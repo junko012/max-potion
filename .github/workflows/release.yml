@@ -1,0 +1,117 @@
+name: Release
+
+# Se dispara al subir un tag vX.Y.Z (ver RELEASING.md). Construye un paquete COMPLETO por plataforma
+# (app + la pokemon.db del propio repo, verificada contra db.lock + idiomas) y los publica en GitHub Releases con SHA256SUMS.
+on:
+  push:
+    tags: ["v*"]
+  # Ensayo sin publicar: Actions → Release → Run workflow. Construye los paquetes de las 4 plataformas y los deja como
+  # artefactos de la ejecución (no crea tag ni release). Úsalo antes del primer tag real.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versión de prueba (X.Y.Z)"
+        default: "1.0.0"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest,  rid: linux-x64 }
+          - { os: windows-latest, rid: win-x64 }
+          - { os: macos-latest,   rid: osx-arm64 }
+          - { os: macos-latest,   rid: osx-x64 }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: 9.0.x }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+
+      - name: Version (from tag, or the manual input)
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+          else echo "VERSION=${INPUT_VERSION:-1.0.0}" >> "$GITHUB_ENV"; fi
+
+      - name: Check bundled pokemon.db matches db.lock (published release)
+        run: python scripts/sync-db.py --check
+
+      - name: Test
+        run: dotnet test tests/Exxeguttor.Tests -c Release --filter "FullyQualifiedName!~Diagnostic"
+
+      - name: Publish
+        run: >
+          dotnet publish src/Exxeguttor.UI -c Release -r ${{ matrix.rid }}
+          -p:Version=${VERSION} -p:SourceRevisionId=${GITHUB_SHA::7} -o build/publish
+
+      - name: Add database
+        run: cp pokemon-database/database/pokemon.db build/publish/pokemon.db
+
+      - name: Package
+        run: python scripts/package.py ${{ matrix.rid }} "${VERSION}" build/publish dist
+
+      - name: Linux packages (.deb / .rpm)
+        if: matrix.rid == 'linux-x64'
+        run: |
+          sudo apt-get update && sudo apt-get install -y rpm
+          command -v rpmbuild || { echo "rpmbuild no quedó instalado"; dpkg -L rpm | grep -i bin; exit 1; }
+          REQUIRE_RPM=1 python3 scripts/build_linux_packages.py "${VERSION}" build/publish dist
+          ls -lh dist
+
+      # AppImage (un solo archivo para cualquier distro). continue-on-error: mientras se prueba por primera vez,
+      # un fallo aquí no tumba el resto del job; quitar esa línea cuando el AppImage ya salga bien.
+      - name: AppImage
+        if: matrix.rid == 'linux-x64'
+        continue-on-error: true
+        run: |
+          curl -fsSL -o appimagetool.AppImage https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool.AppImage
+          APPIMAGETOOL="$PWD/appimagetool.AppImage" python3 scripts/build_appimage.py "${VERSION}" build/publish dist
+          ls -lh dist
+
+      # Firma GPG de los .rpm (ver docs/SIGNING.md). Sin los secrets, el script avisa y no firma.
+      - name: Sign .rpm
+        if: matrix.rid == 'linux-x64'
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: bash scripts/sign_release.sh rpm dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.rid }}
+          path: dist/*
+          retention-days: 1
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: dist, merge-multiple: true }
+      - name: Checksums
+        run: cd dist && sha256sum * > SHA256SUMS.txt
+      - name: Sign checksums
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: bash scripts/sign_release.sh checksums dist
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "${GITHUB_REF_NAME}" dist/* --repo "${GITHUB_REPOSITORY}"
+          --title "Max Potion ${GITHUB_REF_NAME#v}" --generate-notes
+          --notes "Linux is the primary platform. Windows and macOS builds are provided as-is; macOS is unsigned (right-click → Open the first time)."

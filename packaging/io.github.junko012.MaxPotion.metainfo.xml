@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- AppStream: lo leen GNOME Software, KDE Discover, el AppImage y (más adelante) Flathub.
+     @VERSION@ y @DATE@ los rellena scripts/build_appimage.py. Cuando haya capturas, agregar <screenshots>. -->
+<component type="desktop-application">
+  <id>io.github.junko012.MaxPotion</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Max Potion</name>
+  <summary>Offline Pokémon save editor with real-time legality checking</summary>
+  <developer_name>junko012</developer_name>
+  <description>
+    <p>Max Potion is an all-in-one Pokémon save file editor, written for Linux first and also available on other platforms. It works entirely offline: the data it needs travels inside the app.</p>
+    <p>Features:</p>
+    <ul>
+      <li>Edit Pokémon, trainer data, bag and Pokédex across the generations supported by PKHeX.Core</li>
+      <li>Movesets and learnsets built in, with recommended sets</li>
+      <li>Real-time legality checking, with explanations and automatic fixes</li>
+      <li>Interface in 13 languages, with the game-data language chosen independently</li>
+    </ul>
+    <p>Built on PKHeX.Core. Always keep a backup of your save file before editing. Pokémon is a trademark of Nintendo, Creatures Inc. and GAME FREAK inc.; this project is not affiliated with or endorsed by them.</p>
+  </description>
+  <launchable type="desktop-id">maxpotion.desktop</launchable>
+  <url type="homepage">https://github.com/junko012/max-potion</url>
+  <url type="bugtracker">https://github.com/junko012/max-potion/issues</url>
+  <categories>
+    <category>Game</category>
+    <category>Utility</category>
+  </categories>
+  <provides>
+    <binary>maxpotion</binary>
+  </provides>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="@VERSION@" date="@DATE@"/>
+  </releases>
+</component>

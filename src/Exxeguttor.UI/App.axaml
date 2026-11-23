@@ -1,0 +1,1024 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="using:Exxeguttor.UI.Converters"
+             x:Class="Exxeguttor.UI.App"
+             RequestedThemeVariant="Default">
+
+    <Application.Styles>
+        <FluentTheme />
+
+        <!-- Indicador de carga: Poké Ball (u otro Image) girando mientras corre algo pesado
+             de PKHeX.Core en background — usado por MainWindow (crear Pokémon, analizar
+             legalidad al exportar) y PokemonInfoView (badge de legalidad al seleccionar).
+             Global acá (no en cada Window/UserControl) porque se reusa en ambos lugares.
+             Rotación continua, a diferencia del pulso de la libreta que es una sola vez
+             (ver MainWindow.axaml, Border.notebook-icon.pulse). -->
+        <Style Selector="Image.spin">
+            <Style.Animations>
+                <Animation Duration="0:0:0.9" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="RotateTransform.Angle" Value="0"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="RotateTransform.Angle" Value="360"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- ══════════════════════════════════════════════════════════════════════════
+             Loader 1 (BusyKind.OpenSave) — Pokédex escaneando al abrir un save. Reemplaza la
+             coreografía anterior (Hitmonlee/Voltorb/Dugtrio) — ver
+             mockups/open_save_pokedex/open-save-pokedex.{html,md}. La Pokédex en sí (vaivén y
+             parpadeo de lente) reusa los estilos "pkdx-bob-y"/"pkdx-bob-rotate"/"pkdx-lens" del
+             Loader 4 (más abajo), activados con Classes.pokedexactive bindeado a
+             BusyState.IsOpenSaveLoaderActive. Acá solo van los elementos propios de esta
+             escena: tres anillos que se expanden desde la lente, un rayo que gira 360° y dos
+             líneas que cruzan el cuerpo de la Pokédex. Ciclo de 2.4 s, loop infinito.
+
+             La clase activadora "opensaveactive" cumple el mismo rol que "pokedexactive" y los
+             demás (reinicia el ciclo desde cue 0% en cada apertura, y detiene todo al cerrar).
+             Cada elemento tiene UN SOLO RenderTransform simple y el Setter apunta a su
+             sub-propiedad — misma regla del resto del proyecto (nunca TransformGroup ni
+             reasignar RenderTransform entre keyframes). Los anillos tienen Opacity="0" fija en
+             el XAML para que durante su Delay inicial no se vean estáticos. ══ -->
+        <Style Selector="Ellipse.os-ring.opensaveactive">
+            <Setter Property="RenderTransform"><ScaleTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:2.4" IterationCount="Infinite" Easing="CubicEaseOut">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0.65"/><Setter Property="ScaleTransform.ScaleX" Value="0.4"/><Setter Property="ScaleTransform.ScaleY" Value="0.4"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="4.6"/><Setter Property="ScaleTransform.ScaleY" Value="4.6"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Ellipse.os-ring-2.opensaveactive">
+            <Setter Property="RenderTransform"><ScaleTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:2.4" Delay="0:0:0.8" IterationCount="Infinite" Easing="CubicEaseOut">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0.65"/><Setter Property="ScaleTransform.ScaleX" Value="0.4"/><Setter Property="ScaleTransform.ScaleY" Value="0.4"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="4.6"/><Setter Property="ScaleTransform.ScaleY" Value="4.6"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Ellipse.os-ring-3.opensaveactive">
+            <Setter Property="RenderTransform"><ScaleTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:2.4" Delay="0:0:1.6" IterationCount="Infinite" Easing="CubicEaseOut">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0.65"/><Setter Property="ScaleTransform.ScaleX" Value="0.4"/><Setter Property="ScaleTransform.ScaleY" Value="0.4"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="4.6"/><Setter Property="ScaleTransform.ScaleY" Value="4.6"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Rayo giratorio desde la lente — rotación lineal completa por ciclo. El origen de
+             rotación (extremo izquierdo, centro vertical) se fija en el XAML con
+             RenderTransformOrigin="0,0.5". -->
+        <Style Selector="Border.os-sweep.opensaveactive">
+            <Setter Property="RenderTransform"><RotateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:2.4" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="RotateTransform.Angle" Value="360"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Línea horizontal que cruza el cuerpo de la Pokédex (ida y vuelta) y línea vertical
+             desfasada 0.6 s. Recorridos = alto/ancho del cuerpo escalado (125/106 px) menos el
+             grosor de la línea (2 px). -->
+        <Style Selector="Border.os-scan-h.opensaveactive">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:2.4" IterationCount="Infinite" Easing="CubicEaseInOut">
+                    <KeyFrame Cue="0%">   <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="50%">  <Setter Property="TranslateTransform.Y" Value="123"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.os-scan-v.opensaveactive">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:2.4" Delay="0:0:0.6" IterationCount="Infinite" Easing="CubicEaseInOut">
+                    <KeyFrame Cue="0%">   <Setter Property="TranslateTransform.X" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="50%">  <Setter Property="TranslateTransform.X" Value="104"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="TranslateTransform.X" Value="0"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- ══════════════════════════════════════════════════════════════════════════
+             Loader 3 (BusyKind.CreatePokemon) — huevo que tiembla, se agrieta en dos
+             momentos, y revela el sprite de la especie recién elegida. Ver
+             mockups/loading_screens/screen-05-loading-screens.{html,md} para el boceto CSS
+             original (misma duración/cues acá, 1:1). Ciclo de 2.2s, loop infinito — el
+             mínimo artificial de espera en MainWindowViewModel.OnSpeciesChosen coincide a
+             propósito con esta misma duración (ver comentario ahí), así que la barra de
+             progreso de abajo (l3-progress-fill) SÍ puede ser decorativa atada al ciclo fijo,
+             a diferencia de la de Loader 1 que se sacó de acá — no hay progreso real
+             granular que reportar para "crear un Pokémon" (ver .md, sección "Resueltos" de
+             Loader 3, único caso donde el ciclo decorativo y la barra comparten duración a
+             propósito, ya que no son fuentes conceptualmente independientes en este loader).
+
+             Todos los selectores de acá abajo son compuestos con ".loader3active" — mismo
+             mecanismo que ".opensaveactive" (reinicio desde cue 0% en cada creación, ver
+             BusyStateService.IsCreatePokemonLoaderActive), togglado en MainWindow.axaml vía
+             Classes.loader3active="{Binding BusyState.IsCreatePokemonLoaderActive}". Mismo
+             patrón de un solo RenderTransform simple por elemento que el bloque de Loader 1
+             de arriba — ver esa nota larga para el porqué (evitar "No animator registered"
+             con un TransformGroup). ══ -->
+
+        <!-- Huevo: tiembla (RotateTransform.Angle, pequeño vaivén ±4°) y se desvanece al
+             final del ciclo (85%-92%) para dar paso a la revelación. -->
+        <Style Selector="Border.l3-egg-shake.loader3active">
+            <Setter Property="RenderTransform"><RotateTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Style.Animations>
+                <Animation Duration="0:0:2.2" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="RotateTransform.Angle" Value="0"/>  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="25%">  <Setter Property="RotateTransform.Angle" Value="-4"/> <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="75%">  <Setter Property="RotateTransform.Angle" Value="4"/>  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="85%">  <Setter Property="RotateTransform.Angle" Value="0"/>  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="92%">  <Setter Property="RotateTransform.Angle" Value="0"/>  <Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="RotateTransform.Angle" Value="0"/>  <Setter Property="Opacity" Value="0"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Grietas progresivas — dos Path independientes, cada una aparece (Opacity 0→1) en
+             un momento distinto del ciclo, quedan visibles el resto (mismo timing que el
+             boceto CSS crack-in/crack-in-2: 45%/70%). Puramente decorativo, no atado a
+             porcentaje real de carga (no hay nada que medir acá, ver nota del bloque). -->
+        <Style Selector="Path.l3-crack-1.loader3active">
+            <Style.Animations>
+                <Animation Duration="0:0:2.2" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="40%">  <Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="45%">  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="1"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Path.l3-crack-2.loader3active">
+            <Style.Animations>
+                <Animation Duration="0:0:2.2" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="65%">  <Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="70%">  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="1"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Revelación: sprite de la especie recién elegida, oculto hasta 85%, entra
+             "creciendo" (ScaleTransform 0.6→1.1→1.0) mientras el huevo se desvanece encima
+             (ver l3-egg-shake, mismo rango 85%-100%) — misma técnica de reveal por
+             superposición+fade que ya usa el boceto CSS original. -->
+        <Style Selector="Image.l3-reveal.loader3active">
+            <Setter Property="RenderTransform"><ScaleTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Style.Animations>
+                <Animation Duration="0:0:2.2" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="0.6"/><Setter Property="ScaleTransform.ScaleY" Value="0.6"/></KeyFrame>
+                    <KeyFrame Cue="85%">  <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="0.6"/><Setter Property="ScaleTransform.ScaleY" Value="0.6"/></KeyFrame>
+                    <KeyFrame Cue="92%">  <Setter Property="Opacity" Value="1"/><Setter Property="ScaleTransform.ScaleX" Value="1.1"/><Setter Property="ScaleTransform.ScaleY" Value="1.1"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="1"/><Setter Property="ScaleTransform.ScaleX" Value="1"/>   <Setter Property="ScaleTransform.ScaleY" Value="1"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Barra de progreso del Loader 3 — a propósito SÍ atada al ciclo fijo de 2.2s (ver
+             nota larga del bloque, arriba): es la misma duración exacta del mínimo artificial
+             de espera, así que sirve como indicador real de "cuánto falta del piso mínimo"
+             sin necesidad de reportar progreso real desde ningún lado. -->
+        <Style Selector="Border.l3-progress-fill.loader3active">
+            <Style.Animations>
+                <Animation Duration="0:0:2.2" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Width" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Width" Value="160"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- ══════════════════════════════════════════════════════════════════════════
+             Loader 4 (BusyKind.VerifyLegality) — Pokédex escaneando. Reemplaza la pokebola
+             genérica en "Verificando legalidad" (PokemonEditorViewModel, un Pokémon) y
+             "Analizando legalidad" (MainWindowViewModel, al exportar) — mismo Kind para los
+             dos, ver mockups/legality_scan/pokedex-legality-scan.md. Ciclo de 2.4s, loop
+             infinito (a diferencia de la pantalla de éxito de exportación, que corre una
+             sola vez). Primer ícono de UI a color sólido del proyecto — decisión consciente,
+             ver el .md. El bob de la Pokédex combina traslación+rotación en el boceto CSS
+             original (mismo caso que ya se resolvió antes varias veces) — se separa en dos
+             Border anidados, uno por cada tipo de transform, en vez de un TransformGroup.
+             La clase activadora "pokedexactive" se bindea a BusyState.IsVerifyLegalityLoaderActive
+             (mismo mecanismo de reinicio desde cue 0% que el resto de los loaders). ══ -->
+
+        <!-- Pokédex — vaivén (traslación Y en el Border exterior, rotación en el interior). -->
+        <Style Selector="Border.pkdx-bob-y.pokedexactive">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:2.4" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="50%">  <Setter Property="TranslateTransform.Y" Value="-3"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.pkdx-bob-rotate.pokedexactive">
+            <Setter Property="RenderTransform"><RotateTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Style.Animations>
+                <Animation Duration="0:0:2.4" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="RotateTransform.Angle" Value="-3"/></KeyFrame>
+                    <KeyFrame Cue="50%">  <Setter Property="RotateTransform.Angle" Value="3"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="RotateTransform.Angle" Value="-3"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Lente — parpadeo breve a mitad de ciclo, solo Opacity. -->
+        <Style Selector="Ellipse.pkdx-lens.pokedexactive">
+            <Style.Animations>
+                <Animation Duration="0:0:2.4" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="55%">  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="60%">  <Setter Property="Opacity" Value="0.3"/></KeyFrame>
+                    <KeyFrame Cue="65%">  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="1"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- ══ Loader 5 (catálogo de especies) — Pokédex "trabajando": versión más marcada y rápida
+             que la del Loader 4 (que es un escaneo tranquilo). Mismo mecanismo: clase
+             "pokedexactive" bindeada a BusyState.IsSpeciesCatalogLoaderActive. ══ -->
+        <Style Selector="Border.pkdx5-bob-y.pokedexactive">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:0.9" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="50%">  <Setter Property="TranslateTransform.Y" Value="-6"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.pkdx5-bob-rotate.pokedexactive">
+            <Setter Property="RenderTransform"><RotateTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Style.Animations>
+                <Animation Duration="0:0:1.8" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="RotateTransform.Angle" Value="-6"/></KeyFrame>
+                    <KeyFrame Cue="50%">  <Setter Property="RotateTransform.Angle" Value="6"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="RotateTransform.Angle" Value="-6"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Ellipse.pkdx5-lens.pokedexactive">
+            <Style.Animations>
+                <Animation Duration="0:0:0.7" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="50%">  <Setter Property="Opacity" Value="0.2"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="1"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Rectangle.pkdx5-line-a.pokedexactive">
+            <Style.Animations>
+                <Animation Duration="0:0:1.2" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="45%">  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="50%">  <Setter Property="Opacity" Value="0.2"/></KeyFrame>
+                    <KeyFrame Cue="95%">  <Setter Property="Opacity" Value="0.2"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="1"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Rectangle.pkdx5-line-b.pokedexactive">
+            <Style.Animations>
+                <Animation Duration="0:0:1.2" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0.2"/></KeyFrame>
+                    <KeyFrame Cue="45%">  <Setter Property="Opacity" Value="0.2"/></KeyFrame>
+                    <KeyFrame Cue="50%">  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="95%">  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0.2"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Haz de escaneo — recorre al Pokémon de arriba a abajo, Opacity + traslación Y
+             (un solo tipo de transform, sin problema de composición). -->
+        <Style Selector="Border.pkdx-scan-beam.pokedexactive">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:2.4" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="8%">   <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="14%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.Y" Value="3"/></KeyFrame>
+                    <KeyFrame Cue="55%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.Y" Value="43"/></KeyFrame>
+                    <KeyFrame Cue="62%">  <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.Y" Value="43"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.Y" Value="43"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Checklist de 4 categorías (PID/Naturaleza, IVs/Stats, Movimientos, Origen del
+             encuentro — mismas que LegalityMessageMapper) — cada fila se ilumina en su
+             propio momento del ciclo, mismo criterio de Delay escalonado que las hojas
+             voladas del Diálogo 1 (0/0.3s/0.6s/0.9s). Solo Opacity, sin transform. -->
+        <Style Selector="StackPanel.pkdx-check-1.pokedexactive">
+            <Style.Animations>
+                <Animation Duration="0:0:2.4" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0.35"/></KeyFrame>
+                    <KeyFrame Cue="12%">  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="1"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="StackPanel.pkdx-check-2.pokedexactive">
+            <Style.Animations>
+                <Animation Duration="0:0:2.4" Delay="0:0:0.3" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0.35"/></KeyFrame>
+                    <KeyFrame Cue="12%">  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="1"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="StackPanel.pkdx-check-3.pokedexactive">
+            <Style.Animations>
+                <Animation Duration="0:0:2.4" Delay="0:0:0.6" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0.35"/></KeyFrame>
+                    <KeyFrame Cue="12%">  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="1"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="StackPanel.pkdx-check-4.pokedexactive">
+            <Style.Animations>
+                <Animation Duration="0:0:2.4" Delay="0:0:0.9" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0.35"/></KeyFrame>
+                    <KeyFrame Cue="12%">  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="1"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Sprite real siendo escaneado — CORREGIDO tras feedback: la primera versión
+             mostraba una silueta genérica fija, sin importar qué Pokémon se estaba
+             analizando. Ahora bindea a BusyState.CurrentScanSprite (real, resuelto por
+             especie) y se "revela" con un blip corto de escala+fade CADA VEZ que cambia de
+             especie (BusyState.IsScanSpriteRevealing, un solo tiro de 320ms — ver
+             BusyStateService.PulseScanReveal) — no un loop infinito como el resto de la
+             escena, porque esto se dispara a demanda (una vez por Pokémon real analizado),
+             no en un ciclo fijo. Si son varios Pokémon (exportar con varias ediciones
+             pendientes), se ve la transición de uno a otro; si es uno solo (verificar al
+             cargar en el editor), se ve una única revelación al arrancar. -->
+        <Style Selector="Image.pkdx-scan-sprite.pkdxrevealactive">
+            <Setter Property="RenderTransform"><ScaleTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Style.Animations>
+                <Animation Duration="0:0:0.32" IterationCount="1">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="0.8"/><Setter Property="ScaleTransform.ScaleY" Value="0.8"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="1"/><Setter Property="ScaleTransform.ScaleX" Value="1"/>  <Setter Property="ScaleTransform.ScaleY" Value="1"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- ══════════════════════════════════════════════════════════════════════════
+             Diálogos de confirmación con Rotom (mockups/confirmation_dialogs) — a
+             diferencia de los tres loaders de arriba, acá la clase activadora ES
+             directamente el booleano de visibilidad del diálogo (IsConfirmingClose /
+             IsConfirmingClear) — no hace falta un flag de servicio aparte tipo
+             IsOpenSaveLoaderActive, porque abrir el diálogo YA es un false→true del
+             mismo binding que dispara IsVisible, así que cada apertura reinicia el
+             ciclo desde cue 0% sola. Mismo patrón de "un solo RenderTransform simple
+             por elemento" que el resto del archivo — donde el boceto CSS combina más
+             de un transform a la vez (traslación+rotación en las hojas voladas,
+             rotación+escala en el combado de la hoja mojada) se anidan DOS elementos,
+             cada uno con su propio transform simple, en vez de un TransformGroup. ══ -->
+
+        <!-- Diálogo 1 — "¿Cerrar sin exportar?", Rotom-Ventilador. Bob vertical sutil. -->
+        <Style Selector="Image.dlg1-fan-bob.dlg1active">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:1.6" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="50%">  <Setter Property="TranslateTransform.Y" Value="-4"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Tres hojas voladas — misma forma de journey (traslada +70,-24 y rota 200°
+             mientras se desvanece a partir del 20%), delay escalonado (0/0.25s/0.5s,
+             igual que el boceto CSS) para dar sensación de ráfaga continua. Traslación
+             en el Border exterior (+ Opacity, que no es un transform y puede ir en
+             cualquiera de los dos), rotación en el Border interior — dos elementos en
+             vez de un TransformGroup, ver nota del bloque arriba. -->
+        <Style Selector="Border.dlg1-paper-move-1.dlg1active">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:1.6" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.X" Value="0"/>  <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="20%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.X" Value="14"/> <Setter Property="TranslateTransform.Y" Value="-4.8"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.X" Value="70"/> <Setter Property="TranslateTransform.Y" Value="-24"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.dlg1-paper-spin-1.dlg1active">
+            <Setter Property="RenderTransform"><RotateTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Style.Animations>
+                <Animation Duration="0:0:1.6" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="RotateTransform.Angle" Value="200"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <!-- Hoja 2 — mismos cues, con Delay="0:0:0.25" (ver .md: "pequeño desfase de
+             tiempo entre ellas"). Delay en Avalonia se comporta como animation-delay de
+             CSS para un loop infinito: solo corre una vez antes de la primera
+             iteración, después las iteraciones siguen pegadas una a la otra — el
+             desfase de fase entre las tres hojas queda constante para siempre, que es
+             justo el efecto buscado. -->
+        <Style Selector="Border.dlg1-paper-move-2.dlg1active">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:1.6" Delay="0:0:0.25" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.X" Value="0"/>  <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="20%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.X" Value="14"/> <Setter Property="TranslateTransform.Y" Value="-4.8"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.X" Value="70"/> <Setter Property="TranslateTransform.Y" Value="-24"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.dlg1-paper-spin-2.dlg1active">
+            <Setter Property="RenderTransform"><RotateTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Style.Animations>
+                <Animation Duration="0:0:1.6" Delay="0:0:0.25" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="RotateTransform.Angle" Value="200"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <!-- Hoja 3 — Delay="0:0:0.5", la más chica, sin líneas de texto (ver boceto). -->
+        <Style Selector="Border.dlg1-paper-move-3.dlg1active">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:1.6" Delay="0:0:0.5" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.X" Value="0"/>  <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="20%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.X" Value="14"/> <Setter Property="TranslateTransform.Y" Value="-4.8"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.X" Value="70"/> <Setter Property="TranslateTransform.Y" Value="-24"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.dlg1-paper-spin-3.dlg1active">
+            <Setter Property="RenderTransform"><RotateTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Style.Animations>
+                <Animation Duration="0:0:1.6" Delay="0:0:0.5" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="RotateTransform.Angle" Value="200"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+
+        <!-- Diálogo "¿Liberar?" — Rotom-Corte corta el lazo que ata al Pokémon y este se va (ciclo 2.8 s,
+             mismos cues que el boceto mockups/release_pokemon). Cada elemento anima un solo transform. -->
+        <Style Selector="Image.rel-mow.relactive">
+            <Setter Property="RenderTransform"><RotateTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.8"/>
+            <Style.Animations>
+                <Animation Duration="0:0:2.8" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="30%">  <Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="38%">  <Setter Property="RotateTransform.Angle" Value="-10"/></KeyFrame>
+                    <KeyFrame Cue="46%">  <Setter Property="RotateTransform.Angle" Value="14"/></KeyFrame>
+                    <KeyFrame Cue="56%">  <Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Image.rel-goner.relactive">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:2.8" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="46%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.Y" Value="-30"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.rel-rope-l.relactive">
+            <Setter Property="RenderTransform"><RotateTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0,0.5"/>
+            <Style.Animations>
+                <Animation Duration="0:0:2.8" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="1"/><Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="46%">  <Setter Property="Opacity" Value="1"/><Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="RotateTransform.Angle" Value="80"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.rel-rope-r.relactive">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:2.8" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="46%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.Y" Value="-30"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.rel-slash.relactive">
+            <Setter Property="Opacity" Value="0"/>
+            <Style.Animations>
+                <Animation Duration="0:0:2.8" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="44%">  <Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="48%">  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="56%">  <Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.rel-spark.relactive">
+            <Setter Property="Opacity" Value="0"/>
+            <Style.Animations>
+                <Animation Duration="0:0:2.8" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="50%">  <Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="58%">  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Diálogo 2 — "¿Descartar ediciones?", Rotom-Lavadora. Bob vertical (amplitud
+             un poco menor que el Ventilador, -3px vs -4px, igual que el boceto). -->
+        <Style Selector="Image.dlg2-wash-bob.dlg2active">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:1.6" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="50%">  <Setter Property="TranslateTransform.Y" Value="-3"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Tres gotas de agua cayendo — traslación + fade (un solo transform, sin
+             problema de TransformGroup acá). Delay escalonado 0/0.3s/0.6s (ciclo de 2s,
+             igual que el boceto). -->
+        <Style Selector="Border.dlg2-drop-1.dlg2active">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:2" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="25%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.Y" Value="7.3"/></KeyFrame>
+                    <KeyFrame Cue="60%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.Y" Value="22"/></KeyFrame>
+                    <KeyFrame Cue="65%">  <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.Y" Value="22"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.Y" Value="22"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.dlg2-drop-2.dlg2active">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:2" Delay="0:0:0.3" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="25%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.Y" Value="7.3"/></KeyFrame>
+                    <KeyFrame Cue="60%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.Y" Value="22"/></KeyFrame>
+                    <KeyFrame Cue="65%">  <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.Y" Value="22"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.Y" Value="22"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.dlg2-drop-3.dlg2active">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:2" Delay="0:0:0.6" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="25%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.Y" Value="7.3"/></KeyFrame>
+                    <KeyFrame Cue="60%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.Y" Value="22"/></KeyFrame>
+                    <KeyFrame Cue="65%">  <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.Y" Value="22"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.Y" Value="22"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Mancha de humedad — overlay de color sobre la hoja, solo Opacity (sin
+             transform). -->
+        <Style Selector="Border.dlg2-wet-overlay.dlg2active">
+            <Style.Animations>
+                <Animation Duration="0:0:2" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="55%">  <Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="62%">  <Setter Property="Opacity" Value="0.7"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0.7"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Combado de la hoja mojada — rotación + escala en Y, origen abajo-centro.
+             Dos elementos anidados (ver nota del bloque, arriba) en vez de
+             TransformGroup: dlg2-paper-rotate (exterior) + dlg2-paper-scale
+             (interior), mismos cues en ambos para que el combado se vea como un solo
+             movimiento coordinado. -->
+        <Style Selector="Border.dlg2-paper-rotate.dlg2active">
+            <Setter Property="RenderTransform"><RotateTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,1"/>
+            <Style.Animations>
+                <Animation Duration="0:0:2" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="55%">  <Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="RotateTransform.Angle" Value="4"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.dlg2-paper-scale.dlg2active">
+            <Setter Property="RenderTransform"><ScaleTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,1"/>
+            <Style.Animations>
+                <Animation Duration="0:0:2" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="ScaleTransform.ScaleY" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="55%">  <Setter Property="ScaleTransform.ScaleY" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="ScaleTransform.ScaleY" Value="0.9"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- ══════════════════════════════════════════════════════════════════════════
+             Pantalla de éxito de exportación (mockups/export_success) — Porygon
+             evolucionando a Porygon2 vía el objeto Mejora + Rotom en la PC reaccionando.
+             A DIFERENCIA de todo lo de arriba: UNA SOLA PASADA (IterationCount="1",
+             FillMode="Forward" — se queda congelada en el último KeyFrame en vez de
+             revertir al estado inicial, equivalente a "fill: forwards" de CSS), no loop
+             infinito. La clase activadora "xsactive" se bindea directo a
+             IsExportSuccessVisible — mismo criterio que los diálogos de Rotom (el mismo
+             booleano de visibilidad ya sirve de disparador, no hace falta un flag de
+             servicio aparte), así que cada exportación nueva reinicia la secuencia desde
+             cue 0% sola.
+
+             Simplificación real respecto al boceto CSS, no solo por prolijidad: el boceto
+             combina translateY+scale en el Pokémon Porygon al desvanecerse (65%) y en
+             algunos flashes — como esos cues son EXACTAMENTE donde el elemento pasa a
+             Opacity 0, el transform que lo acompaña es invisible en la práctica (nada que
+             ver ahí). Se dejó solo la animación de Opacity en esos casos — mismo
+             resultado visual, sin el riesgo de combinar dos tipos de transform en un
+             mismo elemento (ver nota de "un solo RenderTransform simple por elemento" en
+             los bloques de arriba). Los flashes (evolve-flash, plug-flash) SÍ necesitan
+             Opacity+Scale juntos, pero eso es UN solo tipo de transform (ScaleTransform
+             con ScaleX/ScaleY) + Opacity — no es composición de dos transforms, así que
+             no aplica la restricción ahí.
+
+             El objeto Mejora viajando por la tubería (∩) usa la Opción B que el propio .md
+             deja a criterio de la sesión de implementación: un recorrido simplificado con
+             varios puntos intermedios (6, aproximando la forma de herradura del trazado real)
+             en vez de muestreo completo de la curva Bézier (que el .md marca como "la parte
+             de mayor complejidad técnica", Pendiente #4) — visible durante todo el trayecto,
+             no un salto instantáneo. PRIMERA VERSIÓN de esto (corregida) leía LITERALMENTE
+             los keyTimes del `<animateMotion>` del boceto CSS (que deja Opacity en 0 durante
+             todo el recorrido real, keyTimes "0;0.15;0.16;1" con values "1;1;0;0") y hacía el
+             objeto invisible casi todo el tiempo — fiel al código del boceto, pero no a lo
+             que hacía falta ver en la práctica (feedback real: "no se ve el objeto, tiene que
+             verse"). Ver Style "Image.xs-upgrade-item.xsactive" más abajo. ══ -->
+
+        <!-- Porygon — solo Opacity, sin transform (ver nota de arriba: el
+             translateY+scale del boceto ocurre exactamente cuando ya es invisible). -->
+        <Style Selector="Image.xs-porygon.xsactive">
+            <Style.Animations>
+                <Animation Duration="0:0:3" IterationCount="1" FillMode="Forward">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="61%">  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="65%">  <Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Destello blanco de evolución — círculo con degradado radial, Opacity+Scale. -->
+        <Style Selector="Ellipse.xs-evolve-flash.xsactive">
+            <Setter Property="RenderTransform"><ScaleTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Style.Animations>
+                <Animation Duration="0:0:3" IterationCount="1" FillMode="Forward">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="0.5"/><Setter Property="ScaleTransform.ScaleY" Value="0.5"/></KeyFrame>
+                    <KeyFrame Cue="61%">  <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="0.5"/><Setter Property="ScaleTransform.ScaleY" Value="0.5"/></KeyFrame>
+                    <KeyFrame Cue="66%">  <Setter Property="Opacity" Value="1"/><Setter Property="ScaleTransform.ScaleX" Value="1.6"/><Setter Property="ScaleTransform.ScaleY" Value="1.6"/></KeyFrame>
+                    <KeyFrame Cue="80%">  <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="2"/>  <Setter Property="ScaleTransform.ScaleY" Value="2"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="2"/>  <Setter Property="ScaleTransform.ScaleY" Value="2"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Porygon2 — revelación creciendo, mismo patrón ya usado en el Loader 3
+             (huevo → sprite revelado). -->
+        <Style Selector="Image.xs-porygon2.xsactive">
+            <Setter Property="RenderTransform"><ScaleTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Style.Animations>
+                <Animation Duration="0:0:3" IterationCount="1" FillMode="Forward">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="0.4"/> <Setter Property="ScaleTransform.ScaleY" Value="0.4"/></KeyFrame>
+                    <KeyFrame Cue="63%">  <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="0.4"/> <Setter Property="ScaleTransform.ScaleY" Value="0.4"/></KeyFrame>
+                    <KeyFrame Cue="70%">  <Setter Property="Opacity" Value="1"/><Setter Property="ScaleTransform.ScaleX" Value="1.25"/><Setter Property="ScaleTransform.ScaleY" Value="1.25"/></KeyFrame>
+                    <KeyFrame Cue="80%">  <Setter Property="Opacity" Value="1"/><Setter Property="ScaleTransform.ScaleX" Value="1"/>   <Setter Property="ScaleTransform.ScaleY" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="1"/><Setter Property="ScaleTransform.ScaleX" Value="1"/>   <Setter Property="ScaleTransform.ScaleY" Value="1"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Rotom reaccionando — rebote de escala solo (sin Opacity, siempre visible). -->
+        <Style Selector="Image.xs-rotom-bounce.xsactive">
+            <Setter Property="RenderTransform"><ScaleTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Style.Animations>
+                <Animation Duration="0:0:3" IterationCount="1" FillMode="Forward">
+                    <KeyFrame Cue="0%">   <Setter Property="ScaleTransform.ScaleX" Value="1"/>    <Setter Property="ScaleTransform.ScaleY" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="58%">  <Setter Property="ScaleTransform.ScaleX" Value="1"/>    <Setter Property="ScaleTransform.ScaleY" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="64%">  <Setter Property="ScaleTransform.ScaleX" Value="1.15"/> <Setter Property="ScaleTransform.ScaleY" Value="1.15"/></KeyFrame>
+                    <KeyFrame Cue="78%">  <Setter Property="ScaleTransform.ScaleX" Value="1"/>    <Setter Property="ScaleTransform.ScaleY" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="ScaleTransform.ScaleX" Value="1"/>    <Setter Property="ScaleTransform.ScaleY" Value="1"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Chispa de conexión (color warning) en el punto de contacto de la tubería con
+             la pantalla de la Rotom PC. -->
+        <Style Selector="Ellipse.xs-plug-flash.xsactive">
+            <Setter Property="RenderTransform"><ScaleTransform/></Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Style.Animations>
+                <Animation Duration="0:0:3" IterationCount="1" FillMode="Forward">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="0.5"/><Setter Property="ScaleTransform.ScaleY" Value="0.5"/></KeyFrame>
+                    <KeyFrame Cue="58%">  <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="0.5"/><Setter Property="ScaleTransform.ScaleY" Value="0.5"/></KeyFrame>
+                    <KeyFrame Cue="64%">  <Setter Property="Opacity" Value="1"/><Setter Property="ScaleTransform.ScaleX" Value="1.2"/><Setter Property="ScaleTransform.ScaleY" Value="1.2"/></KeyFrame>
+                    <KeyFrame Cue="78%">  <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="1.5"/><Setter Property="ScaleTransform.ScaleY" Value="1.5"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="ScaleTransform.ScaleX" Value="1.5"/><Setter Property="ScaleTransform.ScaleY" Value="1.5"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Pulso de color de acento recorriendo la tubería — solo Opacity, la
+             geometría del Path no se anima (es estática, ver MainWindow.axaml). -->
+        <Style Selector="Path.xs-pipe-pulse.xsactive">
+            <Style.Animations>
+                <Animation Duration="0:0:3" IterationCount="1" FillMode="Forward">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0.25"/></KeyFrame>
+                    <KeyFrame Cue="15%">  <Setter Property="Opacity" Value="0.25"/></KeyFrame>
+                    <KeyFrame Cue="25%">  <Setter Property="Opacity" Value="0.85"/></KeyFrame>
+                    <KeyFrame Cue="55%">  <Setter Property="Opacity" Value="0.85"/></KeyFrame>
+                    <KeyFrame Cue="65%">  <Setter Property="Opacity" Value="0.35"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0.35"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Objeto Mejora — CORREGIDO tras feedback real: la primera versión lo hacía
+             desvanecerse casi de inmediato (0%-16%) siguiendo LITERALMENTE los keyTimes del
+             <animateMotion> del boceto CSS, que en los hechos deja el objeto con Opacity 0
+             durante todo el viaje real. Eso era fiel al código del boceto pero no a lo que
+             se necesitaba ver — ahora viaja VISIBLE por la tubería (Opción B del .md:
+             "recorrido simplificado con unos pocos puntos intermedios en vez de muestreo
+             completo de la curva Bézier", no el salto directo que se había hecho antes).
+             TranslateTransform con varios KeyFrame intermedios aproximando el trazado real
+             en forma de herradura (M52,58 L52,36 Q52,18 70,18 L260,18 Q278,18 278,36
+             L278,58, ver MainWindow.axaml) — no es muestreo real de la curva Bézier
+             (seguiría siendo el approach de mayor fidelidad, ver nota de "Pendiente #4" en
+             el .md), pero con 6 puntos en vez de 2 se nota la forma del recorrido. Solo
+             TranslateTransform (un único tipo de transform, sin problema de composición) +
+             Opacity. Declarado DESPUÉS de los dos Path de la tubería en el Canvas de
+             MainWindow.axaml (más ZIndex explícito de refuerzo) para pintarse siempre por
+             encima, nunca detrás. -->
+        <Style Selector="Image.xs-upgrade-item.xsactive">
+            <Setter Property="RenderTransform"><TranslateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:3" IterationCount="1" FillMode="Forward">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.X" Value="0"/>   <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="15%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.X" Value="0"/>   <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="23%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.X" Value="0"/>   <Setter Property="TranslateTransform.Y" Value="-22"/></KeyFrame>
+                    <KeyFrame Cue="29%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.X" Value="18"/>  <Setter Property="TranslateTransform.Y" Value="-40"/></KeyFrame>
+                    <KeyFrame Cue="44%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.X" Value="208"/> <Setter Property="TranslateTransform.Y" Value="-40"/></KeyFrame>
+                    <KeyFrame Cue="51%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.X" Value="226"/> <Setter Property="TranslateTransform.Y" Value="-22"/></KeyFrame>
+                    <KeyFrame Cue="58%">  <Setter Property="Opacity" Value="1"/><Setter Property="TranslateTransform.X" Value="226"/> <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="65%">  <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.X" Value="226"/> <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0"/><Setter Property="TranslateTransform.X" Value="226"/> <Setter Property="TranslateTransform.Y" Value="0"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Bloque de mensaje ("✓ Save exportado" + nombre de archivo + botón Listo) —
+             CORREGIDO tras feedback: antes era parte del StackPanel de siempre, visible
+             desde el instante en que se abre el diálogo, a la vez que la animación de la
+             escena. Ahora se mantiene en Opacity 0 hasta que Porygon2 termina de revelarse
+             del todo (esa animación llega a su forma final en 80%, ver
+             "Image.xs-porygon2.xsactive" arriba) y recién ahí aparece con un fundido corto
+             (80%→88%), quedándose visible el resto (FillMode="Forward" como todo lo demás
+             de esta pantalla). -->
+        <Style Selector="StackPanel.xs-success-message.xsactive">
+            <Style.Animations>
+                <Animation Duration="0:0:3" IterationCount="1" FillMode="Forward">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="80%">  <Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="88%">  <Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="1"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Campo con un valor no válido (ej. fecha inexistente, ver NumericInput): texto y borde en rojo. -->
+        <Style Selector="TextBox.invalid">
+            <Setter Property="Foreground" Value="#E30909"/>
+        </Style>
+        <Style Selector="TextBox.invalid /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="#E30909"/>
+        </Style>
+
+        <!-- NumericUpDown compacto: número visible, flechas pequeñas -->
+        <Style Selector="NumericUpDown">
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="MinHeight" Value="22"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="ShowButtonSpinner" Value="True"/>
+            <Setter Property="ClipValueToMinMax" Value="True"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="NumericUpDown /template/ ButtonSpinner">
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="MinHeight" Value="22"/>
+        </Style>
+        <Style Selector="NumericUpDown /template/ ButtonSpinner /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <!-- TextBox interno visible con número -->
+        <Style Selector="NumericUpDown /template/ ButtonSpinner /template/ TextBox">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="MinHeight" Value="0"/>
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="Padding" Value="1,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <!-- Flechas pequeñas -->
+        <Style Selector="NumericUpDown /template/ ButtonSpinner /template/ RepeatButton">
+            <Setter Property="Width" Value="14"/>
+            <Setter Property="Height" Value="11"/>
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FontSize" Value="7"/>
+        </Style>
+
+        <!-- TabItem compacto -->
+        <Style Selector="TabItem">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="MinWidth" Value="0"/>
+        </Style>
+
+        <!-- Etapa 4.6.3 — pulso de escala genérico (mismas keyframes que
+             Border.notebook-icon.pulse de MainWindow.axaml, pero desacoplado de esa clase
+             específica para poder reusarlo en cualquier control: acá, el badge de legalidad
+             cuando pasa de ilegal a legal en vivo). Requiere RenderTransformOrigin="0.5,0.5"
+             y un <Border.RenderTransform><ScaleTransform/></Border.RenderTransform> en el
+             control que lo use — mismo requisito que el original (animar el RenderTransform
+             compuesto directo tira "No animator registered" en Avalonia). -->
+        <Style Selector="Border.pulse-scale">
+            <Style.Animations>
+                <Animation Duration="0:0:0.45" FillMode="Forward">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="35%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1.3"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1.3"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+
+        <!-- ══════════════════════════════════════════════════════════════════════════
+             Barra de estado inferior (mockups/status_bar/): pokébola abstracta de 20 px —
+             Voltorb (abrir) / Electrode (exportar, suma anillos) — y Rotom (edición).
+             Estados de la pokébola, por clase en el Panel.pball: idle, opening, opened, error,
+             exporting, exported. ══ -->
+        <Style Selector="Panel.pball Ellipse.pball-shell"><Setter Property="Stroke" Value="#B8B8BF"/></Style>
+        <Style Selector="Panel.pball Line.pball-line"><Setter Property="Stroke" Value="#B8B8BF"/></Style>
+        <Style Selector="Panel.pball Ellipse.pball-btn"><Setter Property="Stroke" Value="#B8B8BF"/></Style>
+        <Style Selector="Panel.pball Line.pball-ring">
+            <Setter Property="IsVisible" Value="False"/>
+            <Setter Property="Stroke" Value="#B8B8BF"/>
+        </Style>
+        <Style Selector="Panel.pball.exporting Line.pball-ring"><Setter Property="IsVisible" Value="True"/></Style>
+        <Style Selector="Panel.pball.exported Line.pball-ring"><Setter Property="IsVisible" Value="True"/></Style>
+
+        <Style Selector="Panel.pball.opening Path.pball-top"><Setter Property="Fill" Value="#3B82F6"/></Style>
+        <Style Selector="Panel.pball.exporting Path.pball-top"><Setter Property="Fill" Value="#3B82F6"/></Style>
+        <Style Selector="Panel.pball.opened Path.pball-top"><Setter Property="Fill" Value="#1D9E75"/></Style>
+        <Style Selector="Panel.pball.exported Path.pball-top"><Setter Property="Fill" Value="#1D9E75"/></Style>
+        <Style Selector="Panel.pball.opened Ellipse.pball-shell"><Setter Property="Stroke" Value="#1D9E75"/></Style>
+        <Style Selector="Panel.pball.exported Ellipse.pball-shell"><Setter Property="Stroke" Value="#1D9E75"/></Style>
+        <Style Selector="Panel.pball.opened Line.pball-line"><Setter Property="Stroke" Value="#1D9E75"/></Style>
+        <Style Selector="Panel.pball.exported Line.pball-line"><Setter Property="Stroke" Value="#1D9E75"/></Style>
+        <Style Selector="Panel.pball.exported Line.pball-ring"><Setter Property="Stroke" Value="#1D9E75"/></Style>
+        <Style Selector="Panel.pball.opened Ellipse.pball-btn"><Setter Property="Stroke" Value="#1D9E75"/></Style>
+        <Style Selector="Panel.pball.exported Ellipse.pball-btn"><Setter Property="Stroke" Value="#1D9E75"/></Style>
+
+        <!-- Abriendo: gira; Exportando: gira más rápido. -->
+        <Style Selector="Panel.pball.opening">
+            <Setter Property="RenderTransform"><RotateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:0.6" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="RotateTransform.Angle" Value="360"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Panel.pball.exporting">
+            <Setter Property="RenderTransform"><RotateTransform/></Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:0.35" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="RotateTransform.Angle" Value="360"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <!-- Error: parpadeo alternado rojo/blanco entre las dos mitades, sin transición (como Voltorb
+             antes de autodestruirse). -->
+        <Style Selector="Panel.pball.error Path.pball-top">
+            <Style.Animations>
+                <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Fill" Value="#EF4444"/></KeyFrame>
+                    <KeyFrame Cue="49.9%"><Setter Property="Fill" Value="#EF4444"/></KeyFrame>
+                    <KeyFrame Cue="50%">  <Setter Property="Fill" Value="White"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Fill" Value="White"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Panel.pball.error Path.pball-bottom">
+            <Style.Animations>
+                <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">   <Setter Property="Fill" Value="White"/></KeyFrame>
+                    <KeyFrame Cue="49.9%"><Setter Property="Fill" Value="White"/></KeyFrame>
+                    <KeyFrame Cue="50%">  <Setter Property="Fill" Value="#EF4444"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Fill" Value="#EF4444"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Panel.pball.error Ellipse.pball-shell"><Setter Property="Stroke" Value="#EF4444"/></Style>
+
+        <!-- Rotom con cambios sin exportar: resplandor ámbar que pulsa (~1 s). -->
+        <Style Selector="Ellipse.rotom-glow"><Setter Property="Opacity" Value="0"/></Style>
+        <Style Selector="Ellipse.rotom-glow.on">
+            <Style.Animations>
+                <Animation Duration="0:0:1" IterationCount="Infinite" Easing="SineEaseInOut">
+                    <KeyFrame Cue="0%">   <Setter Property="Opacity" Value="0.3"/></KeyFrame>
+                    <KeyFrame Cue="50%">  <Setter Property="Opacity" Value="0.95"/></KeyFrame>
+                    <KeyFrame Cue="100%"> <Setter Property="Opacity" Value="0.3"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </Application.Styles>
+
+    <Application.Resources>
+        <converters:TypeColorConverter           x:Key="TypeColorConverter"/>
+        <converters:TypeNameConverter            x:Key="TypeNameConverter"/>
+        <converters:NatureNameConverter          x:Key="NatureNameConverter"/>
+        <converters:TypeToSoftBrushConverter      x:Key="TypeToSoftBrush"/>
+        <converters:TypeToSoftBorderConverter     x:Key="TypeToSoftBorder"/>
+        <converters:TypeToActiveBorderConverter   x:Key="TypeToActiveBorder"/>
+        <converters:DamageClassToBrushConverter  x:Key="DamageClassToBrush"/>
+        <converters:DamageClassToBorderConverter x:Key="DamageClassToBorder"/>
+        <converters:DamageClassDotConverter      x:Key="DamageClassDotConverter"/>
+        <converters:CapitalizeConverter          x:Key="CapitalizeConverter"/>
+        <converters:TypeTextColorConverter       x:Key="TypeTextColorConverter"/>
+        <converters:PpUpPipBrushConverter        x:Key="PpUpPipBrushConverter"/>
+        <converters:LegalityColorConverter        x:Key="LegalityColorConverter"/>
+        <converters:LegalityBackgroundTintConverter x:Key="LegalityBackgroundTintConverter"/>
+        <converters:LegalityIconConverter         x:Key="LegalityIconConverter"/>
+        <converters:FieldHighlightConverter       x:Key="FieldHighlightConverter"/>
+        <converters:SeverityBackgroundConverter   x:Key="SeverityBackgroundConverter"/>
+        <converters:SeverityBorderConverter       x:Key="SeverityBorderConverter"/>
+        <converters:SeverityTextConverter         x:Key="SeverityTextConverter"/>
+        <converters:SeverityLabelConverter        x:Key="SeverityLabelConverter"/>
+        <converters:BoolToOpacityConverter        x:Key="BoolToOpacityConverter"/>
+        <converters:ItemNameToSpriteConverter      x:Key="ItemSpriteConverter"/>
+        <converters:RadarPointsConverter           x:Key="RadarPointsConverter"/>
+        <converters:DoubleToGridLengthConverter    x:Key="StarWidthConverter"/>
+        <converters:IntEqualsConverter             x:Key="IntEqualsConverter"/>
+        <converters:RibbonCategoryBackgroundConverter  x:Key="RibbonCategoryBackground"/>
+        <converters:RibbonCategoryBorderConverter      x:Key="RibbonCategoryBorder"/>
+        <converters:RibbonCategoryTextConverter        x:Key="RibbonCategoryText"/>
+        <converters:RibbonChipBackgroundConverter      x:Key="RibbonChipBackground"/>
+        <converters:RibbonChipForegroundConverter      x:Key="RibbonChipForeground"/>
+        <converters:RibbonTileBrushConverter           x:Key="RibbonTileBrush"/>
+    </Application.Resources>
+
+</Application>

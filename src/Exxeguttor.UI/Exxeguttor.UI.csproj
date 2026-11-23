@@ -1,0 +1,120 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <AssemblyName>maxpotion</AssemblyName>
+    <RootNamespace>Exxeguttor.UI</RootNamespace>
+    <Product>Max Potion</Product>
+    <AssemblyTitle>Max Potion</AssemblyTitle>
+    <Company>Max Potion contributors</Company>
+    <ApplicationIcon>Assets\maxpotion.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+    <Authors>Max Potion contributors</Authors>
+    <Copyright>Copyright © 2025 Max Potion contributors</Copyright>
+    <Description>Pokémon save file editor</Description>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishReadyToRun>false</PublishReadyToRun>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <FlatpakAppId>io.github.junko012.MaxPotion</FlatpakAppId>
+    <!-- Commit: al publicar, pasar la propiedad SourceRevisionId con el hash corto de git (opcion -p de dotnet publish).
+         El SDK la agrega a InformationalVersion ("1.0.0+abc1234") y AppInfo la lee para «Acerca de» y los reportes. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="BuildDate" Value="$([System.DateTime]::UtcNow.ToString('yyyy-MM-dd'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.8" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.8" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.8" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.8" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.8" />
+    <PackageReference Condition="'$(Configuration)' == 'Debug'"
+                      Include="Avalonia.Diagnostics" Version="11.3.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Exxeguttor.App\Exxeguttor.App.csproj" />
+  </ItemGroup>
+
+  <!-- Assets de Avalonia (ícono, etc.) — excluye sprites y sonidos, que van como EmbeddedResource -->
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**"
+                      Exclude="Assets\sprites\**;Assets\sounds\**" />
+  </ItemGroup>
+
+  <!-- Sprites embebidos — generados por scripts/download-sprites.py -->
+  <!-- pokemon/normal, pokemon/shiny, pokemon/female, pokemon/shiny-female -->
+  <!-- items, types, index.json -->
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\sprites\**\*.png" />
+    <EmbeddedResource Include="Assets\sprites\index.json"
+                      Condition="Exists('Assets\sprites\index.json')" />
+  </ItemGroup>
+
+  <!-- Sonido chico del módulo Pokédex (estallido de chispas al abrir una tarjeta) —
+       sintetizado, no es un asset con derechos de terceros. Reproducido vía
+       Process.Start a paplay/aplay (ver SoundService.cs), no vía una librería de audio
+       nueva — el proyecto no tenía ninguna dependencia de audio hasta ahora. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\sounds\*.wav" />
+  </ItemGroup>
+
+  <!-- Traducciones embebidas -->
+  <ItemGroup>
+    <EmbeddedResource Include="i18n\*.json" />
+  </ItemGroup>
+
+  <!-- Language packs adicionales (lang/*.json en la raíz del repo): se copian junto al
+       ejecutable (build y publish, también con PublishSingleFile) para que el menú de idioma
+       los detecte vía AppContext.BaseDirectory/lang. -->
+  <ItemGroup>
+    <None Include="..\..\lang\*.json" Link="lang\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <!-- pokemon.db (vive en pokemon-database/database en la raíz del repo): se copia junto al
+       ejecutable en build y publish, igual que lang/*.json. Lo usa scripts/build_linux_packages.py. -->
+  <ItemGroup>
+    <None Include="..\..\pokemon-database\database\pokemon.db" Link="pokemon.db"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- movesets_all_combined.json: única fuente JSON restante (sets competitivos) -->
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\movesets_all_combined.json" />
+  </ItemGroup>
+
+  <!-- Tips (módulo de ayuda): mismo patrón que movesets_all_combined.json de arriba —
+       adentro de Assets/, sin LogicalName manual. El nombre de recurso por defecto
+       que arma el SDK para Assets/Tips/tips_ES.json es
+       "Exxeguttor.UI.Assets.Tips.tips_ES.json" (RootNamespace + ruta de carpetas +
+       archivo) — TipsService.Load() busca exactamente ese nombre.
+
+       Separador GUION BAJO antes del locale (tips_ES.json), no punto: con punto
+       (tips.ES.json) el nombre queda en 3 partes separadas por puntos, patrón que el
+       SDK de .NET interpreta como "nombre.cultura.extensión" (AssignCulture) y saca el
+       archivo del ensamblado principal hacia un recurso satélite de idioma — por eso
+       GetManifestResourceStream nunca lo encontraba, sin ningún error de compilación
+       que lo delate. WithCulture="false" abajo se dejó como resguardo extra, pero en
+       la práctica no alcanzó solo — cambiar el separador es lo que evita el problema
+       de raíz. Ver TipsService.cs para el detalle completo.
+
+       OJO — dos copias a mantener sincronizadas a mano: la fuente "de trabajo" sigue
+       viviendo en pokemon-database/resources/Tips/ (ahí la edita Juan), y ESTA es la
+       copia que realmente se embebe. Mismo trade-off que ya tiene
+       movesets_all_combined.json hoy. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Tips\*.json" WithCulture="false" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Exxeguttor.UI.ViewModels"
+             x:Class="Exxeguttor.UI.Views.BagPouchTileView"
+             x:DataType="vm:BagPouchTileViewModel"
+             Width="120" Height="84">
+
+    <!-- Corrección de sesión "iconos de categoría": ANTES el ícono era un emoji (TextBlock,
+         FontSize=40) — se veía inconsistente entre sistemas (en Linux especialmente, la
+         fuente de emoji a color desentona con el resto de la UI, que es sprites pixel art) y
+         ocupaba demasiado lugar. AHORA es el sprite real del ítem representativo de la
+         categoría (Image, ver BagPouchDatabase.IconSpriteKey/BagPouchTileViewModel.Sprite),
+         mismo lenguaje visual que el resto de Mochila. Tile reducida de 204x108 a 120x84 —
+         mitad de tamaño aprox., pensada para que entren 5 por fila en el panel central en
+         vez de 3 (pedido explícito). -->
+
+    <UserControl.Styles>
+        <!-- Mismo lenguaje visual que PokemonSlotView.slot-card (borde redondeado, feedback de
+             selección vía Classes) — acá el estado seleccionado SÍ se resuelve con estilos en
+             vez de dejarlo sin bindear, porque acá la tile clickeada persiste visible en
+             pantalla (a diferencia de un slot de Pokémon, que al seleccionarse abre el editor
+             en el panel de al lado y dejar de "verse distinto" no se nota tanto). -->
+        <Style Selector="Border.pouch-tile">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Background" Value="#F7F7F7"/>
+        </Style>
+        <Style Selector="Border.pouch-tile.selected">
+            <Setter Property="BorderBrush" Value="#D9584E"/>
+            <Setter Property="Background" Value="#FBEDEC"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Border CornerRadius="8"
+            Margin="3"
+            Padding="6"
+            BorderThickness="2"
+            Classes="pouch-tile"
+            Classes.selected="{Binding IsSelected}">
+
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="4">
+
+            <Image Source="{Binding Sprite}"
+                   Width="32" Height="32"
+                   RenderOptions.BitmapInterpolationMode="None"
+                   HorizontalAlignment="Center"/>
+
+            <TextBlock Text="{Binding DisplayName}"
+                       FontSize="11"
+                       FontWeight="SemiBold"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       MaxWidth="104"
+                       HorizontalAlignment="Center"/>
+
+            <TextBlock Text="{Binding CountText}"
+                       FontSize="10"
+                       Opacity="0.55"
+                       HorizontalAlignment="Center"/>
+
+        </StackPanel>
+    </Border>
+
+</UserControl>

@@ -1,0 +1,225 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Exxeguttor.UI.ViewModels"
+        x:Class="Exxeguttor.UI.Views.SplashWindow"
+        Title="Max Potion"
+        Width="520" Height="400"
+        CanResize="False"
+        SystemDecorations="None"
+        WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="True"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent">
+
+    <!-- REDISEÑO — reemplaza la versión anterior con fondo ilustrado de Exeggutor (ver
+         notas de la sesión de diseño: una ilustración directa del Pokémon como fondo del
+         splash era el asset de mayor riesgo de todo el proyecto, más que cualquier tema de
+         nombre o paleta de color).
+
+         Estética "pantalla LCD vieja, sobria": paleta verdosa apagada (no el hex icónico
+         de ninguna paleta puntual — ver Assets/textures/ y los brushes de abajo), scanlines
+         + campo de datos hex horneados como PNG estáticos (más simple y confiable que
+         intentar tiling/randomización en tiempo real en XAML), wordmark en Press Start 2P
+         (Assets/fonts/, TTF real convertido del paquete @fontsource/press-start-2p, OFL —
+         ver Assets/fonts/PressStart2P-LICENSE.txt) con reveal tipo barrido, y un carrusel
+         vertical de etapas con el MISMO mecanismo de "propiedades de layout + Transitions"
+         que ya usa el cover flow de SpeciesPickerView (Pantalla 4), aplicado en vertical —
+         ver SplashStageItem.cs y RecalculateStageLayout() en el code-behind.
+
+         La ventana es más grande (520x360) que la tarjeta visible (460x300, centrada) para
+         dejarle aire transparente al BoxShadow — si el Border ocupara el 100% de la
+         ventana, la sombra se cortaría en el borde en vez de "flotar". -->
+
+    <!-- REDISEÑO 2 — splash en forma de pokébola (mockups/splash_screen/splash-pokeball.md).
+         Mismo lenguaje LCD que antes, pero la tarjeta es un círculo de 340 px: hemisferio superior
+         con wordmark + subtítulo, banda central con un botón que lleva el aro de progreso, y
+         hemisferio inferior con el carrusel de etapas (ancho útil 270 px, hasta 2 líneas; el
+         círculo recorta solo lo que sobra, así que ya no hacen falta los degradados de máscara).
+         La ventana crece a 520x400 para que la sombra no se corte arriba/abajo.
+         Sin rojo/blanco clásicos: la silueta (círculo + banda + botón) ya evoca la pokébola. -->
+    <Grid>
+        <Border x:Name="SplashCard"
+                Width="340" Height="340"
+                HorizontalAlignment="Center" VerticalAlignment="Center"
+                CornerRadius="170"
+                ClipToBounds="True"
+                BorderBrush="#8C3C4235"
+                BorderThickness="2"
+                BoxShadow="0 18 44 0 #47000000, 0 2 6 0 #1F000000">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Color="#DBDFD0" Offset="0"/>
+                    <GradientStop Color="#DBDFD0" Offset="0.5"/>
+                    <GradientStop Color="#E7EADD" Offset="0.5"/>
+                    <GradientStop Color="#E7EADD" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+
+            <Grid>
+
+                <!-- Texturas de fondo horneadas — scanlines casi subliminales y campo hex tenue. -->
+                <Image Source="avares://maxpotion/Assets/textures/scanlines_overlay.png"
+                       Stretch="Fill" IsHitTestVisible="False"/>
+                <Image Source="avares://maxpotion/Assets/textures/hexfield_overlay.png"
+                       Stretch="Fill" IsHitTestVisible="False"/>
+
+                <!-- Banda central de la pokébola. -->
+                <Border Height="16" VerticalAlignment="Center" Background="#3C4235"/>
+
+                <!-- Wordmark + subtítulo, hemisferio superior. -->
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top"
+                            Margin="0,58,0,0" Spacing="12">
+
+                    <!-- Canvas de tamaño fijo (300x30): wordmark, "tapa" que lo cubre (WordmarkCover,
+                         se encoge de arriba hacia abajo revelando el texto) y barra de escaneo. -->
+                    <Canvas Width="300" Height="30" HorizontalAlignment="Center">
+                        <TextBlock Text="MAX POTION"
+                                   Canvas.Left="0" Canvas.Top="4" Width="300"
+                                   TextAlignment="Center"
+                                   FontFamily="avares://maxpotion/Assets/fonts/PressStart2P-Regular.ttf#Press Start 2P"
+                                   FontSize="18"
+                                   Foreground="#3C4235"/>
+
+                        <Border Canvas.Left="0" Canvas.Top="0" Width="300" Height="30"
+                                ClipToBounds="True">
+                            <Border x:Name="WordmarkCover"
+                                    VerticalAlignment="Bottom" HorizontalAlignment="Stretch"
+                                    Height="30"
+                                    Background="#DBDFD0">
+                                <Border.Transitions>
+                                    <Transitions>
+                                        <DoubleTransition Property="Height" Duration="0:0:1.1" Easing="CubicEaseInOut"/>
+                                    </Transitions>
+                                </Border.Transitions>
+                            </Border>
+                        </Border>
+
+                        <Rectangle x:Name="ScanBar"
+                                   Canvas.Left="0" Canvas.Top="0" Width="300" Height="2"
+                                   Fill="#6B7A5A" Opacity="1">
+                            <Rectangle.Transitions>
+                                <Transitions>
+                                    <DoubleTransition Property="Canvas.Top" Duration="0:0:1.1" Easing="CubicEaseInOut"/>
+                                    <DoubleTransition Property="Opacity" Duration="0:0:1.1" Easing="CubicEaseInOut"/>
+                                </Transitions>
+                            </Rectangle.Transitions>
+                        </Rectangle>
+                    </Canvas>
+
+                    <TextBlock x:Name="Subtitle" Text="SAVE FILE EDITOR"
+                               HorizontalAlignment="Center"
+                               FontSize="11" LetterSpacing="1" Opacity="0"
+                               Foreground="#5C6355">
+                        <TextBlock.Transitions>
+                            <Transitions>
+                                <DoubleTransition Property="Opacity" Duration="0:0:0.4"/>
+                            </Transitions>
+                        </TextBlock.Transitions>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Botón central: aro de progreso (ProgressArc, 0–360° según las etapas) + punto que
+                     pasa a verde al terminar (ButtonDot). -->
+                <Grid Width="84" Height="84" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Ellipse Fill="#3C4235"/>
+                    <Ellipse Width="62" Height="62" Fill="#DBDFD0"/>
+                    <Arc x:Name="ProgressArc" Width="77" Height="77"
+                         StartAngle="-90" SweepAngle="0"
+                         Stroke="#1D9E75" StrokeThickness="3.5" StrokeLineCap="Round">
+                        <Arc.Transitions>
+                            <Transitions>
+                                <DoubleTransition Property="SweepAngle" Duration="0:0:0.75" Easing="CubicEaseInOut"/>
+                            </Transitions>
+                        </Arc.Transitions>
+                    </Arc>
+                    <Ellipse x:Name="ButtonDot" Width="14" Height="14" Fill="#7D8371"/>
+                </Grid>
+
+                <!-- Carrusel vertical de etapas, hemisferio inferior: fila activa justo bajo el botón,
+                     la anterior apagada encima; las nuevas entran desde abajo. SplashWindow.axaml.cs mueve
+                     cada renglón vía Top/Opacity/FontSize (Transitions de abajo animan el cambio). -->
+                <Border x:Name="StageCarouselContainer"
+                        Width="270" Height="100"
+                        HorizontalAlignment="Center" VerticalAlignment="Top"
+                        Margin="0,208,0,0"
+                        ClipToBounds="True"
+                        Opacity="0">
+                    <Border.Transitions>
+                        <Transitions>
+                            <DoubleTransition Property="Opacity" Duration="0:0:0.4"/>
+                        </Transitions>
+                    </Border.Transitions>
+
+                    <ItemsControl x:Name="StageItemsControl">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:SplashStageItem">
+                                <TextBlock Text="{Binding Text}"
+                                           FontSize="{Binding FontSize}"
+                                           Foreground="{Binding Foreground}"
+                                           Opacity="{Binding Opacity}"
+                                           Width="270" TextAlignment="Center" TextWrapping="Wrap"
+                                           Classes.milestone-active="{Binding IsMilestoneActive}">
+                                    <TextBlock.Transitions>
+                                        <Transitions>
+                                            <DoubleTransition Property="Opacity" Duration="0:0:0.75"/>
+                                            <DoubleTransition Property="FontSize" Duration="0:0:0.75" Easing="CubicEaseInOut"/>
+                                        </Transitions>
+                                    </TextBlock.Transitions>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Border>
+
+                <TextBlock Text="v0.1.0" FontSize="9" Foreground="#7D8371"
+                           HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                           Margin="0,0,0,16"/>
+
+                <!-- Flicker de encendido — cubre todo el círculo al arrancar, se apaga solo una vez
+                     (ver RunPowerOnSequence). Último hijo del Grid para quedar arriba de todo. -->
+                <Border x:Name="PowerFlicker" Background="#DBDFD0" Opacity="1">
+                    <Border.Transitions>
+                        <Transitions>
+                            <DoubleTransition Property="Opacity" Duration="0:0:0.06"/>
+                        </Transitions>
+                    </Border.Transitions>
+                </Border>
+
+            </Grid>
+        </Border>
+    </Grid>
+
+    <Window.Styles>
+        <!-- CRÍTICO para que el carrusel de etapas se mueva de verdad — mismo gotcha que
+             ya resuelve SpeciesPickerView para su cover flow horizontal: un ItemsControl
+             con ItemsPanel=Canvas envuelve cada ítem en un ContentPresenter autogenerado
+             que ES el hijo directo del Canvas, no el TextBlock del DataTemplate. Poner
+             Canvas.Top directo en el TextBlock (como en el primer borrador de este mismo
+             archivo) simplemente no posiciona nada — hay que targetear el ContentPresenter
+             acá. -->
+        <Style Selector="ItemsControl#StageItemsControl ContentPresenter" x:DataType="vm:SplashStageItem">
+            <Setter Property="Canvas.Top" Value="{Binding Top}"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Canvas.Top" Duration="0:0:0.75" Easing="CubicEaseInOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <!-- Solo se activa mientras el renglón "marco" (arranque/cierre) es el actual —
+             negrita real + sombra con presencia, nunca en los de carga de módulos
+             intermedios. Ver SplashStageItem.IsMilestoneActive. -->
+        <Style Selector="TextBlock.milestone-active">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Effect">
+                <DropShadowEffect BlurRadius="5" OffsetX="0" OffsetY="1" Color="#3C4235" Opacity="0.4"/>
+            </Setter>
+        </Style>
+    </Window.Styles>
+
+</Window>

@@ -1,0 +1,162 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Exxeguttor.UI.ViewModels"
+             xmlns:controls="using:Exxeguttor.UI.Controls"
+             x:Class="Exxeguttor.UI.Views.IvSolverView"
+             x:DataType="vm:IvSolverViewModel"
+             IsVisible="{Binding IsVisible}">
+
+    <!-- Modal "Buscar IVs legales" — mockups/ivs_solver_modal/ (boceto aprobado: Rotom PC procesando
+         con lluvia de código; Rotom cambia de forma "hackeado" y cada vez más rápido según el
+         progreso REAL de la búsqueda). Tres estados: Buscando / Encontrada / Sin solución.
+         Mismas dos capas que los demás diálogos: dim de ventana completa + tarjeta blanca centrada. -->
+    <UserControl.Styles>
+        <Style Selector="Border.ivchip">
+            <Setter Property="Background" Value="#F4F4F5"/>
+            <Setter Property="BorderBrush" Value="#DCDCE0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Width" Value="50"/>
+            <Setter Property="Padding" Value="0,5"/>
+        </Style>
+        <Style Selector="Border.ivchip.diff">
+            <Setter Property="Background" Value="#FFF4EC"/>
+            <Setter Property="BorderBrush" Value="#C2410C"/>
+        </Style>
+        <Style Selector="Border.ivchip TextBlock.val">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#1C1C1F"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Border.ivchip.perfect TextBlock.val">
+            <Setter Property="Foreground" Value="#2F9E5B"/>
+        </Style>
+        <Style Selector="Border.ivchip.diff TextBlock.val">
+            <Setter Property="Foreground" Value="#C2410C"/>
+        </Style>
+        <Style Selector="Border.ivchip TextBlock.lbl">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Foreground" Value="#9A9AA0"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="TextBlock.chgstatus.changed">
+            <Setter Property="Foreground" Value="#C2410C"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <Border Background="#33000000"/>
+
+        <Border Background="White" BorderBrush="#DCDCE0" BorderThickness="1" CornerRadius="14"
+                Padding="24,20" BoxShadow="0 10 24 0 #38000000" Width="380"
+                HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Spacing="14">
+
+                <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" Foreground="#1C1C1F"
+                           HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
+
+                <!-- Escena Rotom PC (control propio, se anima solo mientras busca) -->
+                <controls:RotomMatrixControl Width="200" Height="150" HorizontalAlignment="Center"
+                                             Mode="{Binding SceneMode}"
+                                             IsRunning="{Binding IsRotomRunning}"
+                                             Progress="{Binding Progress}"
+                                             Sprites="{Binding RotomSprites}"/>
+
+                <!-- Sin solución: explicación (arriba de los IVs, como en el boceto) -->
+                <TextBlock IsVisible="{Binding IsNone}" Text="{Binding NoneText}" FontSize="12" Foreground="#6B6B70"
+                           TextAlignment="Center" TextWrapping="Wrap"/>
+
+                <!-- IVs: objetivo / elegidos / más cercana -->
+                <ItemsControl ItemsSource="{Binding IvChips}" HorizontalAlignment="Center">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="6"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:IvChipViewModel">
+                            <Border Classes="ivchip" Classes.perfect="{Binding IsPerfect}" Classes.diff="{Binding IsDifferent}">
+                                <StackPanel>
+                                    <TextBlock Classes="lbl" Text="{Binding Label}"/>
+                                    <TextBlock Classes="val" Text="{Binding Value}"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- ═══ 1 · Buscando ═══ -->
+                <StackPanel IsVisible="{Binding IsSearching}" Spacing="14">
+                    <StackPanel Spacing="7">
+                        <Border Height="6" Background="#E5E5EA" CornerRadius="3" ClipToBounds="True">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="{Binding Progress, Converter={StaticResource StarWidthConverter}}"/>
+                                    <ColumnDefinition Width="{Binding InverseProgress, Converter={StaticResource StarWidthConverter}}"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Height="6" Background="#3B82F6" CornerRadius="3"/>
+                            </Grid>
+                        </Border>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="{Binding CheckedText}" FontSize="12" Foreground="#6B6B70"/>
+                            <TextBlock Grid.Column="1" Text="{Binding ProgressText}" FontSize="12" Foreground="#6B6B70"/>
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="{Binding TimeText}" FontSize="11" Foreground="#9A9AA0"/>
+                            <TextBlock Grid.Column="1" Text="{Binding HitsText}" FontSize="11" Foreground="#9A9AA0"/>
+                        </Grid>
+                    </StackPanel>
+                    <TextBlock Text="{Binding HintText}" FontSize="12" Foreground="#6B6B70"
+                               TextAlignment="Center" TextWrapping="Wrap"/>
+                    <Button Content="{Binding CancelLabel}" Command="{Binding CancelCommand}"
+                            HorizontalAlignment="Center" Padding="16,6"/>
+                </StackPanel>
+
+                <!-- ═══ 2 · Encontrada ═══ -->
+                <StackPanel IsVisible="{Binding IsFound}" Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="{Binding OptionLabel}" FontSize="12" Foreground="#6B6B70"
+                                   VerticalAlignment="Center" TextWrapping="Wrap"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4"
+                                    IsVisible="{Binding HasMultipleOptions}">
+                            <Button Content="‹" Command="{Binding PrevOptionCommand}" Width="28" Height="28" Padding="0"/>
+                            <Button Content="›" Command="{Binding NextOptionCommand}" Width="28" Height="28" Padding="0"/>
+                        </StackPanel>
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding ChangeRows}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:IvChangeRowViewModel">
+                                <Border BorderBrush="#DCDCE0" BorderThickness="0,1,0,0" Padding="0,5">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <TextBlock Grid.Column="0" Text="{Binding Attribute}" FontSize="12" Foreground="#1C1C1F"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="12" Foreground="#6B6B70"
+                                                   HorizontalAlignment="Right" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="2" Classes="chgstatus" Classes.changed="{Binding Changed}"
+                                                   Text="{Binding Status}" FontSize="12" Foreground="#6B6B70"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="{Binding VerifiedText}" FontSize="11" Foreground="#2F9E5B"
+                               HorizontalAlignment="Center" TextWrapping="Wrap"/>
+                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                        <Button Content="{Binding DiscardLabel}" Command="{Binding DiscardCommand}" Padding="16,6"/>
+                        <Button Content="{Binding ApplyLabel}" Command="{Binding ApplyCommand}" Padding="16,6"
+                                Background="#1C1C1F" Foreground="White"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- ═══ 3 · Sin solución ═══ -->
+                <StackPanel IsVisible="{Binding IsNone}" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                    <Button Content="{Binding BackToOriginalLabel}" Command="{Binding BackToOriginalCommand}" Padding="16,6"/>
+                    <Button Content="{Binding UseClosestLabel}" Command="{Binding UseClosestCommand}" Padding="16,6"
+                            IsVisible="{Binding HasClosest}" Background="#1C1C1F" Foreground="White"/>
+                </StackPanel>
+
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

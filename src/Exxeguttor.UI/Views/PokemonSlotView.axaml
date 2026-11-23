@@ -1,0 +1,221 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Exxeguttor.UI.ViewModels"
+             x:Class="Exxeguttor.UI.Views.PokemonSlotView"
+             x:DataType="vm:PokemonSlotViewModel"
+             Width="64" Height="84">
+
+    <UserControl.Styles>
+        <!-- Botón "−" (liberar Pokémon): círculo rojo arriba a la izquierda, visible al pasar el mouse
+             por el slot. Deshabilitado (gris) cuando es el único Pokémon del equipo. -->
+        <Style Selector="Border.rel-btn">
+            <Setter Property="Width" Value="18"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="CornerRadius" Value="9"/>
+            <Setter Property="Background" Value="#EF4444"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="ZIndex" Value="5"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.12"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.rel-btn:pointerover">
+            <Setter Property="Background" Value="#B91C1C"/>
+        </Style>
+        <Style Selector="Border.rel-btn.off">
+            <Setter Property="Background" Value="#C9C9CF"/>
+            <Setter Property="Cursor" Value="Arrow"/>
+        </Style>
+        <Style Selector="Border.rel-btn > TextBlock">
+            <Setter Property="Text" Value="−"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,-2,0,0"/>
+        </Style>
+
+        <Style Selector="Border.slot-card:pointerover Border.rel-btn">
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <!-- Desvanecido previo a quitar el slot al liberar. -->
+        <Style Selector="Border.slot-card">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.35"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.slot-card.releasing">
+            <Setter Property="Opacity" Value="0"/>
+        </Style>
+        <!-- Mismo criterio de animación que Border.notebook-icon.pulse en MainWindow.axaml —
+             pulso breve (450ms) cuando se acaba de crear un Pokémon en este slot. -->
+        <Style Selector="Border.slot-card.pulse">
+            <Style.Animations>
+                <Animation Duration="0:0:0.45" FillMode="Forward">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="35%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1.15"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1.15"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </UserControl.Styles>
+
+    <!-- Tamaño de tarjeta: antes 60×60 — el sprite solo (56px) ya casi llenaba ese alto, así
+         que nivel+género terminaban superpuestos sobre el sprite en vez de debajo. Ahora 64×84:
+         sprite (56) + línea de nivel/género (FontSize 11, igual que el panel de Equipo) +
+         padding, sin superposición. Esto implica menos filas visibles a la vez en la grilla de
+         la caja sin scrollear — decisión tomada a propósito en vez de achicar el sprite, ya que
+         BoxViewModel ya tiene botones ▲▼ de scroll de filas para este escenario. -->
+    <Border CornerRadius="6"
+            Margin="1"
+            Padding="2"
+            BorderThickness="2"
+            BorderBrush="Transparent"
+            Background="Transparent"
+            Classes="slot-card"
+            Classes.pulse="{Binding IsJustCreated}"
+            Classes.releasing="{Binding IsReleasing}">
+
+        <Grid RowDefinitions="*,Auto">
+
+            <!-- Área central: sprite (+ badges superpuestos) o texto -->
+            <Grid Grid.Row="0"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+
+                <!-- Slot vacío sin oferta de crear (relleno de BoxViewModel, o casos futuros) -->
+                <TextBlock IsVisible="{Binding ShowEmptyDash}"
+                           Text="—"
+                           Opacity="0.25"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontSize="18"/>
+
+                <!-- Slot vacío con "+" — clickearlo abre el modal de elegir especie (ver
+                     BoxView.axaml.cs.OnSlotPointerPressed, que redirige acá cuando
+                     IsCreateSlot es true en vez de intentar seleccionar). -->
+                <Border IsVisible="{Binding IsCreateSlot}"
+                        Width="40" Height="40"
+                        CornerRadius="6"
+                        BorderThickness="1.5"
+                        BorderBrush="#B4B2A9"
+                        Background="Transparent">
+                    <TextBlock Text="+"
+                               FontSize="22"
+                               FontWeight="Light"
+                               Foreground="#8F8D82"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- Slot con Pokémon y sprite disponible -->
+                <Grid IsVisible="{Binding HasSprite}"
+                      Width="56" Height="56"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center">
+                    <Image Source="{Binding Sprite}"
+                           Width="56"
+                           Height="56"
+                           RenderOptions.BitmapInterpolationMode="None"/>
+
+                    <!-- Estrella shiny — esquina superior izquierda, no choca con el badge de objeto -->
+                    <TextBlock IsVisible="{Binding IsShiny}"
+                               Text="✦"
+                               FontSize="9"
+                               Foreground="Gold"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Top"
+                               Margin="-2,-2,0,0"/>
+
+                    <!-- Badge de objeto equipado — esquina superior derecha, como en los juegos.
+                         Prioridad: sprite real del objeto (mismo que ya se ve en el combo del
+                         tab Info) → ícono genérico dibujado acá (no existe PNG genérico de
+                         "objeto equipado" en SpriteService, se buscó a propósito antes de
+                         asumir que había uno). -->
+                    <Border IsVisible="{Binding HasHeldItem}"
+                            Width="16" Height="16"
+                            CornerRadius="4"
+                            Background="#EFEDE4"
+                            BorderThickness="1"
+                            BorderBrush="#B4B2A9"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="0,-4,-4,0">
+                        <Grid>
+                            <Image Source="{Binding HeldItemSprite}"
+                                   IsVisible="{Binding !ShowGenericHeldItemBadge}"
+                                   Width="12" Height="12"
+                                   RenderOptions.BitmapInterpolationMode="None"/>
+                            <Image Source="{Binding HeldItemFallbackSprite}"
+                                   IsVisible="{Binding ShowGenericHeldItemBadge}"
+                                   Width="12" Height="12"
+                                   RenderOptions.BitmapInterpolationMode="None"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- Slot con Pokémon pero sin sprite (fallback a texto) -->
+                <StackPanel IsVisible="{Binding !HasSprite}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Spacing="1">
+                    <TextBlock Text="{Binding Name}"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis"
+                               MaxWidth="60"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock IsVisible="{Binding IsShiny}"
+                               Text="✦"
+                               FontSize="9"
+                               Foreground="Gold"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+            </Grid>
+
+            <!-- Nivel + Género en una sola línea — mismo binding, mismo FontSize (11) y misma
+                 Opacity (0.7) que el panel de Equipo (PartyView.axaml), para que se vean
+                 idénticos entre los dos paneles. -->
+            <StackPanel Grid.Row="1"
+                        IsVisible="{Binding !IsEmpty}"
+                        Orientation="Horizontal"
+                        Spacing="4"
+                        HorizontalAlignment="Center"
+                        Margin="0,2,0,0">
+                <TextBlock Text="{Binding LevelText}" FontSize="11" Opacity="0.7"/>
+                <TextBlock Text="{Binding Gender}"     FontSize="11" Opacity="0.7"/>
+            </StackPanel>
+
+            <!-- "−": liberar este Pokémon (ver BoxView.axaml.cs / PokemonReleaseService). -->
+            <Border Grid.Row="0" Grid.RowSpan="2" Classes="rel-btn"
+                    Margin="-1,-1,0,0"
+                    IsVisible="{Binding ShowReleaseButton}"
+                    Classes.off="{Binding ReleaseDisabled}"
+                    ToolTip.Tip="{Binding ReleaseTooltip}">
+                <TextBlock/>
+            </Border>
+
+        </Grid>
+    </Border>
+
+</UserControl>

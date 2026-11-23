@@ -1,0 +1,13 @@
+{
+  "creator": { "name": "junko012", "url": "https://github.com/junko012" },
+  "contributors": [],
+  "translators": [
+    { "name": "Claude (Anthropic)", "scope": "es · en · ar · de · fr · hi · id · it · ja · ko · pt-BR · ru · zh-CN", "noteKey": "Credits_Translation_Note" }
+  ],
+  "thirdParty": [
+    { "name": "PKHeX.Core", "by": "Kurt (kwsch) and contributors", "licenseName": "GPL-3.0", "licenseId": "gpl-3.0", "url": "https://github.com/kwsch/PKHeX" },
+    { "name": "Avalonia UI", "by": "AvaloniaUI OÜ and contributors", "licenseName": "MIT", "licenseId": "mit-avalonia", "url": "https://github.com/AvaloniaUI/Avalonia" },
+    { "name": ".NET · Microsoft.Data.Sqlite", "by": ".NET Foundation and contributors", "licenseName": "MIT", "licenseId": "mit-dotnet", "url": "https://github.com/dotnet" },
+    { "name": "PokéAPI", "by": "Paul Hallett and PokéAPI contributors", "licenseName": "BSD-3-Clause", "licenseId": "bsd3-pokeapi", "url": "https://github.com/PokeAPI/pokeapi" }
+  ]
+}

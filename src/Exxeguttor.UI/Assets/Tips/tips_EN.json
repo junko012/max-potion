@@ -1,0 +1,242 @@
+[
+  {
+    "category": "General",
+    "categoryId": "general",
+    "icon": "exportar",
+    "sample": "export",
+    "title": "Export writes the file",
+    "text": "Until you export, changes live only in this session: the status bar shows “Unexported changes”. Exporting writes the real save."
+  },
+  {
+    "category": "General",
+    "categoryId": "general",
+    "icon": "guardar",
+    "sample": "review",
+    "title": "Review before exporting",
+    "text": "The review modal lets you include or exclude, one by one, each edited Pokémon, the trainer, the bag and any releases."
+  },
+  {
+    "category": "General",
+    "categoryId": "general",
+    "icon": "info",
+    "sample": "langs",
+    "title": "Two independent languages",
+    "text": "In Preferences you choose “Interface language” and, separately, “Game data language” (species, moves, items…). The status bar indicator shows both."
+  },
+  {
+    "category": "General",
+    "categoryId": "general",
+    "icon": "teclado",
+    "sample": "keys",
+    "title": "F1 and shortcuts",
+    "text": "F1 opens this guide. Help → “Keyboard shortcuts” has the full list: open, save, export, close…"
+  },
+  {
+    "category": "Creation",
+    "categoryId": "creation",
+    "icon": "buscar",
+    "sample": "search",
+    "title": "Search by name or number",
+    "text": "The species picker filters as you type, ignoring case and accents."
+  },
+  {
+    "category": "Creation",
+    "categoryId": "creation",
+    "icon": "teclado",
+    "sample": "shift",
+    "title": "Quick jumps with the keyboard",
+    "text": "Hold Shift while using the arrow keys to jump 10% of the results at once. Home and End go to the extremes."
+  },
+  {
+    "category": "Creation",
+    "categoryId": "creation",
+    "icon": "pokemon",
+    "sample": "picker",
+    "title": "Only species from the game are offered",
+    "text": "The picker hides species that don't exist in the save's game or can't be created legally (for example, outside the Hisui Pokédex in Legends: Arceus, or outside Galar and Paldea in Sword/Shield and Scarlet/Violet)."
+  },
+  {
+    "category": "Creation",
+    "categoryId": "creation",
+    "icon": "advertencia",
+    "sample": "",
+    "title": "Forms and special cases",
+    "text": "Some forms can't be made legal when created (such as Zygarde 10%/50% or Ash-Greninja in Legends: Z-A) and don't appear. If a species shows legality alerts, check the “Legal” tab and fix from top to bottom."
+  },
+  {
+    "category": "Editing",
+    "categoryId": "editing",
+    "icon": "grafico",
+    "sample": "tab-ivs",
+    "title": "IVs and EVs by generation",
+    "text": "In Gen 1–2 they are DVs (0–15) and Stat Exp (0–65535). The editor adjusts the ranges by itself based on the save's game."
+  },
+  {
+    "category": "Editing",
+    "categoryId": "editing",
+    "icon": "pokemon",
+    "sample": "tab-sets",
+    "title": "Recommended sets",
+    "text": "The “Sets” tab shows Smogon and Showdown sets for the species, with ability, item, nature and EVs."
+  },
+  {
+    "category": "Editing",
+    "categoryId": "editing",
+    "icon": "chispa",
+    "sample": "tab-special",
+    "title": "Mega, Z, Dynamax and Tera",
+    "text": "Mega Stones, Z-Crystals and each game's other mechanics are chosen in the “Special” tab, not in the item field."
+  },
+  {
+    "category": "Editing",
+    "categoryId": "editing",
+    "icon": "medalla",
+    "sample": "tab-ribbons",
+    "title": "Ribbons by game",
+    "text": "Only the ribbons that exist in the loaded save's generation are shown."
+  },
+  {
+    "category": "Boxes and bag",
+    "categoryId": "storage",
+    "icon": "limpiar",
+    "sample": "release",
+    "title": "Releasing a Pokémon",
+    "text": "The release button is on each Pokémon, eggs included. A dialog asks you to confirm and warns you if it holds an item: the item is lost with it."
+  },
+  {
+    "category": "Boxes and bag",
+    "categoryId": "storage",
+    "icon": "info",
+    "sample": "releaseblock",
+    "title": "The only Pokémon in the party",
+    "text": "The app won't let you release it, because the game needs at least one in the party. Move another Pokémon to the party and try again."
+  },
+  {
+    "category": "Boxes and bag",
+    "categoryId": "storage",
+    "icon": "guardar",
+    "sample": "undo",
+    "title": "Undo has limits",
+    "text": "Until you export you can undo with “Undo” on the notice or by discarding the edits. It's not possible if the party or box has filled up, or if another Pokémon took that slot."
+  },
+  {
+    "category": "Boxes and bag",
+    "categoryId": "storage",
+    "icon": "exportar",
+    "sample": "review",
+    "title": "Keeping one when exporting",
+    "text": "In the review modal you can untick a release to keep that Pokémon, but only in boxes from Gen 3 on, with the slot still free and no edits on it. In the party and in Gen 1–2 boxes, releasing shifts the others: use “Undo” there."
+  },
+  {
+    "category": "Boxes and bag",
+    "categoryId": "storage",
+    "icon": "mochila",
+    "sample": "bagtiles",
+    "title": "Bag categories",
+    "text": "The bag is split into categories (items, medicine, balls, TMs/HMs…) and which ones exist depends on the save's generation. Tap one to see and edit its items."
+  },
+  {
+    "category": "Boxes and bag",
+    "categoryId": "storage",
+    "icon": "lapiz",
+    "sample": "bagrow",
+    "title": "Adding or removing items",
+    "text": "Each category lists every legal item, owned or not. Raise the quantity (or tick the item) to add it and lower it to 0 to remove it."
+  },
+  {
+    "category": "Boxes and bag",
+    "categoryId": "storage",
+    "icon": "chispa",
+    "sample": "bagmax",
+    "title": "Maximum quantity",
+    "text": "“MAX” sets the quantity to that category's cap in that game. If you type a larger number, it snaps to the cap by itself."
+  },
+  {
+    "category": "Boxes and bag",
+    "categoryId": "storage",
+    "icon": "buscar",
+    "sample": "bagstore",
+    "title": "Search and switching to PC",
+    "text": "The search box filters by name or description inside the category. In generations with separate storage, the ◀ ▶ arrows switch between Bag and PC."
+  },
+  {
+    "category": "Legality",
+    "categoryId": "legality",
+    "icon": "balanza",
+    "sample": "steps",
+    "title": "Start with the first step",
+    "text": "The steps in the “Legal” tab are ordered by dependency: encounter, origin game and egg first. Fix from top to bottom and many errors below disappear on their own."
+  },
+  {
+    "category": "Legality",
+    "categoryId": "legality",
+    "icon": "advertencia",
+    "sample": "severity",
+    "title": "Red and amber are different",
+    "text": "“Blocks legality” makes the Pokémon illegal. “Suspicious, review” is a warning: it may be a rare but valid case. Prioritise the red ones."
+  },
+  {
+    "category": "Legality",
+    "categoryId": "legality",
+    "icon": "lapiz",
+    "sample": "autofix",
+    "title": "When “Fix automatically” appears",
+    "text": "Only when the app can work out the correct value (PID, catch rate, level or origin). For everything else, touch the highlighted field and follow the step's suggestion."
+  },
+  {
+    "category": "Legality",
+    "categoryId": "legality",
+    "icon": "chispa",
+    "sample": "retry",
+    "title": "Some fixes search at random",
+    "text": "Fixing the PID tries combinations and sometimes finds nothing. If it fails, press “Retry”."
+  },
+  {
+    "category": "Legality",
+    "categoryId": "legality",
+    "icon": "grafico",
+    "sample": "ivbanner",
+    "title": "Edited IVs that break the encounter",
+    "text": "In some encounters the IVs come from a game seed, and changing them by hand makes them illegal. This notice then appears: use it to find legal IVs."
+  },
+  {
+    "category": "Legality",
+    "categoryId": "legality",
+    "icon": "limpiar",
+    "sample": "ivbuttons",
+    "title": "If there is no exact match",
+    "text": "The search shows the closest one, how many IV points it differs by and what else would change (nature, ability, gender, shiny). Nothing is applied until you confirm; “Back to the original IVs” undoes it."
+  },
+  {
+    "category": "Legality",
+    "categoryId": "legality",
+    "icon": "pokemon",
+    "sample": "recreate",
+    "title": "Invalid origin: recreate it",
+    "text": "“Recreate with a valid encounter” offers legal origins. Species, level, moves, nickname, item, trainer and IVs are kept; place, ball and other capture data change. You'll see what changes before applying."
+  },
+  {
+    "category": "Legality",
+    "categoryId": "legality",
+    "icon": "info",
+    "sample": "gomoves",
+    "title": "“No automatic fix”",
+    "text": "If no encounter matches its moves, change them to legal ones (“Go to Moves”) and check again: if a compatible encounter shows up, the fix is offered automatically."
+  },
+  {
+    "category": "Legality",
+    "categoryId": "legality",
+    "icon": "buscar",
+    "sample": "methods",
+    "title": "Legal moves with “Learnsets”",
+    "text": "The “Learnsets” tab shows how each move is learned (level, TM, egg, tutor, reminder) and from which level."
+  },
+  {
+    "category": "Legality",
+    "categoryId": "legality",
+    "icon": "tips",
+    "sample": "nickname",
+    "title": "Nickname, language and technical detail",
+    "text": "If the nickname doesn't match any valid language, tick the checkbox next to the nickname field. “Technical detail” shows PKHeX's original message, useful when asking for help."
+  }
+]

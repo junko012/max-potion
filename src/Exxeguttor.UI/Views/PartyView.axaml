@@ -1,0 +1,214 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Exxeguttor.UI.ViewModels"
+             x:Class="Exxeguttor.UI.Views.PartyView"
+             x:DataType="vm:PartyViewModel"
+             IsVisible="{Binding IsVisible}">
+
+    <UserControl.Styles>
+        <!-- Botón "−" (liberar Pokémon): círculo rojo arriba a la izquierda, visible al pasar el mouse
+             por el slot. Deshabilitado (gris) cuando es el único Pokémon del equipo. -->
+        <Style Selector="Border.rel-btn">
+            <Setter Property="Width" Value="18"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="CornerRadius" Value="9"/>
+            <Setter Property="Background" Value="#EF4444"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="ZIndex" Value="5"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.12"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.rel-btn:pointerover">
+            <Setter Property="Background" Value="#B91C1C"/>
+        </Style>
+        <Style Selector="Border.rel-btn.off">
+            <Setter Property="Background" Value="#C9C9CF"/>
+            <Setter Property="Cursor" Value="Arrow"/>
+        </Style>
+        <Style Selector="Border.rel-btn > TextBlock">
+            <Setter Property="Text" Value="−"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,-2,0,0"/>
+        </Style>
+
+        <Style Selector="Border.party-slot-card:pointerover Border.rel-btn">
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="Border.party-slot-card">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.35"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.party-slot-card.releasing">
+            <Setter Property="Opacity" Value="0"/>
+        </Style>
+        <!-- Mismo criterio de animación que Border.notebook-icon.pulse en MainWindow.axaml. -->
+        <Style Selector="Border.party-slot-card.pulse">
+            <Style.Animations>
+                <Animation Duration="0:0:0.45" FillMode="Forward">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="35%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1.05"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1.05"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </UserControl.Styles>
+
+    <StackPanel Spacing="4" Margin="8">
+
+        <TextBlock Text="{Binding Loc[SaveFile_Party]}"
+                   FontSize="13"
+                   FontWeight="Bold"
+                   Opacity="0.8"
+                   Margin="4,0,0,4"/>
+
+        <ItemsControl ItemsSource="{Binding Slots}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" Spacing="2"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:PokemonSlotViewModel">
+                    <Border CornerRadius="6"
+                            Padding="6,4"
+                            Margin="0,1"
+                            Cursor="Hand"
+                            Background="Transparent"
+                            Classes="party-slot-card"
+                            Classes.pulse="{Binding IsJustCreated}"
+                            Classes.releasing="{Binding IsReleasing}">
+
+                        <Grid ColumnDefinitions="56,*">
+
+                            <Grid Grid.Column="0"
+                                  Width="56" Height="56"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center">
+                                <TextBlock IsVisible="{Binding ShowEmptyDash}"
+                                           Text="—"
+                                           Opacity="0.25"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="20"/>
+                                <Border IsVisible="{Binding IsCreateSlot}"
+                                        Width="40" Height="40"
+                                        CornerRadius="6"
+                                        BorderThickness="1.5"
+                                        BorderBrush="#B4B2A9"
+                                        Background="Transparent"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="+"
+                                               FontSize="22"
+                                               FontWeight="Light"
+                                               Foreground="#8F8D82"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                                <Image IsVisible="{Binding HasSprite}"
+                                       Source="{Binding Sprite}"
+                                       Width="56" Height="56"
+                                       RenderOptions.BitmapInterpolationMode="None"/>
+                                <TextBlock IsVisible="{Binding !HasSprite}"
+                                           Text="{Binding Name}"
+                                           FontSize="9"
+                                           TextWrapping="Wrap"
+                                           TextAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           MaxWidth="54"/>
+
+                                <!-- Badge de objeto equipado — mismo criterio que en Box
+                                     (PokemonSlotView.axaml): sprite real del objeto, o ícono
+                                     genérico dibujado si no se encuentra ese sprite puntual. -->
+                                <Border IsVisible="{Binding HasHeldItem}"
+                                        Width="16" Height="16"
+                                        CornerRadius="4"
+                                        Background="#EFEDE4"
+                                        BorderThickness="1"
+                                        BorderBrush="#B4B2A9"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Margin="0,-4,-4,0">
+                                    <Grid>
+                                        <Image Source="{Binding HeldItemSprite}"
+                                               IsVisible="{Binding !ShowGenericHeldItemBadge}"
+                                               Width="12" Height="12"
+                                               RenderOptions.BitmapInterpolationMode="None"/>
+                                        <Image Source="{Binding HeldItemFallbackSprite}"
+                                               IsVisible="{Binding ShowGenericHeldItemBadge}"
+                                               Width="12" Height="12"
+                                               RenderOptions.BitmapInterpolationMode="None"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+
+                            <!-- "−": liberar este Pokémon (ver PartyView.axaml.cs / PokemonReleaseService). -->
+                            <Border Grid.Column="0" Classes="rel-btn"
+                                    Margin="-2,-2,0,0"
+                                    IsVisible="{Binding ShowReleaseButton}"
+                                    Classes.off="{Binding ReleaseDisabled}"
+                                    ToolTip.Tip="{Binding ReleaseTooltip}">
+                                <TextBlock/>
+                            </Border>
+
+                            <StackPanel Grid.Column="1"
+                                        IsVisible="{Binding !IsEmpty}"
+                                        VerticalAlignment="Center"
+                                        Margin="8,0,0,0"
+                                        Spacing="2">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="{Binding Name}"
+                                               FontWeight="SemiBold"
+                                               FontSize="12"
+                                               TextTrimming="CharacterEllipsis"
+                                               MaxWidth="80"/>
+                                    <TextBlock IsVisible="{Binding IsShiny}"
+                                               Text="✦"
+                                               FontSize="10"
+                                               Foreground="Gold"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{Binding LevelText}"
+                                               FontSize="11"
+                                               Opacity="0.7"/>
+                                    <TextBlock Text="{Binding Gender}"
+                                               FontSize="11"
+                                               Opacity="0.7"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+    </StackPanel>
+
+</UserControl>

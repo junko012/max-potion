@@ -1,0 +1,67 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Exxeguttor.UI.ViewModels"
+             xmlns:views="using:Exxeguttor.UI.Views"
+             x:Class="Exxeguttor.UI.Views.BoxView"
+             x:DataType="vm:BoxViewModel">
+
+    <StackPanel Spacing="4" Margin="8,6,8,6">
+
+        <!-- Navegación de cajas -->
+        <Grid ColumnDefinitions="Auto,*,Auto">
+            <Button Grid.Column="0" Content="◀"
+                    Command="{Binding PreviousBoxCommand}"
+                    Padding="10,3" FontSize="11"/>
+            <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="1">
+                <TextBlock Text="{Binding CurrentBoxName}"
+                           FontWeight="Bold" FontSize="12" HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding BoxNavText}"
+                           FontSize="10" Opacity="0.6" HorizontalAlignment="Center"/>
+            </StackPanel>
+            <Button Grid.Column="2" Content="▶"
+                    Command="{Binding NextBoxCommand}"
+                    Padding="10,3" FontSize="11"/>
+        </Grid>
+
+        <!-- Grilla 6×2 con botones de navegación de filas a los lados -->
+        <Grid ColumnDefinitions="24,*,24" VerticalAlignment="Center">
+
+            <!-- Botón subir filas -->
+            <Button Grid.Column="0" Content="▲"
+                    Command="{Binding PreviousRowCommand}"
+                    IsVisible="{Binding CanScrollRows}"
+                    Padding="2,0" FontSize="10"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"/>
+
+            <!-- Grilla fija 6 columnas × 2 filas -->
+            <ItemsControl Grid.Column="1"
+                          ItemsSource="{Binding VisibleSlots}"
+                          x:Name="SlotsControl">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="6" Rows="3"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vm:PokemonSlotViewModel">
+                        <views:PokemonSlotView Cursor="Hand"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Botón bajar filas -->
+            <Button Grid.Column="2" Content="▼"
+                    Command="{Binding NextRowCommand}"
+                    IsVisible="{Binding CanScrollRows}"
+                    Padding="2,0" FontSize="10"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"/>
+        </Grid>
+
+        <!-- Divisor inferior — mismo patrón que MainWindow -->
+        <Border BorderThickness="0,1,0,0" Margin="0,4,0,0" Opacity="0.2"/>
+
+    </StackPanel>
+
+</UserControl>

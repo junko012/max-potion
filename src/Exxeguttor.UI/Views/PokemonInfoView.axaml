@@ -1,0 +1,306 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Exxeguttor.UI.ViewModels"
+             xmlns:svc="using:Exxeguttor.UI.Services"
+             xmlns:app="using:Exxeguttor.App.Services"
+             x:Class="Exxeguttor.UI.Views.PokemonInfoView"
+             x:DataType="vm:PokemonEditorViewModel"
+             IsVisible="{Binding IsVisible}">
+
+    <!-- Post-4.6 — SIN ScrollViewer propio a propósito: MainWindow.axaml ya envuelve esta
+         vista en su propio ScrollViewer (Grid.Row="2", fila "*" del panel central). Tener
+         un ScrollViewer acá ADENTRO de ese otro era un ScrollViewer anidado clásico — el de
+         adentro recibe una altura "infinita" del de afuera y no puede calcular bien cuánto
+         espacio tiene de verdad, así que termina recortando contenido de forma arbitraria
+         (síntoma reportado: el panel se ve "capado", el último checkbox de Status no se
+         terminaba de ver). Sacar este ScrollViewer y dejar que el de MainWindow haga todo
+         el trabajo resuelve el corte. -->
+    <StackPanel Margin="10" Spacing="0">
+
+            <!-- ── Cabecera: sprite + 3 columnas de datos ────────── -->
+            <Grid ColumnDefinitions="130,*,*,*" Margin="0,0,0,8">
+
+                <!-- Sprite + tipos + legalidad -->
+                <StackPanel Grid.Column="0" Spacing="4" HorizontalAlignment="Center"
+                            Width="130">
+                    <Image IsVisible="{Binding HasSprite}"
+                           Source="{Binding Sprite}"
+                           Width="64" Height="64"
+                           RenderOptions.BitmapInterpolationMode="None"
+                           HorizontalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" Spacing="3" HorizontalAlignment="Center">
+                        <Border Background="{Binding Type1, Converter={StaticResource TypeColorConverter}}"
+                                CornerRadius="4" Padding="6,2">
+                            <TextBlock Text="{Binding Type1, Converter={StaticResource TypeNameConverter}}" FontSize="10" FontWeight="Bold" Foreground="White"/>
+                        </Border>
+                        <Border Background="{Binding Type2, Converter={StaticResource TypeColorConverter}}"
+                                CornerRadius="4" Padding="6,2" IsVisible="{Binding HasType2}">
+                            <TextBlock Text="{Binding Type2, Converter={StaticResource TypeNameConverter}}" FontSize="10" FontWeight="Bold" Foreground="White"/>
+                        </Border>
+                    </StackPanel>
+                    <!-- Badge de legalidad — oculto mientras GetLegalitySummary corre en
+                         background (LoadLegalityAsync); el overlay grande compartido
+                         (BusyStateService, ver MainWindow.axaml) ya cubre visualmente ese
+                         momento, así que acá no hace falta un spinner propio. Envuelto en un
+                         Border con Classes="pulse-scale" (Etapa 4.6.3, ver App.axaml) que
+                         pulsa una vez cuando pasa de ilegal a legal durante la edición en
+                         vivo — nunca al revés ni en la carga inicial (ver
+                         IsLegalityPulsing/RunLegalityRecalcAsync en el ViewModel). -->
+                    <Border Classes="pulse-scale" Classes.pulse="{Binding IsLegalityPulsing}"
+                            RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
+                        <Border CornerRadius="4" Padding="6,2"
+                                IsVisible="{Binding !IsLegalityLoading}"
+                                Background="{Binding IsLegal, Converter={StaticResource LegalityColorConverter}}"
+                                ToolTip.Tip="{Binding LegalityTooltip}">
+                            <StackPanel Orientation="Horizontal" Spacing="3">
+                                <TextBlock Text="{Binding IsLegal, Converter={StaticResource LegalityIconConverter}}"
+                                           FontSize="10" Foreground="White"/>
+                                <TextBlock Text="{Binding LegalityText}"
+                                           FontSize="10" FontWeight="SemiBold" Foreground="White"/>
+                            </StackPanel>
+                        </Border>
+                    </Border>
+                    <!-- Etapa 4.6.3 — fichas de categoría (reemplaza el TextBlock de una
+                         sola línea que había antes): una por cada DiagnosticStep con
+                         Severity.Invalid (nunca Fishy — ver LegalityChips en el ViewModel),
+                         en fila con wrap. Cada ficha trae su propio tooltip con el Summary
+                         completo de esa categoría. Vacío (nada visible) cuando es legal.
+                         Envuelto en el mismo pulso que el badge de arriba (Etapa 4.6.4-fix):
+                         RunLegalityRecalcAsync ahora dispara el pulso ANTES de vaciar
+                         LegalityChips, así que acá sí hay algo visible que pulsar cuando
+                         se resuelve la ilegalidad, en vez de animar un contenedor vacío. -->
+                    <Border Classes="pulse-scale" Classes.pulse="{Binding IsLegalityPulsing}"
+                            RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
+                        <ItemsControl ItemsSource="{Binding LegalityChips}"
+                                      IsVisible="{Binding !IsLegalityLoading}"
+                                      HorizontalAlignment="Center" MaxWidth="130">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="app:DiagnosticStep">
+                                    <Border Background="#FBEAEA" BorderBrush="#C0392B" BorderThickness="1"
+                                            CornerRadius="3" Padding="4,1" Margin="1.5"
+                                            ToolTip.Tip="{Binding Summary}">
+                                        <TextBlock Text="{Binding CategoryLabel}" FontSize="9"
+                                                   Foreground="#C0392B" FontWeight="SemiBold"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </StackPanel>
+
+                <!-- ══ Col 1 — Identity ══ -->
+                <StackPanel Grid.Column="1" Margin="8,0,4,0" Spacing="0">
+                    <!-- Título de sección: texto en tinta oscura + subrayado verde corto sobre una línea gris
+                         (mismo lenguaje que el indicador activo de los rails, pero no clickeable). -->
+                    <StackPanel Margin="0,0,0,6" Spacing="2">
+                        <TextBlock Text="{Binding Loc[Info_Identity]}" FontSize="10" FontWeight="Bold" LetterSpacing="1"
+                                   Foreground="#1F2937"/>
+                        <Grid Height="3">
+                            <Border Height="1" Background="#DCDCE0" VerticalAlignment="Bottom"/>
+                            <Border Width="26" Height="3" CornerRadius="2" Background="#1D9E75"
+                                    HorizontalAlignment="Left"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Species (readonly) -->
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_Species]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><TextBlock Grid.Column="1" Text="{Binding Species}" FontSize="10" VerticalAlignment="Center"/></Grid>
+                    <!-- Nickname (editable TextBox) -->
+                    <!-- Post-4.6 — checkbox de IsNicknamed agregado junto al TextBox: antes
+                         este flag se forzaba a true en cada edición sin ninguna forma de
+                         verlo ni destildarlo, causa real (invisible) de Pokémon con apodo
+                         de texto normal saliendo ilegales por un flag que no coincidía.
+                         Va DENTRO de la columna 1 (mismo patrón que el StackPanel de Level,
+                         más abajo, con sus botones +/-) en vez de agregar una tercera
+                         columna al Grid externo — así la fila mantiene las mismas 2
+                         columnas ("62,*") que Species/Form/Gender/Nature/Ability y el borde
+                         derecho del área de control sigue alineado con todas las demás. -->
+                    <Grid ColumnDefinitions="62,*" Height="20">
+                        <TextBlock Grid.Column="0" Text="{Binding Loc[Info_Nickname]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/>
+                        <Grid Grid.Column="1" ColumnDefinitions="*,Auto">
+                            <TextBox Grid.Column="0" Text="{Binding Nickname}" FontSize="10" Height="18" MinHeight="0" Padding="2,0" VerticalContentAlignment="Center"/>
+                            <Border Grid.Column="0" Width="14" Height="14" CornerRadius="2" Background="#E30909" BorderBrush="#7A0000" BorderThickness="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,2,0" IsHitTestVisible="False" IsVisible="{Binding HighlightedFieldIds, Converter={StaticResource FieldHighlightConverter}, ConverterParameter='Nickname'}"><TextBlock Text="!" FontSize="11" FontWeight="Black" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" LineHeight="11"/></Border>
+                            <CheckBox Grid.Column="1" IsChecked="{Binding IsNicknamedFlag}" Margin="4,0,0,0" Padding="0" VerticalAlignment="Center" ToolTip.Tip="{Binding Loc[Info_Nickname_Tip]}"/>
+                        </Grid>
+                    </Grid>
+                    <!-- Form (ComboBox, condicional — fase 1 de formas: ver hotfixes/formas_handoff/fase-formas-handoff.md) -->
+                    <Grid ColumnDefinitions="62,*" Height="20">
+                        <TextBlock Grid.Column="0" Text="{Binding Loc[Info_Form]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableForms}" SelectedItem="{Binding Form}" FontSize="10" Height="18" MinHeight="0" Padding="4,0" HorizontalContentAlignment="Stretch" IsEnabled="{Binding EnabledForm}" Opacity="{Binding EnabledForm, Converter={StaticResource BoolToOpacityConverter}}"/>
+                        <Border Grid.Column="1" Width="14" Height="14" CornerRadius="2" Background="#E30909" BorderBrush="#7A0000" BorderThickness="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,18,0" IsHitTestVisible="False" IsVisible="{Binding HighlightedFieldIds, Converter={StaticResource FieldHighlightConverter}, ConverterParameter='Form'}"><TextBlock Text="!" FontSize="11" FontWeight="Black" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" LineHeight="11"/></Border>
+                    </Grid>
+                    <!-- Level (spinner) -->
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_Level]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="1" VerticalAlignment="Center"><Button Content="−" FontSize="9" Width="16" Height="18" MinHeight="0" Padding="0" Tag="Level:1:100" Click="OnSpinnerDecrement"/><TextBox Text="{Binding Level}" FontSize="10" Width="30" Height="18" MinHeight="0" TextAlignment="Center" Padding="0" VerticalContentAlignment="Center" Tag="Level:1:100" LostFocus="OnSpinnerTextChanged"/><Button Content="+" FontSize="9" Width="16" Height="18" MinHeight="0" Padding="0" Tag="Level:1:100" Click="OnSpinnerIncrement"/><Border Width="14" Height="14" CornerRadius="2" Background="#E30909" BorderBrush="#7A0000" BorderThickness="1.5" VerticalAlignment="Center" Margin="1,0,0,0" IsVisible="{Binding HighlightedFieldIds, Converter={StaticResource FieldHighlightConverter}, ConverterParameter='Level'}"><TextBlock Text="!" FontSize="11" FontWeight="Black" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" LineHeight="11"/></Border></StackPanel></Grid>
+                    <!-- Gender (ComboBox — 1 opción si la especie es de género fijo/sin género, 2 si puede ser cualquiera) -->
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_Gender]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><ComboBox Grid.Column="1" ItemsSource="{Binding AvailableGenders}" SelectedItem="{Binding Gender}" FontSize="10" Height="18" MinHeight="0" Padding="4,0" HorizontalContentAlignment="Stretch" IsEnabled="{Binding EnabledGender}" Opacity="{Binding EnabledGender, Converter={StaticResource BoolToOpacityConverter}}"/></Grid>
+                    <!-- Nature (ComboBox, conditional) -->
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Stats_Nature]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><ComboBox Grid.Column="1" ItemsSource="{Binding AvailableNatures}" SelectedItem="{Binding SelectedNature}" FontSize="10" Height="18" MinHeight="0" Padding="4,0" HorizontalContentAlignment="Stretch" IsEnabled="{Binding EnabledNatures}" Opacity="{Binding EnabledNatures, Converter={StaticResource BoolToOpacityConverter}}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Display}" FontSize="10"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox></Grid>
+                    <!-- Ability (ComboBox, conditional) -->
+                    <Grid ColumnDefinitions="62,*" Height="20">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Loc[Info_Ability]}" FontSize="10" Opacity="0.6"/>
+                            <Border Width="10" Height="10" CornerRadius="5" Background="Transparent"
+                                    BorderThickness="0.7" BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                    IsEnabled="{Binding EnabledAbilities}" Opacity="{Binding EnabledAbilities, Converter={StaticResource BoolToOpacityConverter}}"
+                                    ToolTip.Tip="{Binding AbilityDescription}">
+                                <TextBlock Text="i" FontSize="7" FontStyle="Italic" FontWeight="Bold"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableAbilities}" SelectedItem="{Binding Ability}" FontSize="10" Height="18" MinHeight="0" Padding="4,0" HorizontalContentAlignment="Stretch" IsEnabled="{Binding EnabledAbilities}" Opacity="{Binding EnabledAbilities, Converter={StaticResource BoolToOpacityConverter}}" ToolTip.Tip="{Binding AbilityDescription}"/>
+                        <Border Grid.Column="1" Width="14" Height="14" CornerRadius="2" Background="#E30909" BorderBrush="#7A0000" BorderThickness="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,18,0" IsHitTestVisible="False" IsVisible="{Binding HighlightedFieldIds, Converter={StaticResource FieldHighlightConverter}, ConverterParameter='Ability'}"><TextBlock Text="!" FontSize="11" FontWeight="Black" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" LineHeight="11"/></Border>
+                    </Grid>
+                    <!-- Experience (readonly) — movida acá desde Status para balancear el
+                         alto de las 3 columnas al agregar Egg Location/Egg Date en Origin. -->
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_Experience]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><TextBlock Grid.Column="1" Text="{Binding Experience}" FontSize="10" VerticalAlignment="Center"/></Grid>
+                </StackPanel>
+
+                <!-- ══ Col 2 — Status ══ -->
+                <StackPanel Grid.Column="2" Margin="4,0,4,0" Spacing="0">
+                    <!-- Título de sección: texto en tinta oscura + subrayado verde corto sobre una línea gris
+                         (mismo lenguaje que el indicador activo de los rails, pero no clickeable). -->
+                    <StackPanel Margin="0,0,0,6" Spacing="2">
+                        <TextBlock Text="{Binding Loc[Info_Status]}" FontSize="10" FontWeight="Bold" LetterSpacing="1"
+                                   Foreground="#1F2937"/>
+                        <Grid Height="3">
+                            <Border Height="1" Background="#DCDCE0" VerticalAlignment="Bottom"/>
+                            <Border Width="26" Height="3" CornerRadius="2" Background="#1D9E75"
+                                    HorizontalAlignment="Left"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Item (editable, conditional) -->
+                    <Grid ColumnDefinitions="62,*" Height="20">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Loc[Info_Item]}" FontSize="10" Opacity="0.6"/>
+                            <Border Width="10" Height="10" CornerRadius="5" Background="Transparent"
+                                    BorderThickness="0.7" BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                    IsEnabled="{Binding EnabledHeldItems}" Opacity="{Binding EnabledHeldItems, Converter={StaticResource BoolToOpacityConverter}}"
+                                    ToolTip.Tip="{Binding ItemDescription}">
+                                <TextBlock Text="i" FontSize="7" FontStyle="Italic" FontWeight="Bold"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <!-- Mega Stones / Z-Crystals no están en esta lista: se eligen desde el tab Special -->
+                            <Border Width="10" Height="10" CornerRadius="5" Background="Transparent"
+                                    BorderThickness="0.7" BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                    IsVisible="{Binding HeldItemHint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                    ToolTip.Tip="{Binding HeldItemHint}">
+                                <TextBlock Text="✨" FontSize="6"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableItems}" SelectedItem="{Binding HeldItem}" FontSize="10" Height="18" MinHeight="0" Padding="4,0" HorizontalContentAlignment="Stretch" IsEnabled="{Binding EnabledHeldItems}" Opacity="{Binding EnabledHeldItems, Converter={StaticResource BoolToOpacityConverter}}" ToolTip.Tip="{Binding ItemDescription}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="3">
+                                    <Image Source="{Binding Converter={StaticResource ItemSpriteConverter}}" Width="14" Height="14"/>
+                                    <TextBlock Text="{Binding}" FontSize="10" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox></Grid>
+                    <!-- Friendship (spinner, conditional) -->
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_Friendship]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="1" VerticalAlignment="Center" IsEnabled="{Binding EnabledFriendship}" Opacity="{Binding EnabledFriendship, Converter={StaticResource BoolToOpacityConverter}}"><Button Content="−" FontSize="9" Width="16" Height="18" MinHeight="0" Padding="0" Tag="Friendship:0:255" Click="OnSpinnerDecrement"/><TextBox Text="{Binding Friendship}" FontSize="10" Width="30" Height="18" MinHeight="0" TextAlignment="Center" Padding="0" VerticalContentAlignment="Center" Tag="Friendship:0:255" LostFocus="OnSpinnerTextChanged"/><Button Content="+" FontSize="9" Width="16" Height="18" MinHeight="0" Padding="0" Tag="Friendship:0:255" Click="OnSpinnerIncrement"/></StackPanel></Grid>
+                    <!-- Experience se movió a Identity (Col1) para balancear alto de columnas -->
+                    <!-- Handler (readonly, Gen5+) -->
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_Handler]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><TextBlock Grid.Column="1" Text="{Binding HandlerName}" FontSize="10" VerticalAlignment="Center" IsEnabled="{Binding EnabledHandler}" Opacity="{Binding EnabledHandler, Converter={StaticResource BoolToOpacityConverter}}" TextTrimming="CharacterEllipsis"/></Grid>
+                    <!-- Pokérus (CheckBox, Gen2+) -->
+                    <Grid ColumnDefinitions="62,*" Height="24"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_Pokerus]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><CheckBox Grid.Column="1" IsChecked="{Binding PkrsActive}" FontSize="10" MinHeight="0" VerticalAlignment="Center" IsEnabled="{Binding EnabledPokerus}" Opacity="{Binding EnabledPokerus, Converter={StaticResource BoolToOpacityConverter}}"/></Grid>
+                    <!-- Shiny (CheckBox, Gen2+) -->
+                    <Grid ColumnDefinitions="62,*" Height="24"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_Shiny]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><CheckBox Grid.Column="1" IsChecked="{Binding IsShiny}" FontSize="10" MinHeight="0" VerticalAlignment="Center" IsEnabled="{Binding EnabledShiny}" Opacity="{Binding EnabledShiny, Converter={StaticResource BoolToOpacityConverter}}"/></Grid>
+                    <!-- IsEgg = sigue siendo huevo sin eclosionar AHORA MISMO (distinto de
+                         "nació de huevo" — HatchedFromEgg, justo abajo). Tildar esto en un
+                         Pokémon ya armado (con movimientos/EVs/etc.) no arma un huevo
+                         legítimo — PKHeX lo va a marcar ilegal igual. -->
+                    <Grid ColumnDefinitions="62,*" Height="24"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_Egg]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><CheckBox Grid.Column="1" IsChecked="{Binding IsEgg}" FontSize="10" MinHeight="0" VerticalAlignment="Center" IsEnabled="{Binding EnabledIsEgg}" Opacity="{Binding EnabledIsEgg, Converter={StaticResource BoolToOpacityConverter}}"/></Grid>
+                    <!-- Nuevo: "nació de huevo" (HatchedFromEgg) — habilita Egg Location/Egg
+                         Date en Origin. Deshabilitado (siempre tildado) mientras IsEgg sea
+                         true, porque en ese caso es forzosamente cierto. -->
+                    <Grid ColumnDefinitions="62,*" Height="24"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_FromEgg]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center" TextWrapping="Wrap"/><CheckBox Grid.Column="1" IsChecked="{Binding HatchedFromEgg}" FontSize="10" MinHeight="0" VerticalAlignment="Center" IsEnabled="{Binding EnabledHatchedFromEgg}" Opacity="{Binding EnabledHatchedFromEgg, Converter={StaticResource BoolToOpacityConverter}}"/></Grid>
+                </StackPanel>
+
+                <!-- ══ Col 3 — Origin ══ -->
+                <StackPanel Grid.Column="3" Margin="4,0,0,0" Spacing="0">
+                    <!-- Título de sección: texto en tinta oscura + subrayado verde corto sobre una línea gris
+                         (mismo lenguaje que el indicador activo de los rails, pero no clickeable). -->
+                    <StackPanel Margin="0,0,0,6" Spacing="2">
+                        <TextBlock Text="{Binding Loc[Info_Origin]}" FontSize="10" FontWeight="Bold" LetterSpacing="1"
+                                   Foreground="#1F2937"/>
+                        <Grid Height="3">
+                            <Border Height="1" Background="#DCDCE0" VerticalAlignment="Bottom"/>
+                            <Border Width="26" Height="3" CornerRadius="2" Background="#1D9E75"
+                                    HorizontalAlignment="Left"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- OT (editable) -->
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_OT]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><TextBox Grid.Column="1" Text="{Binding OT}" FontSize="10" Height="18" MinHeight="0" Padding="2,0" VerticalContentAlignment="Center" MaxLength="12"/></Grid>
+                    <!-- Trainer ID (editable) -->
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_TrainerId]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><TextBox Grid.Column="1" Text="{Binding TidDisplay}" svc:NumericInput.Kind="Digits" svc:NumericInput.Max="65535" MaxLength="5" FontSize="10" Height="18" MinHeight="0" Padding="2,0" VerticalContentAlignment="Center"/></Grid>
+                    <!-- Met Location — selector con las ubicaciones reales de PKHeX.Core
+                         para este juego (GameInfo.GetLocationList), no texto libre. Mismo
+                         ItemTemplate/patrón que Nature/Ability: ItemsSource de objetos
+                         (ComboItem), no de strings. -->
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_Location]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><ComboBox Grid.Column="1" ItemsSource="{Binding AvailableMetLocations}" SelectedItem="{Binding SelectedMetLocation}" FontSize="10" Height="18" MinHeight="0" Padding="4,0" HorizontalContentAlignment="Stretch" IsEnabled="{Binding EnabledMetLocation}" Opacity="{Binding EnabledMetLocation, Converter={StaticResource BoolToOpacityConverter}}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Text}" FontSize="10"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox><Border Grid.Column="1" Width="14" Height="14" CornerRadius="2" Background="#E30909" BorderBrush="#7A0000" BorderThickness="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,18,0" IsHitTestVisible="False" IsVisible="{Binding HighlightedFieldIds, Converter={StaticResource FieldHighlightConverter}, ConverterParameter='MetLocation'}"><TextBlock Text="!" FontSize="11" FontWeight="Black" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" LineHeight="11"/></Border></Grid>
+                    <!-- Met Level (spinner, Gen2+) -->
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_MetLevel]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="1" VerticalAlignment="Center" IsEnabled="{Binding EnabledMetLevel}" Opacity="{Binding EnabledMetLevel, Converter={StaticResource BoolToOpacityConverter}}"><Button Content="−" FontSize="9" Width="16" Height="18" MinHeight="0" Padding="0" Tag="MetLevel:0:100" Click="OnSpinnerDecrement"/><TextBox Text="{Binding MetLevel}" FontSize="10" Width="30" Height="18" MinHeight="0" TextAlignment="Center" Padding="0" VerticalContentAlignment="Center" Tag="MetLevel:0:100" LostFocus="OnSpinnerTextChanged"/><Button Content="+" FontSize="9" Width="16" Height="18" MinHeight="0" Padding="0" Tag="MetLevel:0:100" Click="OnSpinnerIncrement"/></StackPanel></Grid>
+                    <!-- Ball (editable, Gen2+) -->
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_Ball]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><ComboBox Grid.Column="1" ItemsSource="{Binding AvailableBalls}" SelectedItem="{Binding BallName}" FontSize="10" Height="18" MinHeight="0" Padding="4,0" HorizontalContentAlignment="Stretch" IsEnabled="{Binding EnabledBall}" Opacity="{Binding EnabledBall, Converter={StaticResource BoolToOpacityConverter}}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="3">
+                                    <Image Source="{Binding Converter={StaticResource ItemSpriteConverter}}" Width="14" Height="14"/>
+                                    <TextBlock Text="{Binding}" FontSize="10" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox></Grid>
+                    <!-- Met Date (editable, Gen4+) -->
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_MetDate]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><TextBox Grid.Column="1" Text="{Binding MetDate}" svc:NumericInput.Kind="Date" MaxLength="10" FontSize="10" Height="18" MinHeight="0" Padding="2,0" VerticalContentAlignment="Center" IsEnabled="{Binding EnabledMetDate}" Opacity="{Binding EnabledMetDate, Converter={StaticResource BoolToOpacityConverter}}"/></Grid>
+                    <!-- Time of Day (readonly, Gen2+Gen4) -->
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_Time]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><TextBlock Grid.Column="1" Text="{Binding TimeOfDay}" FontSize="10" VerticalAlignment="Center" IsEnabled="{Binding EnabledTimeOfDay}" Opacity="{Binding EnabledTimeOfDay, Converter={StaticResource BoolToOpacityConverter}}"/></Grid>
+
+                    <!-- Egg Location / Egg Date — nuevo (antes el ViewModel ya los calculaba
+                         pero no había fila en el panel para mostrarlos). Habilitados por el
+                         checkbox "From egg" (HatchedFromEgg) de Status, no por HasEggData
+                         directamente — así el usuario puede tildar "From egg" a mano para
+                         agregarle un origen de huevo a un Pokémon que no lo tenía. -->
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_EggLoc]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><ComboBox Grid.Column="1" ItemsSource="{Binding AvailableEggLocations}" SelectedItem="{Binding SelectedEggLocation}" FontSize="10" Height="18" MinHeight="0" Padding="4,0" HorizontalContentAlignment="Stretch" IsEnabled="{Binding EnabledEggLocation}" Opacity="{Binding EnabledEggLocation, Converter={StaticResource BoolToOpacityConverter}}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Text}" FontSize="10"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox></Grid>
+                    <Grid ColumnDefinitions="62,*" Height="20"><TextBlock Grid.Column="0" Text="{Binding Loc[Info_EggDate]}" FontSize="10" Opacity="0.6" VerticalAlignment="Center"/><TextBox Grid.Column="1" Text="{Binding EggDate}" svc:NumericInput.Kind="Date" MaxLength="10" FontSize="10" Height="18" MinHeight="0" Padding="2,0" VerticalContentAlignment="Center" IsEnabled="{Binding EnabledEggDate}" Opacity="{Binding EnabledEggDate, Converter={StaticResource BoolToOpacityConverter}}"/></Grid>
+                </StackPanel>
+
+            </Grid>
+
+        </StackPanel>
+
+</UserControl>

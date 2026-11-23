@@ -1,0 +1,242 @@
+[
+  {
+    "category": "Général",
+    "categoryId": "general",
+    "icon": "exportar",
+    "sample": "export",
+    "title": "Exporter écrit le fichier",
+    "text": "Tant que vous n'exportez pas, les modifications ne vivent que dans cette session : la barre d'état affiche «Modifications non exportées». L'export écrit la vraie sauvegarde."
+  },
+  {
+    "category": "Général",
+    "categoryId": "general",
+    "icon": "guardar",
+    "sample": "review",
+    "title": "Vérifiez avant d'exporter",
+    "text": "La fenêtre de revue permet d'inclure ou d'exclure un par un chaque Pokémon modifié, le dresseur, le sac et les relâchements."
+  },
+  {
+    "category": "Général",
+    "categoryId": "general",
+    "icon": "info",
+    "sample": "langs",
+    "title": "Deux langues indépendantes",
+    "text": "Dans les Préférences, vous choisissez «Langue de l'interface» et, à part, «Langue des données de jeu» (espèces, capacités, objets…). L'indicateur de la barre d'état affiche les deux."
+  },
+  {
+    "category": "Général",
+    "categoryId": "general",
+    "icon": "teclado",
+    "sample": "keys",
+    "title": "F1 et raccourcis",
+    "text": "F1 ouvre ce guide. Aide → «Raccourcis clavier» donne la liste complète : ouvrir, enregistrer, exporter, fermer…"
+  },
+  {
+    "category": "Création",
+    "categoryId": "creation",
+    "icon": "buscar",
+    "sample": "search",
+    "title": "Recherchez par nom ou numéro",
+    "text": "Le sélecteur d'espèce filtre pendant la saisie, sans tenir compte des majuscules ni des accents."
+  },
+  {
+    "category": "Création",
+    "categoryId": "creation",
+    "icon": "teclado",
+    "sample": "shift",
+    "title": "Sauts rapides au clavier",
+    "text": "Maintenez Maj pendant que vous utilisez les flèches pour sauter 10 % des résultats d'un coup. Début et Fin vont aux extrémités."
+  },
+  {
+    "category": "Création",
+    "categoryId": "creation",
+    "icon": "pokemon",
+    "sample": "picker",
+    "title": "Seules les espèces du jeu sont proposées",
+    "text": "Le sélecteur masque les espèces qui n'existent pas dans le jeu de la sauvegarde ou qui ne peuvent pas être créées de façon légale (par exemple hors du Pokédex d'Hisui dans Légendes : Arceus, ou hors de Galar et Paldea dans Épée/Bouclier et Écarlate/Violet)."
+  },
+  {
+    "category": "Création",
+    "categoryId": "creation",
+    "icon": "advertencia",
+    "sample": "",
+    "title": "Formes et cas particuliers",
+    "text": "Certaines formes ne peuvent pas être rendues légales à la création (comme Zygarde 10 %/50 % ou Ash-Amphinobi dans Légendes : Z-A) et n'apparaissent pas. Si une espèce affiche des alertes de légalité, consultez l'onglet «Légal» et corrigez de haut en bas."
+  },
+  {
+    "category": "Édition",
+    "categoryId": "editing",
+    "icon": "grafico",
+    "sample": "tab-ivs",
+    "title": "IV et EV selon la génération",
+    "text": "En Gen 1–2, ce sont des DV (0–15) et de l'Exp. de stats (0–65535). L'éditeur adapte seul les plages selon le jeu de la sauvegarde."
+  },
+  {
+    "category": "Édition",
+    "categoryId": "editing",
+    "icon": "pokemon",
+    "sample": "tab-sets",
+    "title": "Sets recommandés",
+    "text": "L'onglet «Sets» affiche des sets Smogon et Showdown pour l'espèce, avec talent, objet, nature et EV."
+  },
+  {
+    "category": "Édition",
+    "categoryId": "editing",
+    "icon": "chispa",
+    "sample": "tab-special",
+    "title": "Méga, Z, Dynamax et Téra",
+    "text": "Les Méga-Gemmes, les Cristaux Z et les autres mécaniques de chaque jeu se choisissent dans l'onglet «Spécial», pas dans le champ objet."
+  },
+  {
+    "category": "Édition",
+    "categoryId": "editing",
+    "icon": "medalla",
+    "sample": "tab-ribbons",
+    "title": "Rubans selon le jeu",
+    "text": "Seuls les rubans qui existent dans la génération de la sauvegarde chargée sont affichés."
+  },
+  {
+    "category": "Boîtes et sac",
+    "categoryId": "storage",
+    "icon": "limpiar",
+    "sample": "release",
+    "title": "Relâcher un Pokémon",
+    "text": "Le bouton de relâchement se trouve sur chaque Pokémon, œufs compris. Une fenêtre demande confirmation et prévient s'il porte un objet : l'objet est perdu avec lui."
+  },
+  {
+    "category": "Boîtes et sac",
+    "categoryId": "storage",
+    "icon": "info",
+    "sample": "releaseblock",
+    "title": "Le seul Pokémon de l'équipe",
+    "text": "L'appli ne permet pas de le relâcher, car le jeu exige au moins un Pokémon dans l'équipe. Placez un autre Pokémon dans l'équipe et réessayez."
+  },
+  {
+    "category": "Boîtes et sac",
+    "categoryId": "storage",
+    "icon": "guardar",
+    "sample": "undo",
+    "title": "Annuler a des limites",
+    "text": "Jusqu'à l'export, vous pouvez annuler avec «Annuler» dans la notification ou en abandonnant les modifications. C'est impossible si l'équipe ou la boîte est pleine, ou si un autre Pokémon occupe l'emplacement."
+  },
+  {
+    "category": "Boîtes et sac",
+    "categoryId": "storage",
+    "icon": "exportar",
+    "sample": "review",
+    "title": "En garder un à l'export",
+    "text": "Dans la fenêtre de revue, décochez un relâchement pour garder ce Pokémon, mais seulement dans les boîtes à partir de la Gen 3, si l'emplacement est encore libre et sans modification dessus. Dans l'équipe et les boîtes de Gen 1–2, relâcher décale les autres : utilisez «Annuler»."
+  },
+  {
+    "category": "Boîtes et sac",
+    "categoryId": "storage",
+    "icon": "mochila",
+    "sample": "bagtiles",
+    "title": "Catégories du sac",
+    "text": "Le sac est divisé en catégories (objets, soins, balls, CT/CS…) et leur liste dépend de la génération de la sauvegarde. Touchez-en une pour voir et modifier ses objets."
+  },
+  {
+    "category": "Boîtes et sac",
+    "categoryId": "storage",
+    "icon": "lapiz",
+    "sample": "bagrow",
+    "title": "Ajouter ou retirer des objets",
+    "text": "Chaque catégorie liste tous les objets légaux, possédés ou non. Augmentez la quantité (ou cochez l'objet) pour l'ajouter, et mettez 0 pour le retirer."
+  },
+  {
+    "category": "Boîtes et sac",
+    "categoryId": "storage",
+    "icon": "chispa",
+    "sample": "bagmax",
+    "title": "Quantité maximale",
+    "text": "«MAX» met la quantité au plafond de cette catégorie dans ce jeu. Si vous saisissez un nombre supérieur, il est ramené au plafond automatiquement."
+  },
+  {
+    "category": "Boîtes et sac",
+    "categoryId": "storage",
+    "icon": "buscar",
+    "sample": "bagstore",
+    "title": "Rechercher et passer au PC",
+    "text": "La recherche filtre par nom ou description dans la catégorie. Dans les générations avec stockage séparé, les flèches ◀ ▶ basculent entre Sac et PC."
+  },
+  {
+    "category": "Légalité",
+    "categoryId": "legality",
+    "icon": "balanza",
+    "sample": "steps",
+    "title": "Commencez par la première étape",
+    "text": "Les étapes de l'onglet «Légal» sont classées par dépendance : rencontre, jeu d'origine et œuf d'abord. Corrigez de haut en bas : beaucoup d'erreurs plus bas disparaissent d'elles-mêmes."
+  },
+  {
+    "category": "Légalité",
+    "categoryId": "legality",
+    "icon": "advertencia",
+    "sample": "severity",
+    "title": "Rouge et ambre, ce n'est pas pareil",
+    "text": "«Bloque la légalité» rend le Pokémon illégal. «Suspect, à vérifier» est un avertissement : cela peut être un cas rare mais valide. Traitez d'abord les rouges."
+  },
+  {
+    "category": "Légalité",
+    "categoryId": "legality",
+    "icon": "lapiz",
+    "sample": "autofix",
+    "title": "Quand «Corriger automatiquement» apparaît",
+    "text": "Seulement quand l'appli peut calculer la bonne valeur (PID, taux de capture, niveau ou origine). Pour le reste, touchez le champ en surbrillance et suivez la suggestion de l'étape."
+  },
+  {
+    "category": "Légalité",
+    "categoryId": "legality",
+    "icon": "chispa",
+    "sample": "retry",
+    "title": "Certaines corrections cherchent au hasard",
+    "text": "Corriger le PID teste des combinaisons et ne trouve parfois rien. En cas d'échec, appuyez sur «Réessayer»."
+  },
+  {
+    "category": "Légalité",
+    "categoryId": "legality",
+    "icon": "grafico",
+    "sample": "ivbanner",
+    "title": "IV modifiés qui cassent la rencontre",
+    "text": "Dans certaines rencontres, les IV viennent d'une graine du jeu ; les changer à la main les rend illégaux. Cet avis apparaît alors : utilisez-le pour chercher des IV légaux."
+  },
+  {
+    "category": "Légalité",
+    "categoryId": "legality",
+    "icon": "limpiar",
+    "sample": "ivbuttons",
+    "title": "S'il n'y a pas de combinaison exacte",
+    "text": "La recherche montre la plus proche, de combien de points d'IV elle diffère et ce qui changerait d'autre (nature, talent, genre, chromatique). Rien n'est appliqué sans votre confirmation ; «Revenir aux IVs d'origine» annule."
+  },
+  {
+    "category": "Légalité",
+    "categoryId": "legality",
+    "icon": "pokemon",
+    "sample": "recreate",
+    "title": "Origine invalide : la recréer",
+    "text": "«Recréer avec une rencontre valide» propose des origines légales. L'espèce, le niveau, les capacités, le surnom, l'objet, le dresseur et les IV sont conservés ; le lieu, la balle et d'autres données de capture changent. Vous voyez ce qui change avant d'appliquer."
+  },
+  {
+    "category": "Légalité",
+    "categoryId": "legality",
+    "icon": "info",
+    "sample": "gomoves",
+    "title": "« Pas de correction automatique »",
+    "text": "Si aucune rencontre ne correspond à ses capacités, remplacez-les par des légales («Aller aux capacités») et revérifiez : si une rencontre compatible apparaît, la correction est proposée automatiquement."
+  },
+  {
+    "category": "Légalité",
+    "categoryId": "legality",
+    "icon": "buscar",
+    "sample": "methods",
+    "title": "Capacités légales avec «Capacités apprises»",
+    "text": "L'onglet «Capacités apprises» montre comment chaque capacité s'apprend (niveau, CT, œuf, tuteur, rappel) et à partir de quel niveau."
+  },
+  {
+    "category": "Légalité",
+    "categoryId": "legality",
+    "icon": "tips",
+    "sample": "nickname",
+    "title": "Surnom, langue et détail technique",
+    "text": "Si le surnom ne correspond à aucune langue valide, cochez la case à côté du champ surnom. «Détail technique» affiche le message d'origine de PKHeX, utile pour demander de l'aide."
+  }
+]

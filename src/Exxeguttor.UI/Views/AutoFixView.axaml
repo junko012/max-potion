@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Exxeguttor.UI.ViewModels"
+             xmlns:controls="using:Exxeguttor.UI.Controls"
+             x:Class="Exxeguttor.UI.Views.AutoFixView"
+             x:DataType="vm:AutoFixViewModel"
+             IsVisible="{Binding IsVisible}">
+
+    <!-- Feedback de "Corregir automáticamente": Rotom PC procesando → corregido (✔) / no se pudo (con
+         Reintentar). Mismas dos capas que los demás diálogos: dim de ventana completa + tarjeta blanca. -->
+    <Grid>
+        <Border Background="#33000000"/>
+
+        <Border Background="White" BorderBrush="#DCDCE0" BorderThickness="1" CornerRadius="14"
+                Padding="24,20" BoxShadow="0 10 24 0 #38000000" Width="340"
+                HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Spacing="14">
+                <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" Foreground="#1C1C1F"
+                           HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
+
+                <controls:RotomMatrixControl Width="200" Height="150" HorizontalAlignment="Center"
+                                             Mode="{Binding SceneMode}"
+                                             IsRunning="{Binding IsRotomRunning}"
+                                             Progress="{Binding Progress}"
+                                             Sprites="{Binding RotomSprites}"/>
+
+                <TextBlock IsVisible="{Binding !IsWorking}" Text="{Binding Message}" FontSize="12" Foreground="#6B6B70"
+                           TextAlignment="Center" TextWrapping="Wrap"/>
+
+                <!-- Corregido: se cierra solo; Aceptar lo cierra antes -->
+                <Button IsVisible="{Binding IsDone}" Content="{Binding CloseLabel}" Command="{Binding CloseCommand}"
+                        HorizontalAlignment="Center" Padding="16,6"/>
+
+                <!-- No se pudo: reintentar (algunas correcciones buscan al azar) o cerrar -->
+                <StackPanel IsVisible="{Binding IsFailed}" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                    <Button Content="{Binding CloseLabel}" Command="{Binding CloseCommand}" Padding="16,6"/>
+                    <Button Content="{Binding RetryLabel}" Command="{Binding RetryCommand}" Padding="16,6"
+                            Background="#1C1C1F" Foreground="White"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

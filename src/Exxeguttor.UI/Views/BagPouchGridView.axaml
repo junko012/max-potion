@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Exxeguttor.UI.ViewModels"
+             xmlns:views="using:Exxeguttor.UI.Views"
+             x:Class="Exxeguttor.UI.Views.BagPouchGridView"
+             x:DataType="vm:BagViewModel">
+
+    <!-- Mismo lenguaje visual que BoxView: navegación arriba (◀ nombre ▶ + texto de posición
+         debajo) + grilla clickeable abajo. Acá lo que se navega con ◀▶ es el ORIGEN (Mochila/
+         PC — equivalente a Caja 1/Caja 2), y la grilla muestra las CATEGORÍAS de ítems del
+         origen actual (equivalente a los Pokémon dentro de una caja) — ver comentario de clase
+         en BagViewModel.cs, corrección de sesión "categorización de Mochila". -->
+    <StackPanel Spacing="4" Margin="8,6,8,6">
+
+        <!-- Navegación de origen (Mochila/PC). Las flechas se ocultan del todo si el save no
+             tiene un segundo origen (Gen4+, sin PCItems/FreeSpace) — no tiene sentido mostrar
+             flechas que nunca hacen nada, a diferencia de Cajas donde siempre hay al menos 1. -->
+        <Grid ColumnDefinitions="Auto,*,Auto">
+            <Button Grid.Column="0" Content="◀"
+                    Command="{Binding PreviousStoreCommand}"
+                    IsVisible="{Binding ShowStoreNav}"
+                    Padding="10,3" FontSize="11"/>
+            <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="1">
+                <TextBlock Text="{Binding CurrentStoreName}"
+                           FontWeight="Bold" FontSize="12" HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding StoreNavText}"
+                           FontSize="10" Opacity="0.6" HorizontalAlignment="Center"/>
+            </StackPanel>
+            <Button Grid.Column="2" Content="▶"
+                    Command="{Binding NextStoreCommand}"
+                    IsVisible="{Binding ShowStoreNav}"
+                    Padding="10,3" FontSize="11"/>
+        </Grid>
+
+        <!-- Grilla de categorías — todas las tiles del origen actual, sin paginado (a
+             diferencia de BoxView no hace falta scroll de filas: el máximo posible son las ~13
+             categorías reales de InventoryType, entran de sobra envolviendo en columnas). -->
+        <ItemsControl ItemsSource="{Binding Pouches}"
+                      x:Name="TilesControl"
+                      Margin="0,8,0,0">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:BagPouchTileViewModel">
+                    <views:BagPouchTileView Cursor="Hand"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <TextBlock Text="{Binding Loc[Bag_Pouches_Hint]}"
+                   FontSize="10" Opacity="0.4" TextWrapping="Wrap" Margin="0,10,0,0"/>
+
+    </StackPanel>
+
+</UserControl>

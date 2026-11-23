@@ -1,0 +1,242 @@
+[
+  {
+    "category": "Allgemein",
+    "categoryId": "general",
+    "icon": "exportar",
+    "sample": "export",
+    "title": "Exportieren schreibt die Datei",
+    "text": "Solange du nicht exportierst, existieren Änderungen nur in dieser Sitzung: Die Statusleiste zeigt „Nicht exportierte Änderungen“. Beim Exportieren wird der echte Spielstand geschrieben."
+  },
+  {
+    "category": "Allgemein",
+    "categoryId": "general",
+    "icon": "guardar",
+    "sample": "review",
+    "title": "Vor dem Exportieren prüfen",
+    "text": "Im Prüfdialog kannst du jedes bearbeitete Pokémon, den Trainer, die Tasche und Freilassungen einzeln ein- oder ausschließen."
+  },
+  {
+    "category": "Allgemein",
+    "categoryId": "general",
+    "icon": "info",
+    "sample": "langs",
+    "title": "Zwei unabhängige Sprachen",
+    "text": "In den Einstellungen wählst du „Oberflächensprache“ und getrennt davon „Sprache der Spieldaten“ (Arten, Attacken, Items …). Die Anzeige in der Statusleiste zeigt beide."
+  },
+  {
+    "category": "Allgemein",
+    "categoryId": "general",
+    "icon": "teclado",
+    "sample": "keys",
+    "title": "F1 und Tastenkürzel",
+    "text": "F1 öffnet diese Anleitung. Unter Hilfe → „Tastenkürzel“ steht die ganze Liste: öffnen, speichern, exportieren, schließen …"
+  },
+  {
+    "category": "Erstellung",
+    "categoryId": "creation",
+    "icon": "buscar",
+    "sample": "search",
+    "title": "Nach Name oder Nummer suchen",
+    "text": "Die Artenauswahl filtert beim Tippen, unabhängig von Groß-/Kleinschreibung und Akzenten."
+  },
+  {
+    "category": "Erstellung",
+    "categoryId": "creation",
+    "icon": "teclado",
+    "sample": "shift",
+    "title": "Schnelle Sprünge per Tastatur",
+    "text": "Halte Umschalt (Shift) und nutze die Pfeiltasten, um 10 % der Ergebnisse auf einmal zu überspringen. Pos1 und Ende springen zu den Enden."
+  },
+  {
+    "category": "Erstellung",
+    "categoryId": "creation",
+    "icon": "pokemon",
+    "sample": "picker",
+    "title": "Es werden nur Arten des Spiels angeboten",
+    "text": "Die Auswahl blendet Arten aus, die es im Spiel des Spielstands nicht gibt oder die nicht legal erstellt werden können (z. B. außerhalb des Hisui-Pokédex in Legenden: Arceus oder außerhalb von Galar und Paldea in Schwert/Schild und Karmesin/Purpur)."
+  },
+  {
+    "category": "Erstellung",
+    "categoryId": "creation",
+    "icon": "advertencia",
+    "sample": "",
+    "title": "Formen und Sonderfälle",
+    "text": "Manche Formen lassen sich beim Erstellen nicht legal machen (etwa Zygarde 10 %/50 % oder Ash-Quajutsu in Legenden: Z-A) und erscheinen nicht. Zeigt eine Art Legalitätswarnungen, prüfe den Tab „Legal“ und korrigiere von oben nach unten."
+  },
+  {
+    "category": "Bearbeitung",
+    "categoryId": "editing",
+    "icon": "grafico",
+    "sample": "tab-ivs",
+    "title": "IVs und EVs je Generation",
+    "text": "In Gen 1–2 sind es DVs (0–15) und Stat-Erfahrung (0–65535). Der Editor passt die Bereiche je nach Spiel des Spielstands selbst an."
+  },
+  {
+    "category": "Bearbeitung",
+    "categoryId": "editing",
+    "icon": "pokemon",
+    "sample": "tab-sets",
+    "title": "Empfohlene Sets",
+    "text": "Im Tab „Sets“ siehst du Smogon- und Showdown-Sets für die Art, mit Fähigkeit, Item, Wesen und EVs."
+  },
+  {
+    "category": "Bearbeitung",
+    "categoryId": "editing",
+    "icon": "chispa",
+    "sample": "tab-special",
+    "title": "Mega, Z, Dynamax und Tera",
+    "text": "Mega-Steine, Z-Kristalle und die weiteren Mechaniken jedes Spiels wählst du im Tab „Spezial“, nicht im Item-Feld."
+  },
+  {
+    "category": "Bearbeitung",
+    "categoryId": "editing",
+    "icon": "medalla",
+    "sample": "tab-ribbons",
+    "title": "Bänder je Spiel",
+    "text": "Es werden nur Bänder angezeigt, die es in der Generation des geladenen Spielstands gibt."
+  },
+  {
+    "category": "Boxen und Tasche",
+    "categoryId": "storage",
+    "icon": "limpiar",
+    "sample": "release",
+    "title": "Ein Pokémon freilassen",
+    "text": "Der Freilassen-Knopf sitzt an jedem Pokémon, auch an Eiern. Ein Dialog fragt nach Bestätigung und warnt, wenn es ein Item trägt: Das Item geht mit verloren."
+  },
+  {
+    "category": "Boxen und Tasche",
+    "categoryId": "storage",
+    "icon": "info",
+    "sample": "releaseblock",
+    "title": "Das einzige Pokémon im Team",
+    "text": "Die App lässt dich es nicht freilassen, weil das Spiel mindestens eines im Team braucht. Schiebe ein anderes Pokémon ins Team und versuche es erneut."
+  },
+  {
+    "category": "Boxen und Tasche",
+    "categoryId": "storage",
+    "icon": "guardar",
+    "sample": "undo",
+    "title": "Rückgängig hat Grenzen",
+    "text": "Bis zum Export kannst du über „Rückgängig“ im Hinweis oder durch Verwerfen der Änderungen zurück. Es geht nicht, wenn Team oder Box inzwischen voll sind oder ein anderes Pokémon den Platz belegt."
+  },
+  {
+    "category": "Boxen und Tasche",
+    "categoryId": "storage",
+    "icon": "exportar",
+    "sample": "review",
+    "title": "Beim Export eines behalten",
+    "text": "Im Prüfdialog kannst du eine Freilassung abwählen, um das Pokémon zu behalten – aber nur in Boxen ab Gen 3, wenn der Platz noch frei ist und es keine Änderungen daran gibt. Im Team und in Boxen von Gen 1–2 verschiebt Freilassen die anderen: nutze dort „Rückgängig“."
+  },
+  {
+    "category": "Boxen und Tasche",
+    "categoryId": "storage",
+    "icon": "mochila",
+    "sample": "bagtiles",
+    "title": "Kategorien der Tasche",
+    "text": "Die Tasche ist in Kategorien geteilt (Items, Medizin, Bälle, TMs/VMs …); welche es gibt, hängt von der Generation des Spielstands ab. Tippe auf eine, um ihre Items zu sehen und zu bearbeiten."
+  },
+  {
+    "category": "Boxen und Tasche",
+    "categoryId": "storage",
+    "icon": "lapiz",
+    "sample": "bagrow",
+    "title": "Items hinzufügen oder entfernen",
+    "text": "Jede Kategorie listet alle legalen Items, ob du sie hast oder nicht. Erhöhe die Anzahl (oder hake das Item an), um es hinzuzufügen, und setze sie auf 0, um es zu entfernen."
+  },
+  {
+    "category": "Boxen und Tasche",
+    "categoryId": "storage",
+    "icon": "chispa",
+    "sample": "bagmax",
+    "title": "Höchstmenge",
+    "text": "„MAX“ setzt die Anzahl auf das Limit dieser Kategorie in diesem Spiel. Gibst du eine größere Zahl ein, wird sie von selbst auf das Limit gesetzt."
+  },
+  {
+    "category": "Boxen und Tasche",
+    "categoryId": "storage",
+    "icon": "buscar",
+    "sample": "bagstore",
+    "title": "Suchen und zum PC wechseln",
+    "text": "Das Suchfeld filtert innerhalb der Kategorie nach Name oder Beschreibung. In Generationen mit separatem Lager wechseln die Pfeile ◀ ▶ zwischen Tasche und PC."
+  },
+  {
+    "category": "Legalität",
+    "categoryId": "legality",
+    "icon": "balanza",
+    "sample": "steps",
+    "title": "Beginne beim ersten Schritt",
+    "text": "Die Schritte im Tab „Legal“ sind nach Abhängigkeit geordnet: erst Begegnung, Herkunftsspiel und Ei. Korrigiere von oben nach unten – viele Fehler darunter verschwinden von selbst."
+  },
+  {
+    "category": "Legalität",
+    "categoryId": "legality",
+    "icon": "advertencia",
+    "sample": "severity",
+    "title": "Rot und Gelb sind nicht dasselbe",
+    "text": "„Verhindert Legalität“ macht das Pokémon illegal. „Verdächtig, prüfen“ ist ein Hinweis: Es kann ein seltener, aber gültiger Fall sein. Kümmere dich zuerst um die roten."
+  },
+  {
+    "category": "Legalität",
+    "categoryId": "legality",
+    "icon": "lapiz",
+    "sample": "autofix",
+    "title": "Wann „Automatisch korrigieren“ erscheint",
+    "text": "Nur wenn die App den richtigen Wert berechnen kann (PID, Fangrate, Level oder Herkunft). Bei allem anderen tippst du das markierte Feld an und folgst dem Vorschlag des Schritts."
+  },
+  {
+    "category": "Legalität",
+    "categoryId": "legality",
+    "icon": "chispa",
+    "sample": "retry",
+    "title": "Manche Korrekturen suchen zufällig",
+    "text": "Beim PID werden Kombinationen ausprobiert, manchmal ohne Treffer. Schlägt es fehl, drücke „Erneut versuchen“."
+  },
+  {
+    "category": "Legalität",
+    "categoryId": "legality",
+    "icon": "grafico",
+    "sample": "ivbanner",
+    "title": "IVs geändert, Begegnung kaputt",
+    "text": "Bei manchen Begegnungen stammen die IVs aus einem Spiel-Seed; per Hand geändert werden sie illegal. Dann erscheint dieser Hinweis: Damit suchst du legale IVs."
+  },
+  {
+    "category": "Legalität",
+    "categoryId": "legality",
+    "icon": "limpiar",
+    "sample": "ivbuttons",
+    "title": "Wenn es keine exakte Kombination gibt",
+    "text": "Die Suche zeigt die nächstliegende, um wie viele IV-Punkte sie abweicht und was sich sonst ändern würde (Wesen, Fähigkeit, Geschlecht, Schillernd). Nichts wird ohne deine Bestätigung angewendet; mit „Zurück zu den ursprünglichen IVs“ gehst du zurück."
+  },
+  {
+    "category": "Legalität",
+    "categoryId": "legality",
+    "icon": "pokemon",
+    "sample": "recreate",
+    "title": "Ungültige Herkunft: neu erstellen",
+    "text": "„Mit gültiger Begegnung neu erstellen“ bietet legale Herkünfte an. Art, Level, Attacken, Spitzname, Item, Trainer und IVs bleiben erhalten; Ort, Ball und andere Fangdaten ändern sich. Vor dem Anwenden siehst du, was sich ändert."
+  },
+  {
+    "category": "Legalität",
+    "categoryId": "legality",
+    "icon": "info",
+    "sample": "gomoves",
+    "title": "„Keine automatische Korrektur“",
+    "text": "Passt keine Begegnung zu den Attacken, ändere sie auf legale („Zu den Attacken“) und prüfe erneut: Taucht eine passende Begegnung auf, wird die Korrektur automatisch angeboten."
+  },
+  {
+    "category": "Legalität",
+    "categoryId": "legality",
+    "icon": "buscar",
+    "sample": "methods",
+    "title": "Legale Attacken mit „Attackenlisten“",
+    "text": "Der Tab „Attackenlisten“ zeigt, wie jede Attacke erlernt wird (Level, TM, Ei, Tutor, Erinnerer) und ab welchem Level."
+  },
+  {
+    "category": "Legalität",
+    "categoryId": "legality",
+    "icon": "tips",
+    "sample": "nickname",
+    "title": "Spitzname, Sprache und technisches Detail",
+    "text": "Passt der Spitzname zu keiner gültigen Sprache, setze das Häkchen neben dem Spitznamenfeld. „Technische Details“ zeigt die Originalmeldung von PKHeX – nützlich, wenn du um Hilfe bittest."
+  }
+]

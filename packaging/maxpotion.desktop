@@ -1,0 +1,15 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Max Potion
+Comment=Pokémon save file editor, native to Linux
+Comment[es]=Editor de archivos de guardado de Pokémon, nativo de Linux
+Comment[zh_CN]=面向 Linux 的宝可梦存档编辑器
+Exec=maxpotion %f
+Icon=maxpotion
+Terminal=false
+Categories=Game;Utility;
+Keywords=pokemon;save;editor;pkhex;
+Keywords[es]=pokemon;guardado;editor;
+Keywords[zh_CN]=宝可梦;存档;编辑器;
+StartupWMClass=maxpotion

@@ -1,0 +1,2164 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Exxeguttor.UI.ViewModels"
+        xmlns:services="using:Exxeguttor.UI.Services"
+        xmlns:views="using:Exxeguttor.UI.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="Exxeguttor.UI.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/maxpotion.ico"
+        Title="{Binding Title}"
+        Width="1280" Height="750"
+        MinWidth="900" MinHeight="600">
+
+    <Window.Styles>
+        <!-- Píldora de idiomas activos de la barra de estado (plan i18n, Fase 2): verde normal,
+             ámbar cuando los datos caen a inglés por falta de idioma en PKHeX. -->
+        <Style Selector="Button.lang-pill">
+            <Setter Property="Background" Value="#E6F6F0"/>
+            <Setter Property="BorderBrush" Value="#1D9E75"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+        </Style>
+        <Style Selector="Button.lang-pill.warn">
+            <Setter Property="Background" Value="#FFF4CC"/>
+            <Setter Property="BorderBrush" Value="#E0A800"/>
+        </Style>
+        <!-- Efecto sobre el ícono de la libreta al apretar "Guardar" (checkpoint de sesión) -->
+        <Style Selector="Border.notebook-icon.pulse">
+            <Style.Animations>
+                <Animation Duration="0:0:0.45" FillMode="Forward">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="35%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1.3"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1.3"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <!-- Rail lateral (Pantalla 2 / mockups/navigation_rail) — mismo criterio de acento
+             que Button.mode-btn.active de arriba (#D9584E), no el azul del boceto original,
+             para no introducir un segundo color de acento en la app. -->
+        <Style Selector="Button.rail-item">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0,6"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Width" Value="54"/>
+        </Style>
+        <Style Selector="Button.rail-item /template/ ContentPresenter">
+            <Setter Property="Foreground" Value="#9A9AA0"/>
+        </Style>
+        <Style Selector="Button.rail-item.active /template/ ContentPresenter">
+            <Setter Property="Foreground" Value="#1F2937"/>
+        </Style>
+        <!-- Indicador de ítem activo: subrayado en el verde de la app, debajo del label. -->
+        <Style Selector="Border.rail-underline">
+            <Setter Property="Height" Value="3"/>
+            <Setter Property="Width" Value="26"/>
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="Button.rail-item.active Border.rail-underline">
+            <Setter Property="Background" Value="#1D9E75"/>
+        </Style>
+        <Style Selector="Border.rail-accent">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Margin" Value="0,4"/>
+        </Style>
+
+        <!-- ── Modal de revisión / carrusel unificado (Pantalla 3 / mockups/export_modal) ── -->
+
+        <Style Selector="Border.review-card">
+            <Setter Property="Width" Value="130"/>
+            <Setter Property="MaxHeight" Value="260"/>
+            <Setter Property="ClipToBounds" Value="True"/>
+            <Setter Property="Opacity" Value="0.7"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="CornerRadius" Value="9"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="BorderBrush" Value="#C4C4CC"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BoxShadow" Value="0 3 8 0 #22000000"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Border.review-card.focused">
+            <Setter Property="Width" Value="200"/>
+            <!-- Un poco más de techo que la tarjeta lateral (260) porque el sprite/nombre
+                 focalizados también crecen (ver Border.review-card.focused Panel.card-sprite
+                 más abajo, 76px vs 52px) — 280 sigue entrando cómodo en el Canvas de 300px
+                 del carrusel (ver ItemsPanelTemplate más abajo), con margen. -->
+            <Setter Property="MaxHeight" Value="280"/>
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="Padding" Value="14"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#3B82F6"/>
+            <Setter Property="BoxShadow" Value="0 10 24 0 #38000000"/>
+        </Style>
+
+        <Style Selector="Panel.card-sprite">
+            <Setter Property="Width" Value="52"/>
+            <Setter Property="Height" Value="52"/>
+        </Style>
+        <Style Selector="Border.review-card.focused Panel.card-sprite">
+            <Setter Property="Width" Value="76"/>
+            <Setter Property="Height" Value="76"/>
+        </Style>
+
+        <!-- Ícono de legalidad — antes era un badge circular superpuesto en la esquina del
+             sprite; ahora vive en la fila de cabecera de la tarjeta (esquina derecha, el
+             checkbox de inclusión ocupa la izquierda) como texto simple, sin círculo de
+             fondo. -->
+        <Style Selector="TextBlock.legality-icon">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="TextBlock.legality-icon.ok">
+            <Setter Property="Foreground" Value="#1D9E75"/>
+        </Style>
+        <Style Selector="TextBlock.legality-icon.warn">
+            <Setter Property="Foreground" Value="#C0392B"/>
+        </Style>
+
+        <Style Selector="TextBlock.card-name">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        <Style Selector="Border.review-card.focused TextBlock.card-name">
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="TextBlock.card-sub">
+            <Setter Property="FontSize" Value="9"/>
+            <Setter Property="Opacity" Value="0.6"/>
+        </Style>
+
+        <!-- Fila de checklist reducida (tarjeta lateral, RowsPreview) — solo categoría +
+             ✓/⚠, sin sublabels ni mensaje amigable (eso queda para la focalizada). -->
+        <Style Selector="Grid.check-row">
+            <Setter Property="Margin" Value="0,0,0,3"/>
+        </Style>
+        <Style Selector="Grid.check-row TextBlock">
+            <Setter Property="FontSize" Value="9"/>
+            <Setter Property="Opacity" Value="0.75"/>
+        </Style>
+        <Style Selector="Grid.check-row TextBlock.ok">
+            <Setter Property="Foreground" Value="#1D9E75"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="Grid.check-row TextBlock.warn">
+            <Setter Property="Foreground" Value="#C0392B"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+
+        <!-- Puntos de paginación — verde/ámbar según si esa tarjeta tiene warnings, más
+             grande cuando es la focalizada. -->
+        <Style Selector="Border.review-dot">
+            <Setter Property="Width" Value="6"/>
+            <Setter Property="Height" Value="6"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="Background" Value="#1D9E75"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Border.review-dot.warn">
+            <Setter Property="Background" Value="#D97706"/>
+        </Style>
+        <Style Selector="Border.review-dot.active">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Height" Value="8"/>
+        </Style>
+
+        <!-- Puntos del navegador lateral de Tips — mismos colores/tamaños que
+             review-dot de arriba, pero CON transición (review-dot no la tiene,
+             solo salta de 6 a 8px sin animar). Se declara como estilo global
+             (no local por-instancia dentro del DataTemplate) para que quede
+             estructuralmente igual al resto de los estilos probados del
+             archivo — Setter sobre "Transitions" es la forma correcta de
+             declarar una transición reutilizable por clase en Avalonia. -->
+        <Style Selector="Border.tip-dot">
+            <Setter Property="Width" Value="6"/>
+            <Setter Property="Height" Value="6"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="Background" Value="#1D9E75"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Width" Duration="0:0:0.25"/>
+                    <DoubleTransition Property="Height" Duration="0:0:0.25"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.tip-dot.active">
+            <Setter Property="Width" Value="9"/>
+            <Setter Property="Height" Value="9"/>
+            <Setter Property="CornerRadius" Value="4.5"/>
+        </Style>
+
+        <Style Selector="Button.carousel-nav">
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#DDDDDD"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="ZIndex" Value="1"/>
+        </Style>
+
+        <!-- CRÍTICO para el cover flow: el ItemsControl con ItemsPanel=Canvas no posiciona
+             solo — cada tarjeta (mi <Border Classes="review-card">, definida en el
+             DataTemplate) queda envuelta en un ContentPresenter que el ItemsControl genera
+             automáticamente, y ES ESE ContentPresenter el hijo directo del Canvas, no mi
+             Border. Por eso Canvas.Left/ZIndex se setean acá, targeteando el
+             ContentPresenter por selector, bindeados a CardLeft/CardZIndex de cada tarjeta
+             (el ContentPresenter hereda el mismo DataContext que su contenido). Sin este
+             bloque, ExportReviewCardViewModel.CardLeft no tiene ningún efecto visual. -->
+        <Style Selector="ItemsControl#ReviewCanvasItems ContentPresenter" x:DataType="vm:ExportReviewCardViewModel">
+            <Setter Property="Canvas.Left" Value="{Binding CardLeft}"/>
+            <Setter Property="Canvas.Top" Value="10"/>
+            <Setter Property="ZIndex" Value="{Binding CardZIndex}"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Canvas.Left" Duration="0:0:0.35" Easing="CubicEaseOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+    </Window.Styles>
+
+    <DockPanel>
+
+        <!-- Barra superior: solo menú File/Help — el selector de modo, badge de juego y
+             acciones (notebook/checkpoint/exportar) se movieron a la fila superior nueva,
+             al lado del rail (ver más abajo, Pantalla 2 / mockups/navigation_rail). -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="{Binding Loc[Menu_File]}">
+                <MenuItem Header="{Binding Loc[Menu_File_Open]}"
+                          Command="{Binding OpenSaveFileCommand}"
+                          InputGesture="Ctrl+O"/>
+                <MenuItem Header="{Binding Loc[Menu_File_Save]}"
+                          Command="{Binding SaveFileCommand}"
+                          InputGesture="Ctrl+S"/>
+                <MenuItem Header="{Binding Loc[Menu_File_Export]}"
+                          Command="{Binding ExportFileCommand}"
+                          InputGesture="Ctrl+Shift+S"/>
+                <Separator/>
+                <MenuItem Header="{Binding Loc[Menu_File_Close]}"
+                          Command="{Binding CloseSaveCommand}"
+                          IsEnabled="{Binding HasSaveLoaded}"
+                          InputGesture="Ctrl+W"/>
+                <Separator/>
+                <MenuItem Header="{Binding Loc[Menu_File_Exit]}"
+                          Command="{Binding ExitCommand}"/>
+            </MenuItem>
+            <!-- Preferencias (plan i18n, Fase 2): dos submenús de idioma independientes —
+                 interfaz y datos del juego. Solo texto (autoglotónimo + código), sin banderas.
+                 La fila activa lleva ✓ en su Header (LocaleMenuEntry.Display). -->
+            <MenuItem Header="{Binding Loc[Menu_Preferences]}">
+                <MenuItem Header="{Binding Loc[Menu_Prefs_UiLanguage]}"
+                          ItemsSource="{Binding UiLocaleEntries}">
+                    <MenuItem.ItemContainerTheme>
+                        <ControlTheme x:DataType="vm:LocaleMenuEntry" TargetType="MenuItem"
+                                      BasedOn="{StaticResource {x:Type MenuItem}}">
+                            <Setter Property="Header" Value="{ReflectionBinding Display}"/>
+                            <Setter Property="Command" Value="{ReflectionBinding Command}"/>
+                        </ControlTheme>
+                    </MenuItem.ItemContainerTheme>
+                </MenuItem>
+                <MenuItem Header="{Binding Loc[Menu_Prefs_DataLanguage]}"
+                          ItemsSource="{Binding DataLocaleEntries}">
+                    <MenuItem.ItemContainerTheme>
+                        <ControlTheme x:DataType="vm:LocaleMenuEntry" TargetType="MenuItem"
+                                      BasedOn="{StaticResource {x:Type MenuItem}}">
+                            <Setter Property="Header" Value="{ReflectionBinding Display}"/>
+                            <Setter Property="Command" Value="{ReflectionBinding Command}"/>
+                        </ControlTheme>
+                    </MenuItem.ItemContainerTheme>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="{Binding Loc[Menu_Help]}">
+                <MenuItem Header="{Binding Loc[Menu_Help_Guide]}" InputGesture="F1"
+                          Command="{Binding ShowTipsCommand}"/>
+                <MenuItem Header="{Binding Loc[Menu_Help_Shortcuts]}"
+                          Command="{Binding Help.OpenShortcutsCommand}"/>
+                <Separator/>
+                <MenuItem Header="{Binding Loc[Menu_Help_Report]}"
+                          Command="{Binding Help.OpenReportCommand}"/>
+                <MenuItem Header="{Binding Loc[Menu_Help_Suggest]}"
+                          Command="{Binding Help.SuggestFeatureCommand}"/>
+                <Separator/>
+                <MenuItem Header="{Binding Loc[Menu_Help_Updates]}"
+                          Command="{Binding Help.CheckUpdatesCommand}"/>
+                <MenuItem Header="{Binding Loc[Menu_Help_ConfigFolder]}"
+                          Command="{Binding Help.OpenConfigFolderCommand}"/>
+                <MenuItem Header="{Binding Loc[Menu_Help_LogsFolder]}"
+                          Command="{Binding Help.OpenLogsFolderCommand}"/>
+                <Separator/>
+                <MenuItem Header="{Binding Loc[Menu_Help_About]}"
+                          Command="{Binding ShowAboutCommand}"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Barra de estado inferior: pokébola temática (Voltorb/Electrode) + mensaje, Rotom (edición),
+             juego y pastilla de idiomas. Ver mockups/status_bar/. -->
+        <Border DockPanel.Dock="Bottom"
+                BorderThickness="0,1,0,0"
+                Padding="8,2">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Panel Classes="pball" Width="20" Height="20" VerticalAlignment="Center"
+                           Classes.idle="{Binding IsIconIdle}" Classes.opening="{Binding IsIconOpening}"
+                           Classes.opened="{Binding IsIconOpened}" Classes.error="{Binding IsIconError}"
+                           Classes.exporting="{Binding IsIconExporting}" Classes.exported="{Binding IsIconExported}">
+                        <Ellipse Classes="pball-shell" Width="20" Height="20" Fill="White" StrokeThickness="2"/>
+                        <Path Classes="pball-top" Data="M1,10 A9,9 0 0 1 19,10 Z"/>
+                        <Path Classes="pball-bottom" Data="M1,10 A9,9 0 0 0 19,10 Z"/>
+                        <Line Classes="pball-line" StartPoint="1,10" EndPoint="19,10" StrokeThickness="2"/>
+                        <Line Classes="pball-ring" StartPoint="2.5,5" EndPoint="17.5,5" StrokeThickness="1.5"/>
+                        <Line Classes="pball-ring" StartPoint="2.5,15" EndPoint="17.5,15" StrokeThickness="1.5"/>
+                        <Ellipse Classes="pball-btn" Width="7" Height="7" Fill="White" StrokeThickness="2"/>
+                    </Panel>
+                    <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center"/>
+                </StackPanel>
+                <!-- Rotom: sin cambios = gris y apagado; con cambios sin exportar = color + resplandor ámbar.
+                     Caja fija de 22x20 con recorte (Canvas no limita el tamaño del hijo) para que el sprite
+                     se vea grande sin agrandar la barra. -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                            IsVisible="{Binding HasSaveLoaded}" Margin="16,0,0,0">
+                    <Canvas Width="22" Height="20" ClipToBounds="True" VerticalAlignment="Center">
+                        <Ellipse Classes="rotom-glow" Classes.on="{Binding IsDirty}" Width="22" Height="22"
+                                 Canvas.Left="0" Canvas.Top="-1">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Color="#F59E0B" Offset="0.2"/>
+                                    <GradientStop Color="#00F59E0B" Offset="1"/>
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <Image Source="{Binding StatusRotomGray}" IsVisible="{Binding !IsDirty}"
+                               Width="40" Height="40" Canvas.Left="-9" Canvas.Top="-10"/>
+                        <Image Source="{Binding StatusRotomColor}" IsVisible="{Binding IsDirty}"
+                               Width="40" Height="40" Canvas.Left="-9" Canvas.Top="-10"/>
+                    </Canvas>
+                    <TextBlock Text="{Binding Loc[Status_Edit_Clean]}" IsVisible="{Binding !IsDirty}"
+                               VerticalAlignment="Center" Opacity="0.6"/>
+                    <TextBlock Text="{Binding Loc[Status_Edit_Dirty]}" IsVisible="{Binding IsDirty}"
+                               VerticalAlignment="Center" Foreground="#D97706" FontWeight="SemiBold"/>
+                </StackPanel>
+                <TextBlock Grid.Column="2"
+                           IsVisible="{Binding HasSaveLoaded}"
+                           Text="{Binding Capabilities.GameName}"
+                           VerticalAlignment="Center"
+                           Opacity="0.6"
+                           Margin="16,0,0,0"/>
+                <!-- Idiomas activos: "UI ES · PK ES" (interfaz · datos). Clic = popover. -->
+                <Button Grid.Column="3" Classes="lang-pill"
+                        Classes.warn="{Binding LanguageIndicatorIsWarning}"
+                        Content="{Binding LanguageIndicator}"
+                        AutomationProperties.Name="{Binding Loc[Lang_Popover_Title]}"
+                        Margin="12,0,0,0" Padding="9,1" FontSize="11" VerticalAlignment="Center">
+                    <Button.Flyout>
+                        <Flyout Placement="TopEdgeAlignedRight">
+                            <StackPanel Spacing="6" MinWidth="260" MaxWidth="320">
+                                <TextBlock Text="{Binding Loc[Lang_Popover_Title]}" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding LanguageUiLine}"/>
+                                <TextBlock Text="{Binding LanguageDataLine}"/>
+                                <Border IsVisible="{Binding LanguageIndicatorIsWarning}"
+                                        Background="#FFF4CC" BorderBrush="#E0A800" BorderThickness="1"
+                                        CornerRadius="6" Padding="8,6">
+                                    <TextBlock Text="{Binding Loc[Lang_DataFallbackEnglish_Long]}" TextWrapping="Wrap"/>
+                                </Border>
+                                <TextBlock Text="{Binding Loc[Lang_LongDescNote]}" TextWrapping="Wrap"
+                                           Opacity="0.65" FontSize="11"/>
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Contenido principal -->
+        <Grid>
+
+            <!-- Pantalla 1 — Estado vacío / Carga de save. Reemplaza el texto+botón
+                 centrado de antes por dos zonas: Recientes (izquierda) + drag&drop (derecha).
+                 Ver mockups/empty_state/ en exxeguttor-context para el spec completo. -->
+            <views:EmptyStateView IsVisible="{Binding !HasSaveLoaded}"/>
+
+            <!-- ── Pantalla 2 — Rail de navegación + barra de acciones (con save cargado).
+                 Ver mockups/navigation_rail/ en exxeguttor-context para el spec completo.
+                 Envuelve el layout existente (izquierda|centro|derecha, sin cambios de
+                 contenido) con: rail lateral fijo (54px) + fila superior reordenada
+                 (badge de juego a la izquierda, acciones a la derecha). ── -->
+            <Grid IsVisible="{Binding HasSaveLoaded}" ColumnDefinitions="54,*">
+
+                <!-- Rail lateral: navegación Pokémon / Mochila / Pokédex. Pokédex
+                     reincorporada esta sesión — ver comentario de AppMode en
+                     MainWindowViewModel.cs. -->
+                <Border Grid.Column="0" Width="54" Background="#F0F0F2"
+                        BorderThickness="0,0,1,0">
+                    <StackPanel Margin="0,12,0,0" Spacing="14">
+                        <Button Classes="rail-item" Classes.active="{Binding IsPokemonMode}"
+                                Command="{Binding SwitchToPokemonModeCommand}"
+                                ToolTip.Tip="{Binding Loc[Rail_Pokemon_Tip]}">
+                            <Grid ColumnDefinitions="2,*">
+                                <Border Grid.Column="0" Classes="rail-accent"/>
+                                <StackPanel Grid.Column="1" Spacing="2"
+                                            HorizontalAlignment="Center" Margin="4,0,0,0">
+                                    <Viewbox Width="28" Height="28" HorizontalAlignment="Center">
+                                        <Canvas Width="24" Height="24">
+                                            <Ellipse Canvas.Left="3.7" Canvas.Top="3.7" Width="16.6" Height="16.6"
+                                                     Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.7"/>
+                                            <Path Data="M3.7,12 H9 M15,12 H20.3"
+                                                  Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round"/>
+                                            <Ellipse Canvas.Left="9.7" Canvas.Top="9.7" Width="4.6" Height="4.6"
+                                                     Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.7"
+                                                     Fill="#F0F0F2"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                    <TextBlock Text="{Binding Loc[Rail_Pokemon]}" FontSize="9" HorizontalAlignment="Center"/>
+                                    <Border Classes="rail-underline"/>
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+                        <Button Classes="rail-item" Classes.active="{Binding IsBagMode}"
+                                Command="{Binding SwitchToBagModeCommand}"
+                                ToolTip.Tip="{Binding Loc[Rail_Bag_Tip]}">
+                            <Grid ColumnDefinitions="2,*">
+                                <Border Grid.Column="0" Classes="rail-accent"/>
+                                <StackPanel Grid.Column="1" Spacing="2"
+                                            HorizontalAlignment="Center" Margin="4,0,0,0">
+                                    <Viewbox Width="28" Height="28" HorizontalAlignment="Center">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Data="M9,7 V5.6 A1.6,1.6 0 0 1 10.6,4 H13.4 A1.6,1.6 0 0 1 15,5.6 V7"
+                                                  Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round" StrokeJoin="Round"/>
+                                            <Rectangle Canvas.Left="3.5" Canvas.Top="7" Width="17" Height="12"
+                                                       RadiusX="1.8" RadiusY="1.8"
+                                                       Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.7"/>
+                                            <Path Data="M3.5,12.3 H20.5"
+                                                  Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round"/>
+                                            <Path Data="M11.3,12.3 H12.7 V13.8 H11.3 Z"
+                                                  Fill="{Binding $parent[Button].Foreground}"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                    <TextBlock Text="{Binding Loc[Rail_Bag]}" FontSize="9" HorizontalAlignment="Center"/>
+                                    <Border Classes="rail-underline"/>
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+                        <Button Classes="rail-item" Classes.active="{Binding IsPokedexMode}"
+                                Command="{Binding SwitchToPokedexModeCommand}"
+                                ToolTip.Tip="{Binding Loc[Rail_Pokedex]}">
+                            <Grid ColumnDefinitions="2,*">
+                                <Border Grid.Column="0" Classes="rail-accent"/>
+                                <StackPanel Grid.Column="1" Spacing="2"
+                                            HorizontalAlignment="Center" Margin="4,0,0,0">
+                                    <Viewbox Width="28" Height="28" HorizontalAlignment="Center">
+                                        <Canvas Width="24" Height="24">
+                                            <!-- libro abierto: lomo central + dos tapas -->
+                                            <Path Data="M12,5.5 V19"
+                                                  Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.7"/>
+                                            <Path Data="M12,5.5 C9.3,4 6.2,3.7 3.7,4.6 V17.6 C6.2,16.7 9.3,17 12,18.5"
+                                                  Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round" StrokeJoin="Round"/>
+                                            <Path Data="M12,5.5 C14.7,4 17.8,3.7 20.3,4.6 V17.6 C17.8,16.7 14.7,17 12,18.5"
+                                                  Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round" StrokeJoin="Round"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                    <TextBlock Text="{Binding Loc[Rail_Pokedex]}" FontSize="9" HorizontalAlignment="Center"/>
+                                    <Border Classes="rail-underline"/>
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Columna derecha: fila superior (badge + acciones) + contenido existente
+                     (izquierda|centro|derecha) sin cambios de bindings, solo reubicado. -->
+                <DockPanel Grid.Column="1">
+
+                    <Border DockPanel.Dock="Top" Height="40" BorderThickness="0,0,0,1"
+                            Padding="16,0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" VerticalAlignment="Center">
+                                <Run Text="{Binding Trainer.GameName}" FontWeight="SemiBold"/>
+                                <Run Text=" · "/>
+                                <Run Text="{Binding Trainer.Generation, StringFormat='Gen {0}'}"/>
+                            </TextBlock>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14"
+                                        VerticalAlignment="Center">
+                                <!-- Tips: modal de ayuda general de la app. Primero en la fila
+                                     a propósito (grupo "informativo" junto a Libreta, antes de
+                                     las acciones que sí modifican/exportan algo). -->
+                                <Button Padding="4,3" Command="{Binding ShowTipsCommand}"
+                                        ToolTip.Tip="{Binding Loc[Rail_Help_Tip]}">
+                                    <Viewbox Width="28" Height="28">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Data="M12,3.5 A5.5,5.5 0 0 1 15.3,13 C14.4,13.7 14,14.6 14,15.6 V16.2 H10 V15.6 C10,14.6 9.6,13.7 8.7,13 A5.5,5.5 0 0 1 12,3.5 Z"
+                                                  Stroke="#1F2937" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round" StrokeJoin="Round"/>
+                                            <Path Data="M10.2,18.4 H13.8" Stroke="#1F2937" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round"/>
+                                            <Path Data="M10.6,20.3 H13.4" Stroke="#1F2937" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Button>
+
+                                <!-- Libreta: registro rápido de lo editado esta sesión -->
+                                <Button Padding="4" Background="Transparent" BorderThickness="0"
+                                        ToolTip.Tip="{Binding Loc[Notebook_Title]}">
+                                    <Button.Flyout>
+                                        <Flyout Placement="Bottom">
+                                            <StackPanel Width="220" Spacing="4">
+                                                <TextBlock Text="{Binding Loc[Notebook_Title]}" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,4"/>
+                                                <ItemsControl ItemsSource="{Binding NotebookSummary}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate DataType="services:NotebookEntry">
+                                                            <TextBlock FontSize="11" Margin="0,2">
+                                                                <Run Text="{Binding DisplayName}"/>
+                                                                <Run Text=" — "/>
+                                                                <Run Text="{Binding ChangeCount}"/>
+                                                                <Run Text="{ReflectionBinding $parent[Window].DataContext.Loc[Notebook_ChangesSuffix]}"/>
+                                                            </TextBlock>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <TextBlock Text="{Binding Loc[Notebook_Empty]}"
+                                                           IsVisible="{Binding !HasNotebookChanges}"
+                                                           FontSize="11" Opacity="0.55"/>
+                                            </StackPanel>
+                                        </Flyout>
+                                    </Button.Flyout>
+                                    <Grid>
+                                        <Border Classes="notebook-icon" Classes.pulse="{Binding IsNotebookPulsing}"
+                                                RenderTransformOrigin="0.5,0.5">
+                                            <Border.RenderTransform>
+                                                <ScaleTransform/>
+                                            </Border.RenderTransform>
+                                            <Viewbox Width="32" Height="32">
+                                                <Canvas Width="24" Height="24">
+                                                    <Rectangle Canvas.Left="4.5" Canvas.Top="4" Width="15" Height="16"
+                                                               RadiusX="1.8" RadiusY="1.8"
+                                                               Stroke="#1F2937" StrokeThickness="1.7"/>
+                                                    <Path Data="M9.5,4 V20" Stroke="#1F2937" StrokeThickness="1.7"
+                                                          StrokeLineCap="Round"/>
+                                                    <Path Data="M12.5,8.5 H16.5 M12.5,11.3 H16.5 M12.5,14.1 H15.1"
+                                                          Stroke="#1F2937" StrokeThickness="1.7" StrokeLineCap="Round"/>
+                                                </Canvas>
+                                            </Viewbox>
+                                        </Border>
+                                        <Border IsVisible="{Binding HasNotebookChanges}"
+                                                Background="#C0392B" CornerRadius="7" Width="14" Height="14"
+                                                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-4,-4,0">
+                                            <TextBlock Text="{Binding NotebookChangeCount}" Foreground="White"
+                                                       FontSize="8" FontWeight="Bold"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+                                </Button>
+
+                                <!-- Guardar: checkpoint de sesión (NO escribe a disco — eso lo hace "Exportar") -->
+                                <Button Padding="4,3" Command="{Binding CheckpointCommand}"
+                                        ToolTip.Tip="{Binding Loc[Toolbar_Note_Tip]}">
+                                    <Viewbox Width="28" Height="28">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Data="M5.5,4 H16 L18.5,6.5 V20 H5.5 Z"
+                                                  Stroke="#1F2937" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round" StrokeJoin="Round"/>
+                                            <Path Data="M8.3,4 V8.6 H14.7 V4"
+                                                  Stroke="#1F2937" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round" StrokeJoin="Round"/>
+                                            <Path Data="M7.7,13.2 H16.3 V20 H7.7 Z"
+                                                  Stroke="#1F2937" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round" StrokeJoin="Round"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Button>
+
+                                <!-- Exportar: abre el modal de revisión y de ahí exporta de verdad -->
+                                <Button Padding="4,3" Command="{Binding ExportFileCommand}"
+                                        ToolTip.Tip="{Binding Loc[Toolbar_Export_Tip]}">
+                                    <Viewbox Width="28" Height="28">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Data="M12,15.2 V4.5" Stroke="#1F2937" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round"/>
+                                            <Path Data="M8.2,8.4 L12,4.4 L15.8,8.4" Stroke="#1F2937" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round" StrokeJoin="Round"/>
+                                            <Path Data="M5,14 V17.6 A1.8,1.8 0 0 0 6.8,19.4 H17.2 A1.8,1.8 0 0 0 19,17.6 V14"
+                                                  Stroke="#1F2937" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round" StrokeJoin="Round"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Button>
+
+                                <!-- Limpiar: descarta TODO lo pendiente y vuelve al estado original
+                                     del save cargado (sin cerrar el archivo). Movido después de
+                                     Exportar/antes de Cerrar a propósito — es la única acción
+                                     irreversible de la fila, mejor lejos de Tips (botón nuevo,
+                                     todavía sin memoria muscular) y agrupada con Cerrar. -->
+                                <Button Padding="4,3" Command="{Binding ClearEditsCommand}"
+                                        ToolTip.Tip="{Binding Loc[Toolbar_Discard_Tip]}">
+                                    <Viewbox Width="28" Height="28">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Data="M12,3 L12,13.2" Stroke="#1F2937" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round"/>
+                                            <Path Data="M9,13.2 H15" Stroke="#1F2937" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round"/>
+                                            <Path Data="M9,13.2 L6.3,18.6" Stroke="#1F2937" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round"/>
+                                            <Path Data="M15,13.2 L17.7,18.6" Stroke="#1F2937" StrokeThickness="1.7"
+                                                  StrokeLineCap="Round"/>
+                                            <Path Data="M8.3,15.4 L7.2,19.2 M11,15.4 L11,20 M13,15.4 L13,20 M15.7,15.4 L16.8,19.2"
+                                                  Stroke="#1F2937" StrokeThickness="1.3" StrokeLineCap="Round"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Button>
+
+                                <!-- Cerrar: vuelve a Pantalla 1 (Recientes/drag&drop) -->
+                                <Button Padding="4,3" Command="{Binding CloseSaveCommand}"
+                                        ToolTip.Tip="{Binding Loc[Toolbar_Close_Tip]}">
+                                    <Viewbox Width="26" Height="26">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Data="M6,6 L18,18 M18,6 L6,18"
+                                                  Stroke="#1F2937" StrokeThickness="1.7" StrokeLineCap="Round"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Layout principal: izquierda | centro | derecha — SIN CAMBIOS de
+                         contenido respecto a como estaba, solo se movió adentro del
+                         DockPanel de arriba (antes vivía directo en el Grid raíz). -->
+                    <Grid ColumnDefinitions="200,*,400">
+
+                <!-- ── Panel izquierdo: entrenador (universal, todos los modos) + party
+                     (solo modo Pokémon — no aplica eligiendo objetos) ── -->
+                <Border Grid.Column="0" BorderThickness="0,0,1,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel>
+                            <views:TrainerView DataContext="{Binding Trainer}"/>
+                            <Border BorderThickness="0,1,0,0" Margin="8,0" Opacity="0.2"
+                                    IsVisible="{Binding IsPokemonMode}"/>
+                            <!-- IsVisible va en un wrapper que NO cambia de DataContext —
+                                 si fuera en el mismo tag que DataContext="{Binding Party}",
+                                 "{Binding IsPokemonMode}" resolvería contra PartyViewModel
+                                 (el DataContext nuevo de ESE elemento), no contra
+                                 MainWindowViewModel. Mismo motivo en los otros 3 casos
+                                 de abajo (Bag/Editor). -->
+                            <ContentControl IsVisible="{Binding IsPokemonMode}">
+                                <views:PartyView DataContext="{Binding Party}"/>
+                            </ContentControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- ── Panel central: modo Pokémon (cajas + info) o modo Mochila (grilla de categorías) ── -->
+                <Grid Grid.Column="1">
+
+                    <Grid RowDefinitions="Auto,1,*" IsVisible="{Binding IsPokemonMode}">
+                        <!-- Cajas: altura fija controlada por BoxView internamente -->
+                        <views:BoxView Grid.Row="0" DataContext="{Binding Box}"/>
+                        <!-- Separador -->
+                        <Border Grid.Row="1" BorderThickness="0,1,0,0" Opacity="0.2"/>
+                        <!-- Info básica: ocupa todo el espacio restante con scroll -->
+                        <ScrollViewer Grid.Row="2"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <views:PokemonInfoView DataContext="{Binding Editor}"/>
+                        </ScrollViewer>
+                        <!-- Estado vacío: aún no hay un Pokémon seleccionado (Editor.IsVisible == false). -->
+                        <Border Grid.Row="2" IsVisible="{Binding !Editor.IsVisible}">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
+                                <Viewbox Width="56" Height="56" HorizontalAlignment="Center">
+                                <Canvas Width="24" Height="24">
+                                    <Ellipse Canvas.Left="3.7" Canvas.Top="3.7" Width="16.6" Height="16.6"
+                                             Stroke="#B8B8BF" StrokeThickness="1.2"/>
+                                    <Path Data="M3.7,12 H9 M15,12 H20.3" Stroke="#B8B8BF"
+                                          StrokeThickness="1.2" StrokeLineCap="Round"/>
+                                    <Ellipse Canvas.Left="9.7" Canvas.Top="9.7" Width="4.6" Height="4.6"
+                                             Stroke="#1D9E75" StrokeThickness="1.2"/>
+                                </Canvas>
+                            </Viewbox>
+                                <TextBlock Text="{Binding Loc[Editor_Empty_Title]}" FontSize="14" FontWeight="Bold"
+                                           Foreground="#1F2937" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding Loc[Editor_Empty_Body]}"
+                                           FontSize="11" Foreground="#6B6B70" TextAlignment="Center"
+                                           TextWrapping="Wrap" MaxWidth="320" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <ContentControl IsVisible="{Binding IsBagMode}">
+                        <views:BagPouchGridView DataContext="{Binding Bag}"/>
+                    </ContentControl>
+
+                </Grid>
+
+                <!-- ── Panel derecho: modo Pokémon (tabs de stats) o modo Mochila (lista de ítems).
+                     Pokédex NO usa este panel — ver el ContentControl fusionado centro+derecha
+                     más abajo, que se dibuja encima de este Border cuando IsPokedexMode. ── -->
+                <Border Grid.Column="2" BorderThickness="1,0,0,0" IsVisible="{Binding !IsPokedexMode}">
+                    <Grid>
+                        <Grid IsVisible="{Binding IsPokemonMode}">
+                            <views:PokemonStatsView DataContext="{Binding Editor}"/>
+                            <!-- Estado vacío del panel derecho: qué datos aparecerán al seleccionar un Pokémon.
+                                 Solo informativo (no clickeable). -->
+                            <Border IsVisible="{Binding !Editor.IsVisible}" Background="White">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel Margin="16,18" Spacing="8">
+                                        <StackPanel Spacing="4" Margin="0,0,0,6" HorizontalAlignment="Center">
+                                            <TextBlock Text="{Binding Loc[Editor_Preview_Title]}" FontSize="14" FontWeight="Bold"
+                                                       Foreground="#1F2937" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Loc[Editor_Preview_Sub]}"
+                                                       FontSize="11" Foreground="#6B6B70" HorizontalAlignment="Center"/>
+                                            <Border Width="26" Height="3" CornerRadius="2" Background="#1D9E75"
+                                                    HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    <Border Background="#F7F8FA" BorderBrush="#E5E5EA" BorderThickness="1"
+                                            CornerRadius="8" Padding="10,8">
+                                        <StackPanel Spacing="1">
+                                            <TextBlock Text="{Binding Loc[Tab_IvsEvs]}" FontSize="11" FontWeight="Bold" Foreground="#1F2937"/>
+                                            <TextBlock Text="{Binding Loc[Tab_IvsEvs_Desc]}" FontSize="10" Foreground="#6B6B70" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#F7F8FA" BorderBrush="#E5E5EA" BorderThickness="1"
+                                            CornerRadius="8" Padding="10,8">
+                                        <StackPanel Spacing="1">
+                                            <TextBlock Text="{Binding Loc[Tab_Moves]}" FontSize="11" FontWeight="Bold" Foreground="#1F2937"/>
+                                            <TextBlock Text="{Binding Loc[Tab_Moves_Desc]}" FontSize="10" Foreground="#6B6B70" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#F7F8FA" BorderBrush="#E5E5EA" BorderThickness="1"
+                                            CornerRadius="8" Padding="10,8">
+                                        <StackPanel Spacing="1">
+                                            <TextBlock Text="{Binding Loc[Tab_Learnsets]}" FontSize="11" FontWeight="Bold" Foreground="#1F2937"/>
+                                            <TextBlock Text="{Binding Loc[Tab_Learnsets_Desc]}" FontSize="10" Foreground="#6B6B70" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#F7F8FA" BorderBrush="#E5E5EA" BorderThickness="1"
+                                            CornerRadius="8" Padding="10,8">
+                                        <StackPanel Spacing="1">
+                                            <TextBlock Text="{Binding Loc[Tab_Effectiveness]}" FontSize="11" FontWeight="Bold" Foreground="#1F2937"/>
+                                            <TextBlock Text="{Binding Loc[Tab_Effectiveness_Desc]}" FontSize="10" Foreground="#6B6B70" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#F7F8FA" BorderBrush="#E5E5EA" BorderThickness="1"
+                                            CornerRadius="8" Padding="10,8">
+                                        <StackPanel Spacing="1">
+                                            <TextBlock Text="{Binding Loc[Tab_Sets]}" FontSize="11" FontWeight="Bold" Foreground="#1F2937"/>
+                                            <TextBlock Text="{Binding Loc[Tab_Sets_Desc]}" FontSize="10" Foreground="#6B6B70" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <Border Background="#F7F8FA" BorderBrush="#E5E5EA" BorderThickness="1"
+                                            CornerRadius="8" Padding="10,8">
+                                        <StackPanel Spacing="1">
+                                            <TextBlock Text="{Binding Loc[Tab_Special]}" FontSize="11" FontWeight="Bold" Foreground="#1F2937"/>
+                                            <TextBlock Text="{Binding Loc[Tab_Special_Desc]}" FontSize="10" Foreground="#6B6B70" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#F7F8FA" BorderBrush="#E5E5EA" BorderThickness="1"
+                                            CornerRadius="8" Padding="10,8">
+                                        <StackPanel Spacing="1">
+                                            <TextBlock Text="{Binding Loc[Tab_Legal]}" FontSize="11" FontWeight="Bold" Foreground="#1F2937"/>
+                                            <TextBlock Text="{Binding Loc[Tab_Legal_Desc]}" FontSize="10" Foreground="#6B6B70" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#F7F8FA" BorderBrush="#E5E5EA" BorderThickness="1"
+                                            CornerRadius="8" Padding="10,8">
+                                        <StackPanel Spacing="1">
+                                            <TextBlock Text="{Binding Loc[Tab_Ribbons]}" FontSize="11" FontWeight="Bold" Foreground="#1F2937"/>
+                                            <TextBlock Text="{Binding Loc[Tab_Ribbons_Desc]}" FontSize="10" Foreground="#6B6B70" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Border>
+                        </Grid>
+                        <ContentControl IsVisible="{Binding IsBagMode}">
+                            <views:BagItemListView DataContext="{Binding Bag}"/>
+                        </ContentControl>
+                    </Grid>
+                </Border>
+
+                <!-- ── Modo Pokédex: fusiona centro+derecha en un solo panel de ancho completo
+                     (a diferencia de Mochila, que sí separa grilla de categorías / lista de
+                     ítems) — ver screen-pokedex-album.md en exxeguttor-context. -->
+                <ContentControl Grid.Column="1" Grid.ColumnSpan="2" IsVisible="{Binding IsPokedexMode}">
+                    <views:PokedexView DataContext="{Binding Pokedex}"/>
+                </ContentControl>
+
+            </Grid>
+
+                </DockPanel>
+
+            </Grid>
+
+            <!-- ── Modal de revisión antes de exportar (Pantalla 3 / mockups/export_modal) ──
+                 Carrusel plano unificado: Entrenador + Mochila/PC + Pokémon en un solo
+                 ItemsSource (ReviewCards, ver ExportReviewCardViewModel) — antes eran 3
+                 ItemsControl separados en un scroll horizontal simple. La lógica de fondo
+                 (correlación de legalidad, safety guard de exportación) no cambió, solo la
+                 presentación. -->
+            <Border IsVisible="{Binding IsReviewModalVisible}"
+                    Background="#66000000"/>
+            <Border IsVisible="{Binding IsReviewModalVisible}"
+                    Background="White" CornerRadius="12"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Width="680" MaxHeight="560"
+                    BorderThickness="1" BorderBrush="#DDDDDD">
+                <DockPanel>
+
+                    <!-- Header -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,0,0,1" BorderBrush="#DDDDDD"
+                            Padding="20,14,20,14">
+                        <StackPanel>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="{Binding Loc[Review_Title]}"
+                                           FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                    <Border Background="#EAF1FE" CornerRadius="10" Padding="9,2">
+                                        <TextBlock FontSize="11" Foreground="#3B82F6">
+                                            <Run Text="{Binding ReviewSelectedCount}"/>
+                                            <Run Text="{Binding Loc[Review_Of]}"/>
+                                            <Run Text="{Binding ReviewCards.Count}"/>
+                                            <Run Text="{Binding Loc[Review_SelectedSuffix]}"/>
+                                        </TextBlock>
+                                    </Border>
+                                    <!-- Solo se muestra si hay al menos 1 tarjeta con warning —
+                                         si todo está limpio, se omite (ver mockup, header). -->
+                                    <Border Background="#FEF3E0" CornerRadius="10" Padding="9,2"
+                                            IsVisible="{Binding HasReviewWarnings}">
+                                        <TextBlock FontSize="11" Foreground="#B45309">
+                                            <Run Text="{Binding ReviewWarningCount}"/>
+                                            <Run Text="{Binding Loc[Review_ToReviewSuffix]}"/>
+                                        </TextBlock>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock FontSize="11" Opacity="0.55" Margin="0,6,0,0">
+                                <Run Text="{Binding Loc[Review_DestPrefix]}"/>
+                                <Run Text="{Binding ExportDestinationFileName}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Footer -->
+                    <Border DockPanel.Dock="Bottom" BorderThickness="0,1,0,0" BorderBrush="#DDDDDD"
+                            Padding="20,12">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Content="{Binding Loc[Action_Cancel]}" Command="{Binding CancelReviewCommand}"/>
+                            <Button Content="{Binding Loc[Action_Export]}" Command="{Binding ConfirmExportCommand}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Cuerpo: cover flow real — Canvas con posicionamiento absoluto (no
+                         scroll). La tarjeta enfocada queda SIEMPRE centrada en
+                         MainWindowViewModel.CanvasCenterX sin importar su posición real en
+                         la lista, y el tamaño/opacidad/posición de cada tarjeta se degradan
+                         de forma continua según su distancia al centro (no es binario chica/
+                         grande) — ver UpdateCardLayout() en MainWindowViewModel.cs. Los
+                         Transitions de abajo son los que hacen que el cambio sea un
+                         deslizamiento animado y no un salto instantáneo. -->
+                    <Grid Margin="0,18,0,4">
+                        <Button Command="{Binding PrevReviewCardCommand}" Content="‹"
+                                Classes="carousel-nav" HorizontalAlignment="Left" Margin="8,0,0,0"/>
+                        <Button Command="{Binding NextReviewCardCommand}" Content="›"
+                                Classes="carousel-nav" HorizontalAlignment="Right" Margin="0,0,8,0"/>
+
+                        <StackPanel>
+                            <ItemsControl x:Name="ReviewCanvasItems" ItemsSource="{Binding ReviewCards}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <!-- Width/Height fijos acá deben coincidir con
+                                             CanvasCenterX*2 / la altura máxima esperada de la
+                                             tarjeta enfocada en MainWindowViewModel.cs. -->
+                                        <Canvas Width="600" Height="300" ClipToBounds="True" Background="#EDEDF0"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="vm:ExportReviewCardViewModel">
+                                        <Border Classes="review-card" Classes.focused="{Binding IsFocused}"
+                                                Width="{Binding CardWidth}" Opacity="{Binding CardOpacity}"
+                                                Tapped="ReviewCard_Tapped">
+                                            <Border.Transitions>
+                                                <Transitions>
+                                                    <DoubleTransition Property="Width" Duration="0:0:0.35" Easing="CubicEaseOut"/>
+                                                    <DoubleTransition Property="Opacity" Duration="0:0:0.35" Easing="CubicEaseOut"/>
+                                                </Transitions>
+                                            </Border.Transitions>
+                                            <DockPanel>
+
+                                                <!-- Fila de cabecera: check/uncheck a la izquierda (solo
+                                                     focalizada — obliga a pasar por cada tarjeta antes de
+                                                     destildarla) + ícono de legalidad a la derecha (en
+                                                     TODAS las tarjetas, no solo la focalizada — Trainer/
+                                                     BagPouch siempre ✓, ver ExportReviewCardViewModel). -->
+                                                <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto"
+                                                      Margin="0,0,0,4">
+                                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsIncluded}"
+                                                              IsVisible="{Binding ShowCheck}"/>
+                                                    <TextBlock Grid.Column="2" Text="✓" Classes="legality-icon ok"
+                                                               IsVisible="{Binding IsLegal}"/>
+                                                    <TextBlock Grid.Column="2" Text="⚠" Classes="legality-icon warn"
+                                                               IsVisible="{Binding !IsLegal}"
+                                                               ToolTip.Tip="{Binding FriendlyReason}"/>
+                                                </Grid>
+
+                                                <!-- Sprite/ícono + nombre + subtítulo -->
+                                                <StackPanel DockPanel.Dock="Top"
+                                                            HorizontalAlignment="Center" Spacing="3">
+                                                    <Panel Classes="card-sprite">
+                                                        <Image Source="{Binding Sprite}"
+                                                               IsVisible="{Binding HasSprite}"
+                                                               Stretch="Uniform"/>
+                                                        <!-- Mochila: el mismo ícono vectorial del rail, a tamaño de sprite. -->
+                                                        <Viewbox IsVisible="{Binding IsBagPouch}" Stretch="Uniform" Margin="4">
+                                                            <Canvas Width="24" Height="24">
+                                                                <Path Data="M9,7 V5.6 A1.6,1.6 0 0 1 10.6,4 H13.4 A1.6,1.6 0 0 1 15,5.6 V7"
+                                                                      Stroke="#2860B0" StrokeThickness="1.6"
+                                                                      StrokeLineCap="Round" StrokeJoin="Round"/>
+                                                                <Rectangle Canvas.Left="3.5" Canvas.Top="7" Width="17" Height="12"
+                                                                           RadiusX="1.8" RadiusY="1.8"
+                                                                           Stroke="#2860B0" StrokeThickness="1.6"/>
+                                                                <Path Data="M3.5,12.3 H20.5" Stroke="#2860B0" StrokeThickness="1.6"
+                                                                      StrokeLineCap="Round"/>
+                                                                <Path Data="M11.3,12.3 H12.7 V13.8 H11.3 Z" Fill="#2860B0"/>
+                                                            </Canvas>
+                                                        </Viewbox>
+                                                        <TextBlock Text="{Binding IconGlyph}"
+                                                                   IsVisible="{Binding ShowGlyph}"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   FontSize="18"/>
+                                                    </Panel>
+                                                    <TextBlock Classes="card-name" Text="{Binding PrimaryLine}"
+                                                               HorizontalAlignment="Center"/>
+                                                    <TextBlock Classes="card-sub" Text="{Binding SecondaryLine}"
+                                                               IsVisible="{Binding HasSecondaryLine}"
+                                                               HorizontalAlignment="Center"/>
+                                                </StackPanel>
+
+                                                <!-- Badge "Creación" — solo Pokémon nuevos esta sesión. -->
+                                                <Border DockPanel.Dock="Top" IsVisible="{Binding IsNewlyCreated}"
+                                                        Background="#EAF6F0" BorderBrush="#1D9E75" BorderThickness="1"
+                                                        CornerRadius="10" Padding="8,2" Margin="0,6,0,0"
+                                                        HorizontalAlignment="Center">
+                                                    <TextBlock Text="{ReflectionBinding $parent[Window].DataContext.Loc[Review_Creation]}" FontSize="9" FontWeight="Bold"
+                                                               Foreground="#1D9E75"/>
+                                                </Border>
+
+                                                <!-- Detalle técnico — solo focalizada + Pokémon con
+                                                     problemas de legalidad. -->
+                                                <StackPanel DockPanel.Dock="Bottom"
+                                                            IsVisible="{Binding IsFocused}" Margin="0,6,0,0">
+                                                    <StackPanel IsVisible="{Binding ShowTechnicalDetailToggle}">
+                                                        <ToggleButton x:Name="techToggle" Content="{ReflectionBinding $parent[Window].DataContext.Loc[Review_TechDetail]}"
+                                                                      FontSize="9" Padding="6,2" HorizontalAlignment="Left"/>
+                                                        <Border IsVisible="{Binding #techToggle.IsChecked}"
+                                                                Background="#F5F5F5" CornerRadius="4" Padding="6"
+                                                                Margin="0,4,0,0">
+                                                            <TextBlock Text="{Binding TechnicalDetail}" FontSize="8"
+                                                                       FontFamily="Consolas,monospace" TextWrapping="Wrap"
+                                                                       Opacity="0.75"/>
+                                                        </Border>
+                                                    </StackPanel>
+
+                                                    <!-- Badge inferior: "N a revisar" para ESTA tarjeta
+                                                         puntual — solo si tiene alguna fila en warning. -->
+                                                    <Border IsVisible="{Binding HasWarnings}"
+                                                            BorderThickness="0,1,0,0" BorderBrush="#DDDDDD"
+                                                            Margin="0,7,0,0" Padding="0,6,0,0"
+                                                            HorizontalAlignment="Center">
+                                                        <Border Background="#FEF3E0" CornerRadius="10" Padding="9,2">
+                                                            <TextBlock FontSize="11" Foreground="#B45309">
+                                                                <Run Text="{Binding Rows.Count}"/>
+                                                                <Run Text="{ReflectionBinding $parent[Window].DataContext.Loc[Review_ToReviewSuffix]}"/>
+                                                            </TextBlock>
+                                                        </Border>
+                                                    </Border>
+                                                </StackPanel>
+
+                                                <!-- Checklist: fila reducida (RowsPreview) para tarjetas
+                                                     laterales, completa (Rows) para la focalizada. -->
+                                                <Border DockPanel.Dock="Top" Height="1" Background="#DDDDDD"
+                                                        Margin="0,7,0,5"/>
+                                                <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding RowsPreview}"
+                                                              IsVisible="{Binding !IsFocused}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate DataType="services:EditedFieldSummary">
+                                                            <Grid Classes="check-row" ColumnDefinitions="*,Auto">
+                                                                <TextBlock Grid.Column="0" Text="{Binding Category}"/>
+                                                                <TextBlock Grid.Column="1" Text="✓" Classes="ok"
+                                                                           IsVisible="{Binding !HasIssue}"/>
+                                                                <TextBlock Grid.Column="1" Text="⚠" Classes="warn"
+                                                                           IsVisible="{Binding HasIssue}"/>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <!-- Elemento de "relleno" del DockPanel a propósito: es el
+                                                     ÚNICO hijo sin DockPanel.Dock explícito, así que recibe
+                                                     el espacio que sobra después de header/sprite/nombre/
+                                                     divisor (todos Dock="Top" arriba) — no un número fijo
+                                                     adivinado. Antes tenía MaxHeight="150" fijo + Dock="Top",
+                                                     que dejaba a la tarjeta entera crecer sin techo real (el
+                                                     Border.review-card no tenía MaxHeight tampoco — ver
+                                                     estilos más arriba, ahora sí lo tiene). Con ambos cambios
+                                                     juntos, una Mochila con 20+ objetos scrollea acá adentro
+                                                     en vez de estirar la tarjeta/tapar los puntos de
+                                                     paginación de abajo. -->
+                                                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                              HorizontalScrollBarVisibility="Disabled"
+                                                              IsVisible="{Binding IsFocused}">
+                                                    <ItemsControl ItemsSource="{Binding Rows}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate DataType="services:EditedFieldSummary">
+                                                                <StackPanel Margin="0,0,0,6">
+                                                                    <Border Background="{Binding !HasIssue, Converter={StaticResource LegalityBackgroundTintConverter}}"
+                                                                            BorderBrush="{Binding !HasIssue, Converter={StaticResource LegalityColorConverter}}"
+                                                                            BorderThickness="1" CornerRadius="10" Padding="8,2"
+                                                                            HorizontalAlignment="Left">
+                                                                        <TextBlock Text="{Binding Category}" FontSize="9" FontWeight="Bold"
+                                                                                   Foreground="{Binding !HasIssue, Converter={StaticResource LegalityColorConverter}}"/>
+                                                                    </Border>
+                                                                    <!-- Mensaje amigable, solo si esta categoría puntual
+                                                                         tiene un problema (Pokémon únicamente — Trainer/
+                                                                         BagPouch nunca traen FriendlyMessage). -->
+                                                                    <TextBlock Text="{Binding FriendlyMessage}" FontSize="9"
+                                                                               Foreground="#C0392B" Opacity="0.85"
+                                                                               TextWrapping="Wrap" Margin="10,3,0,2"
+                                                                               IsVisible="{Binding HasIssue}"/>
+                                                                    <ItemsControl ItemsSource="{Binding SubLabels}" Margin="10,3,0,0">
+                                                                        <ItemsControl.ItemTemplate>
+                                                                            <DataTemplate>
+                                                                                <TextBlock Text="{Binding}" FontSize="9" Opacity="0.6"/>
+                                                                            </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                    </ItemsControl>
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!-- Paginación: un punto por tarjeta, coloreado según si esa
+                                 tarjeta puntual tiene warnings — no es solo indicador de
+                                 posición, resume visualmente el conjunto completo. -->
+                            <ItemsControl ItemsSource="{Binding ReviewCards}"
+                                          HorizontalAlignment="Center" Margin="0,12,0,0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="vm:ExportReviewCardViewModel">
+                                        <Border Classes="review-dot"
+                                                Classes.warn="{Binding HasWarnings}"
+                                                Classes.active="{Binding IsFocused}"
+                                                Tapped="ReviewCard_Tapped"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Grid>
+
+                </DockPanel>
+            </Border>
+
+            <!-- ── Modal de crear Pokémon (elegir especie) ── -->
+            <views:SpeciesPickerView DataContext="{Binding SpeciesPicker}"/>
+
+            <!-- ── Modal "Buscar IVs legales" (Rotom PC procesando; mockups/ivs_solver_modal/) ── -->
+            <views:IvSolverView DataContext="{Binding IvSolver}"/>
+
+            <!-- ── Modal de confirmación "Recrear con un encuentro válido" (mockups/encounter_recreate/) ── -->
+            <views:RecreateView DataContext="{Binding Recreate}"/>
+
+            <!-- ── Feedback de "Corregir automáticamente" (Rotom PC procesando / corregido / no se pudo) ── -->
+            <views:AutoFixView DataContext="{Binding AutoFix}"/>
+
+            <!-- ── Confirmación "Cerrar save sin exportar" (Punto 2 sesión "gestión de sesión
+                 de save") — solo aparece si había ediciones pendientes (ver
+                 MainWindowViewModel.RequestCloseSave); mismo lenguaje visual que el modal de
+                 revisión (overlay + tarjeta centrada). Tratamiento visual con Rotom-Ventilador
+                 agregado en sesión posterior (mockups/confirmation_dialogs) — texto/Commands
+                 sin tocar, solo se agregó la escena a la izquierda (antes era título+texto
+                 centrados solos, sin ningún elemento visual). "dlg1active" se bindea directo
+                 a IsConfirmingClose (ver nota larga del bloque en App.axaml — acá no hace
+                 falta un flag de servicio aparte, el mismo booleano de visibilidad ya sirve
+                 de disparador de reinicio del ciclo). -->
+            <Border IsVisible="{Binding IsConfirmingClose}" Background="#66000000"/>
+            <Border IsVisible="{Binding IsConfirmingClose}"
+                    Background="White" CornerRadius="12"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Width="380" BorderThickness="1" BorderBrush="#DDDDDD">
+                <StackPanel Margin="24" Spacing="14">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <!-- Escena: Rotom-Ventilador + tres hojas de papel saliendo
+                             despedidas — geometría simple (Border blanco + líneas finas),
+                             sin asset de imagen para el papel (ver .md). Sin ClipToBounds a
+                             propósito: las hojas volando fuera del recuadro de 90x70 hacia el
+                             texto es el efecto buscado, no un desborde accidental (a
+                             diferencia del fix de ClipToBounds del Loader 1). -->
+                        <Grid Grid.Column="0" Width="90" Height="70" Margin="0,0,16,0">
+                            <Image Source="{Binding RotomFanSprite}" Width="56" Height="56"
+                                   Stretch="Uniform" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                   Classes="dlg1-fan-bob" Classes.dlg1active="{Binding IsConfirmingClose}"/>
+
+                            <Border Width="16" Height="20" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                    Margin="36,0,0,10" RenderTransformOrigin="0.5,0.5"
+                                    Classes="dlg1-paper-move-1" Classes.dlg1active="{Binding IsConfirmingClose}">
+                                <Border Background="White" BorderBrush="#B8B8BF" BorderThickness="1"
+                                        RenderTransformOrigin="0.5,0.5"
+                                        Classes="dlg1-paper-spin-1" Classes.dlg1active="{Binding IsConfirmingClose}">
+                                    <StackPanel Margin="2,3,2,0" Spacing="1">
+                                        <Border Height="1" Background="#DCDCE0"/>
+                                        <Border Height="1" Background="#DCDCE0" Width="9" HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                </Border>
+                            </Border>
+
+                            <Border Width="14" Height="18" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                    Margin="34,0,0,14" RenderTransformOrigin="0.5,0.5"
+                                    Classes="dlg1-paper-move-2" Classes.dlg1active="{Binding IsConfirmingClose}">
+                                <Border Background="White" BorderBrush="#B8B8BF" BorderThickness="1"
+                                        RenderTransformOrigin="0.5,0.5"
+                                        Classes="dlg1-paper-spin-2" Classes.dlg1active="{Binding IsConfirmingClose}">
+                                    <StackPanel Margin="2,3,2,0" Spacing="1">
+                                        <Border Height="1" Background="#DCDCE0"/>
+                                    </StackPanel>
+                                </Border>
+                            </Border>
+
+                            <Border Width="12" Height="15" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                    Margin="38,0,0,18" RenderTransformOrigin="0.5,0.5"
+                                    Classes="dlg1-paper-move-3" Classes.dlg1active="{Binding IsConfirmingClose}">
+                                <Border Background="White" BorderBrush="#B8B8BF" BorderThickness="1"
+                                        RenderTransformOrigin="0.5,0.5"
+                                        Classes="dlg1-paper-spin-3" Classes.dlg1active="{Binding IsConfirmingClose}"/>
+                            </Border>
+                        </Grid>
+
+                        <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Loc[Dialog_CloseUnsaved_Title]}" FontSize="15" FontWeight="SemiBold"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.75"
+                                       Text="{Binding Loc[Dialog_CloseUnsaved_Body]}"/>
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                        <Button Content="{Binding Loc[Action_Cancel]}" Command="{Binding CancelCloseCommand}"/>
+                        <Button Content="{Binding Loc[Dialog_CloseUnsaved_Confirm]}" Command="{Binding ConfirmCloseCommand}"
+                                Background="#D9584E" Foreground="White"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ── Confirmación "Limpiar ediciones" (Punto 3) — mismo patrón que arriba.
+                 Tratamiento visual con Rotom-Lavadora agregado en sesión posterior (ver nota
+                 igual de larga en el Diálogo 1, arriba — mismos criterios acá). ── -->
+            <Border IsVisible="{Binding IsConfirmingClear}" Background="#66000000"/>
+            <Border IsVisible="{Binding IsConfirmingClear}"
+                    Background="White" CornerRadius="12"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Width="380" BorderThickness="1" BorderBrush="#DDDDDD">
+                <StackPanel Margin="24" Spacing="14">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Grid Grid.Column="0" Width="90" Height="70" Margin="0,0,16,0">
+                            <Image Source="{Binding RotomWashSprite}" Width="56" Height="56"
+                                   Stretch="Uniform" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                   Classes="dlg2-wash-bob" Classes.dlg2active="{Binding IsConfirmingClear}"/>
+
+                            <!-- Hoja de papel — se moja progresivamente (overlay de color
+                                 encima, Opacity 0→0.7) y se combarce (rotación+escala en Y,
+                                 dos elementos anidados por la misma razón que las hojas
+                                 voladas del Diálogo 1, ver nota en App.axaml). -->
+                            <Border Width="20" Height="26" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                    Margin="0,0,6,8" RenderTransformOrigin="0.5,1"
+                                    Classes="dlg2-paper-rotate" Classes.dlg2active="{Binding IsConfirmingClear}">
+                                <Border RenderTransformOrigin="0.5,1"
+                                        Classes="dlg2-paper-scale" Classes.dlg2active="{Binding IsConfirmingClear}">
+                                    <Grid>
+                                        <Border Background="White" BorderBrush="#B8B8BF" BorderThickness="1">
+                                            <StackPanel Margin="2,5,2,0" Spacing="1">
+                                                <Border Height="1" Background="#DCDCE0"/>
+                                                <Border Height="1" Background="#DCDCE0" Width="12" HorizontalAlignment="Left"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Background="#3B82F6"
+                                                Classes="dlg2-wet-overlay" Classes.dlg2active="{Binding IsConfirmingClear}"/>
+                                    </Grid>
+                                </Border>
+                            </Border>
+
+                            <!-- Tres gotas cayendo desde Rotom hacia la hoja, delay
+                                 escalonado 0/0.3s/0.6s. -->
+                            <Border Width="3" Height="5" CornerRadius="0,0,1.5,1.5" Background="#3B82F6"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,12,0"
+                                    Classes="dlg2-drop-1" Classes.dlg2active="{Binding IsConfirmingClear}"/>
+                            <Border Width="3" Height="5" CornerRadius="0,0,1.5,1.5" Background="#3B82F6"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,20,0"
+                                    Classes="dlg2-drop-2" Classes.dlg2active="{Binding IsConfirmingClear}"/>
+                            <Border Width="3" Height="5" CornerRadius="0,0,1.5,1.5" Background="#3B82F6"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,16,0"
+                                    Classes="dlg2-drop-3" Classes.dlg2active="{Binding IsConfirmingClear}"/>
+                        </Grid>
+
+                        <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Loc[Dialog_Discard_Title]}" FontSize="15" FontWeight="SemiBold"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.75"
+                                       Text="{Binding Loc[Dialog_Discard_Body]}"/>
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                        <Button Content="{Binding Loc[Action_Cancel]}" Command="{Binding CancelClearCommand}"/>
+                        <Button Content="{Binding Loc[Dialog_Discard_Confirm]}" Command="{Binding ConfirmClearCommand}"
+                                Background="#D9584E" Foreground="White"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+
+            <!-- ── Confirmación "¿Liberar Pokémon?" — Rotom-Corte corta el lazo y el Pokémon se va
+                 (boceto: mockups/release_pokemon/). Misma estructura que los diálogos de arriba. ── -->
+            <Border IsVisible="{Binding IsConfirmingRelease}" Background="#66000000"/>
+            <Border IsVisible="{Binding IsConfirmingRelease}"
+                    Background="White" CornerRadius="12"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Width="400" BorderThickness="1" BorderBrush="#DDDDDD">
+                <StackPanel Margin="24" Spacing="14">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Grid Grid.Column="0" Width="112" Height="78" Margin="0,0,16,0">
+                            <Image Source="{Binding RotomMowSprite}" Width="56" Height="56"
+                                   Stretch="Uniform" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                   Classes="rel-mow" Classes.relactive="{Binding IsConfirmingRelease}"/>
+                            <!-- Lazo: mitad izquierda (cae) y mitad derecha (se va con el Pokémon). -->
+                            <Border Width="30" Height="3" CornerRadius="2" Background="#A16207"
+                                    HorizontalAlignment="Left" VerticalAlignment="Top" Margin="44,44,0,0"
+                                    Classes="rel-rope-l" Classes.relactive="{Binding IsConfirmingRelease}"/>
+                            <Border Width="24" Height="3" CornerRadius="2" Background="#CA8A04"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,44,40,0"
+                                    Classes="rel-rope-r" Classes.relactive="{Binding IsConfirmingRelease}"/>
+                            <Border Width="3" Height="30" Background="White" BorderBrush="#BFDBFE" BorderThickness="1"
+                                    HorizontalAlignment="Left" VerticalAlignment="Top" Margin="62,30,0,0"
+                                    Opacity="0" RenderTransformOrigin="0.5,0.5"
+                                    Classes="rel-slash" Classes.relactive="{Binding IsConfirmingRelease}">
+                                <Border.RenderTransform><RotateTransform Angle="25"/></Border.RenderTransform>
+                            </Border>
+                            <Image Source="{Binding ReleaseSprite}" Width="48" Height="48"
+                                   Stretch="Uniform" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,8"
+                                   RenderOptions.BitmapInterpolationMode="None"
+                                   Classes="rel-goner" Classes.relactive="{Binding IsConfirmingRelease}"/>
+                            <Border Width="4" Height="4" CornerRadius="2" Background="#FDE68A" Opacity="0"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,24,28,0"
+                                    Classes="rel-spark" Classes.relactive="{Binding IsConfirmingRelease}"/>
+                            <Border Width="4" Height="4" CornerRadius="2" Background="#FDE68A" Opacity="0"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,18,8,0"
+                                    Classes="rel-spark" Classes.relactive="{Binding IsConfirmingRelease}"/>
+                        </Grid>
+
+                        <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding ReleaseTitle}" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.75"
+                                       Text="{Binding ReleaseBody}"/>
+                            <Border Background="#F4F4F5" BorderBrush="#DCDCE0" BorderThickness="1" CornerRadius="10"
+                                    Padding="8,1" HorizontalAlignment="Left">
+                                <TextBlock Text="{Binding ReleaseWhere}" FontSize="11"/>
+                            </Border>
+                            <Border IsVisible="{Binding HasReleaseItemWarning}" Background="#FEF3C7" BorderBrush="#FCD34D"
+                                    BorderThickness="1" CornerRadius="6" Padding="8,5">
+                                <TextBlock Text="{Binding ReleaseItemWarning}" FontSize="12" Foreground="#92400E" TextWrapping="Wrap"/>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                        <Button Content="{Binding Loc[Action_Cancel]}" Command="{Binding CancelReleaseCommand}"/>
+                        <Button Content="{Binding Loc[Release_Confirm]}" Command="{Binding ConfirmReleaseCommand}"
+                                Background="#D9584E" Foreground="White"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Último Pokémon del equipo: no se puede liberar (aviso informativo). -->
+            <Border IsVisible="{Binding IsReleaseBlocked}" Background="#66000000"/>
+            <Border IsVisible="{Binding IsReleaseBlocked}"
+                    Background="White" CornerRadius="12"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Width="380" BorderThickness="1" BorderBrush="#DDDDDD">
+                <StackPanel Margin="24" Spacing="14">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Image Grid.Column="0" Source="{Binding RotomMowSprite}" Width="56" Height="56"
+                               Stretch="Uniform" VerticalAlignment="Top" Margin="0,0,16,0"/>
+                        <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Loc[Release_Blocked_Title]}" FontSize="15" FontWeight="SemiBold"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.75"
+                                       Text="{Binding Loc[Release_Blocked_Body]}"/>
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="{Binding Loc[Release_Blocked_Ok]}" Command="{Binding CloseReleaseBlockedCommand}"
+                                Background="#3B82F6" Foreground="White"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Aviso inferior después de liberar, con "Deshacer". -->
+            <Border IsVisible="{Binding IsReleaseToastVisible}"
+                    Background="#1C1C1F" CornerRadius="6" Padding="12,7"
+                    HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,44">
+                <StackPanel Orientation="Horizontal" Spacing="14">
+                    <TextBlock Text="{Binding ReleaseToastText}" Foreground="White" FontSize="12" VerticalAlignment="Center"/>
+                    <Button Content="{Binding Loc[Release_Undo]}" Command="{Binding UndoReleaseCommand}"
+                            Background="Transparent" Foreground="#93C5FD" Padding="4,0" FontSize="12"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ── Modal "Tips" (ayuda general) — rail de 4 categorías + scroll vertical
+                 con snap, portado del boceto interactivo ya validado
+                 (mockups/tips_stack/screen-06-tips-scrollsnap-propuesta.html).
+                 Reemplaza por completo el diseño anterior de stack 3D (4 tarjetas
+                 rotando con Position/ZIndex + chips horizontales de categoría). ── -->
+            <Border IsVisible="{Binding IsTipsVisible}" Background="#66000000"/>
+            <Border IsVisible="{Binding IsTipsVisible}"
+                    Background="White" CornerRadius="14" ClipToBounds="True"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Width="560" BorderThickness="1" BorderBrush="#C5DCF2"
+                    BoxShadow="0 14 32 0 #40000000">
+                <StackPanel Margin="0,0,0,20">
+                    <!-- Cabecera con degradé del acento de la app (#3B82F6) en tinte suave. -->
+                    <Border Padding="24,16,18,14" BorderThickness="0,0,0,1" BorderBrush="#D3E4F5">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                <GradientStop Color="#E6F1FB" Offset="0"/>
+                                <GradientStop Color="#F6FAFE" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <Border Grid.Column="0" Width="30" Height="30" CornerRadius="15"
+                                    Background="#3B82F6" Margin="0,0,10,0">
+                                <TextBlock Text="i" Foreground="White" FontSize="15" FontWeight="Bold"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Grid.Column="1" Text="{Binding Loc[Tips_Title]}" FontSize="16" FontWeight="Bold"
+                                       Foreground="#0C447C" VerticalAlignment="Center"/>
+                            <Button Grid.Column="2" Content="✕" Padding="6,4" Background="Transparent"
+                                    Foreground="#2860B0" BorderThickness="0" Command="{Binding CloseTipsCommand}"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Fallback si tips_ES.json no cargó (ver TipsService — nunca lanza,
+                         Tips.HasTips queda en false en vez de romper el modal). -->
+                    <TextBlock Text="{Binding Loc[Tips_Empty]}"
+                               IsVisible="{Binding !Tips.HasTips}"
+                               Margin="24,40" HorizontalAlignment="Center" Opacity="0.6"/>
+
+                    <Grid ColumnDefinitions="72,*" IsVisible="{Binding Tips.HasTips}" Margin="0,10,0,0">
+
+                        <!-- ── Rail de categorías — mismo lenguaje visual que el rail
+                             principal de la app (Pokémon/Mochila): ícono + label chico +
+                             barra de acento a la izquierda del ítem activo. ── -->
+                        <Border Grid.Column="0" Background="#EEF4FA">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding Tips.Categories}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="vm:TipCategoryViewModel">
+                                        <Button Command="{Binding SelectCommand}"
+                                                Classes.active="{Binding IsActive}"
+                                                Background="Transparent" BorderThickness="0"
+                                                Padding="4,6" HorizontalContentAlignment="Stretch">
+                                            <!-- Colores calcados del rail REAL de la app (Button.rail-item
+                                                 en Window.Styles, arriba del todo del archivo) — antes
+                                                 esto tenía un azul/gris inventados que no coincidían con
+                                                 ningún otro lado de la app. -->
+                                            <Button.Styles>
+                                                <Style Selector="Button.active Path.cat-icon">
+                                                    <Setter Property="Stroke" Value="#1F2937"/>
+                                                </Style>
+                                                <Style Selector="Button.active TextBlock.cat-label">
+                                                    <Setter Property="Foreground" Value="#1F2937"/>
+                                                    <Setter Property="FontWeight" Value="Bold"/>
+                                                </Style>
+                                                <Style Selector="Button.active Border.cat-underline">
+                                                    <Setter Property="Background" Value="#1D9E75"/>
+                                                </Style>
+                                                <Style Selector="Button.active Border.cat-bg">
+                                                    <Setter Property="IsVisible" Value="True"/>
+                                                </Style>
+                                            </Button.Styles>
+                                            <Grid>
+                                                <Border Classes="cat-bg" IsVisible="False" Background="#D6E8F8"/>
+                                                <StackPanel Spacing="4" HorizontalAlignment="Center" Margin="6,0,0,0">
+                                                    <Viewbox Width="20" Height="20">
+                                                        <Canvas Width="24" Height="24">
+                                                            <Path Classes="cat-icon" Data="{Binding IconGeometry}"
+                                                                  Stroke="#9A9AA0" StrokeThickness="1.6"
+                                                                  StrokeLineCap="Round" StrokeJoin="Round"/>
+                                                        </Canvas>
+                                                    </Viewbox>
+                                                    <TextBlock Classes="cat-label" Text="{Binding Name}"
+                                                               FontSize="9" HorizontalAlignment="Center"
+                                                               Foreground="#9A9AA0" TextAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Count}" FontSize="8"
+                                                               HorizontalAlignment="Center" Opacity="0.55"/>
+                                                    <Border Classes="cat-underline" Height="3" Width="26"
+                                                            CornerRadius="2" HorizontalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+
+                        <!-- ── Zona de contenido: scroll vertical con snap + navegador
+                             lateral flotando ENCIMA (no en su propia columna) — el texto
+                             ocupa el panel completo, sin ninguna tarjeta/borde anidado. ── -->
+                        <Grid Grid.Column="1" Margin="20,0,20,0">
+                            <Border Height="260" ClipToBounds="True" VerticalAlignment="Top">
+                                <StackPanel>
+                                    <StackPanel.RenderTransform>
+                                        <TranslateTransform Y="{Binding Tips.ScrollOffset}">
+                                            <!-- Las Transitions tienen que vivir en el mismo objeto
+                                                 cuya propiedad se anima — TranslateTransform.Y es
+                                                 propiedad DE ESTE objeto, no del StackPanel que lo
+                                                 usa como RenderTransform (a diferencia de Canvas.Left/
+                                                 Canvas.Top, que sí son propiedades adjuntas del propio
+                                                 elemento — por eso esas funcionan puestas en el
+                                                 elemento y esta no funcionaba ahí). 650ms — más lento
+                                                 a propósito que el resto de las transiciones de la app
+                                                 (420ms en splash/export), porque acá la "tarjeta" ES
+                                                 todo el panel, no un elemento chico; pedido explícito
+                                                 de Juan al revisar el boceto. -->
+                                            <TranslateTransform.Transitions>
+                                                <Transitions>
+                                                    <DoubleTransition Property="Y" Duration="0:0:0.65" Easing="CubicEaseInOut"/>
+                                                </Transitions>
+                                            </TranslateTransform.Transitions>
+                                        </TranslateTransform>
+                                    </StackPanel.RenderTransform>
+                                    <ItemsControl ItemsSource="{Binding Tips.VisiblePages}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:TipPageViewModel">
+                                                <!-- Height=260 debe coincidir con TipsViewModel.PageHeight
+                                                     y con el Border de arriba — si se cambia acá, cambiar
+                                                     en los tres lugares. Ojo: el Height=260 va en ESTE
+                                                     contenedor externo, no en el StackPanel de adentro —
+                                                     si el StackPanel tuviera su propio Height=260,
+                                                     VerticalAlignment="Center" no tendría ningún espacio
+                                                     extra para centrar (ya ocupa las 260 enteras), por eso
+                                                     el contenido quedaba pegado arriba antes de este fix. -->
+                                                <Border Height="260">
+                                                    <StackPanel VerticalAlignment="Center"
+                                                                HorizontalAlignment="Center" Spacing="8">
+                                                        <Border Width="48" Height="48"
+                                                                CornerRadius="24" HorizontalAlignment="Center"
+                                                                BoxShadow="0 4 12 0 #333B82F6">
+                                                            <Border.Background>
+                                                                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                                                    <GradientStop Color="#E6F1FB" Offset="0"/>
+                                                                    <GradientStop Color="#B9D6F2" Offset="1"/>
+                                                                </LinearGradientBrush>
+                                                            </Border.Background>
+                                                            <Viewbox Width="22" Height="22">
+                                                                <Canvas Width="24" Height="24">
+                                                                    <Path Data="{Binding IconGeometry}"
+                                                                          Stroke="#2860B0" StrokeThickness="1.6"
+                                                                          StrokeLineCap="Round" StrokeJoin="Round"/>
+                                                                </Canvas>
+                                                            </Viewbox>
+                                                        </Border>
+                                                        <!-- Sin colores custom — Foreground por defecto +
+                                                             Opacity para el texto secundario, mismo criterio
+                                                             que TextBlock.card-name/card-sub (ver estilos
+                                                             arriba del archivo, usados en la tarjeta de
+                                                             exportación). -->
+                                                        <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Bold"
+                                                                   Foreground="#0C447C"
+                                                                   TextAlignment="Center" TextWrapping="Wrap"
+                                                                   Width="330" HorizontalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding Text}" FontSize="12" Opacity="0.6"
+                                                                   TextAlignment="Center" TextWrapping="Wrap"
+                                                                   Width="330" HorizontalAlignment="Center"/>
+                                                        <views:TipSampleView IsVisible="{Binding HasSample}" Margin="0,4,0,0"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Navegador lateral flotante: flechas ▲▼ + puntos, con fondo
+                                 translúcido para leerse bien parado sobre el texto. -->
+                            <Border HorizontalAlignment="Right" VerticalAlignment="Center"
+                                    Margin="0,0,4,0" Background="#D9FFFFFF" CornerRadius="14"
+                                    Padding="6,10" BoxShadow="0 2 10 0 #14000000">
+                                <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                    <!-- Mismos glifos '‹'/'›' que ya usa carousel-nav en el modal de
+                                         exportación (esos SÍ renderizan bien en la fuente de la app —
+                                         ▲/▼ no). Rotados 90° para que apunten arriba/abajo en vez de a
+                                         los costados — rotar el botón entero es seguro acá porque es un
+                                         círculo perfecto (Width=Height=22), la rotación no le cambia la
+                                         silueta. '‹' rotado 90° horario apunta arriba (Prev); '›' apunta
+                                         abajo (Next). -->
+                                    <Button Classes="carousel-nav" Content="‹" Command="{Binding Tips.PrevCommand}"
+                                            Width="22" Height="22" CornerRadius="11" FontSize="9">
+                                        <Button.RenderTransform>
+                                            <RotateTransform Angle="90"/>
+                                        </Button.RenderTransform>
+                                    </Button>
+                                    <ItemsControl ItemsSource="{Binding Tips.Dots}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate><StackPanel Spacing="6"/></ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:TipDotViewModel">
+                                                <!-- Border.tip-dot / .active definidos como estilo global
+                                                     arriba del archivo (junto a review-dot) — mismo patrón
+                                                     que usa el carrusel de exportación para sus puntos. -->
+                                                <Border Classes="tip-dot"
+                                                        Tapped="TipDot_Tapped"
+                                                        Classes.active="{Binding IsActive}"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Button Classes="carousel-nav" Content="›" Command="{Binding Tips.NextCommand}"
+                                            Width="22" Height="22" CornerRadius="11" FontSize="9">
+                                        <Button.RenderTransform>
+                                            <RotateTransform Angle="90"/>
+                                        </Button.RenderTransform>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- ── Confirmación "Abrir otro save sin exportar" — mismo gap que Cerrar pero en
+                 la otra puerta de entrada (diálogo del sistema / Recientes): antes pisaba el
+                 save actual sin avisar si tenía ediciones pendientes. Tercer disparador del
+                 mismo patrón que los dos diálogos de arriba (mockups/open_other_savedialog).
+                 Reusa EXACTAMENTE el mismo Rotom-Ventilador y animación de hojas voladas del
+                 Diálogo 1 (mismas clases "dlg1-*", ver App.axaml) en vez de definir un cuarto
+                 set de estilos — el .md del mockup lo pide así a propósito ("no introducir
+                 una cuarta variante visual para un resultado que ya se comunica igual").
+                 Texto SIN TOCAR — ya estaba implementado con redacción real (distinta a la
+                 propuesta en el mockup), que tiene prioridad según el propio documento. ── -->
+            <Border IsVisible="{Binding IsConfirmingOpenNew}" Background="#66000000"/>
+            <Border IsVisible="{Binding IsConfirmingOpenNew}"
+                    Background="White" CornerRadius="12"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Width="380" BorderThickness="1" BorderBrush="#DDDDDD">
+                <StackPanel Margin="24" Spacing="14">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Grid Grid.Column="0" Width="90" Height="70" Margin="0,0,16,0">
+                            <Image Source="{Binding RotomFanSprite}" Width="56" Height="56"
+                                   Stretch="Uniform" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                   Classes="dlg1-fan-bob" Classes.dlg1active="{Binding IsConfirmingOpenNew}"/>
+
+                            <Border Width="16" Height="20" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                    Margin="36,0,0,10" RenderTransformOrigin="0.5,0.5"
+                                    Classes="dlg1-paper-move-1" Classes.dlg1active="{Binding IsConfirmingOpenNew}">
+                                <Border Background="White" BorderBrush="#B8B8BF" BorderThickness="1"
+                                        RenderTransformOrigin="0.5,0.5"
+                                        Classes="dlg1-paper-spin-1" Classes.dlg1active="{Binding IsConfirmingOpenNew}">
+                                    <StackPanel Margin="2,3,2,0" Spacing="1">
+                                        <Border Height="1" Background="#DCDCE0"/>
+                                        <Border Height="1" Background="#DCDCE0" Width="9" HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                </Border>
+                            </Border>
+
+                            <Border Width="14" Height="18" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                    Margin="34,0,0,14" RenderTransformOrigin="0.5,0.5"
+                                    Classes="dlg1-paper-move-2" Classes.dlg1active="{Binding IsConfirmingOpenNew}">
+                                <Border Background="White" BorderBrush="#B8B8BF" BorderThickness="1"
+                                        RenderTransformOrigin="0.5,0.5"
+                                        Classes="dlg1-paper-spin-2" Classes.dlg1active="{Binding IsConfirmingOpenNew}">
+                                    <StackPanel Margin="2,3,2,0" Spacing="1">
+                                        <Border Height="1" Background="#DCDCE0"/>
+                                    </StackPanel>
+                                </Border>
+                            </Border>
+
+                            <Border Width="12" Height="15" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                    Margin="38,0,0,18" RenderTransformOrigin="0.5,0.5"
+                                    Classes="dlg1-paper-move-3" Classes.dlg1active="{Binding IsConfirmingOpenNew}">
+                                <Border Background="White" BorderBrush="#B8B8BF" BorderThickness="1"
+                                        RenderTransformOrigin="0.5,0.5"
+                                        Classes="dlg1-paper-spin-3" Classes.dlg1active="{Binding IsConfirmingOpenNew}"/>
+                            </Border>
+                        </Grid>
+
+                        <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Loc[Dialog_OpenOther_Title]}" FontSize="15" FontWeight="SemiBold"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.75"
+                                       Text="{Binding Loc[Dialog_OpenOther_Body]}"/>
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                        <Button Content="{Binding Loc[Action_Cancel]}" Command="{Binding CancelOpenNewCommand}"/>
+                        <Button Content="{Binding Loc[Dialog_OpenOther_Confirm]}" Command="{Binding ConfirmOpenNewCommand}"
+                                Background="#D9584E" Foreground="White"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ── Pantalla de éxito de exportación (mockups/export_success) — a diferencia
+                 de todos los diálogos/loaders de arriba, esta corre UNA SOLA VEZ (no en
+                 loop) y queda visible hasta que el usuario la cierra a propósito (botón "✕"
+                 o "Listo") — no hay autocierre por tiempo, ver .md. Coordenadas del Canvas
+                 tomadas 1:1 del boceto (viewBox/escena de referencia 300x150) — ver el .md
+                 para el trazado de la tubería y por qué el objeto Mejora no anima posición
+                 (nota larga en App.axaml, mismo criterio acá). ── -->
+            <Border IsVisible="{Binding IsExportSuccessVisible}" Background="#66000000"/>
+            <Border IsVisible="{Binding IsExportSuccessVisible}"
+                    CornerRadius="14" ClipToBounds="True"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Width="380" BorderThickness="1" BorderBrush="#BFE3CD"
+                    BoxShadow="0 14 32 0 #40000000">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Color="#E3F6EA" Offset="0"/>
+                        <GradientStop Color="#FFFFFF" Offset="0.55"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid>
+                    <Button Content="✕" Width="26" Height="26" CornerRadius="13"
+                            HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,10,0"
+                            Command="{Binding CloseExportSuccessCommand}"
+                            Background="White" BorderBrush="#DCDCE0" BorderThickness="1"
+                            FontSize="12" Padding="0" ZIndex="10"/>
+
+                    <StackPanel Margin="24,28,24,20" Spacing="16" HorizontalAlignment="Center">
+                        <Canvas Width="300" Height="150">
+                            <!-- Tubería — trazo grueso semitransparente de fondo (da cuerpo)
+                                 + trazo fino de acento encima (pulsa, ver App.axaml). Mismo
+                                 Data en ambos, coordenadas 1:1 del .md. -->
+                            <Path Data="M52,58 L52,36 Q52,18 70,18 L260,18 Q278,18 278,36 L278,58"
+                                  Stroke="#B8B8BF" StrokeThickness="10" StrokeLineCap="Round" Opacity="0.5" ZIndex="0"/>
+                            <Path Classes="xs-pipe-pulse" Classes.xsactive="{Binding IsExportSuccessVisible}"
+                                  Data="M52,58 L52,36 Q52,18 70,18 L260,18 Q278,18 278,36 L278,58"
+                                  Stroke="#3B82F6" StrokeThickness="4" StrokeLineCap="Round" ZIndex="0"/>
+
+                            <!-- Porygon → destello blanco → Porygon2, las tres superpuestas
+                                 en la misma zona (bottom-left de la escena). -->
+                            <Image Canvas.Left="14" Canvas.Top="74" Width="76" Height="76"
+                                   Source="{Binding ExportSuccessPorygonSprite}"
+                                   Classes="xs-porygon" Classes.xsactive="{Binding IsExportSuccessVisible}"/>
+                            <Ellipse Canvas.Left="22" Canvas.Top="70" Width="60" Height="60"
+                                     Classes="xs-evolve-flash" Classes.xsactive="{Binding IsExportSuccessVisible}">
+                                <Ellipse.Fill>
+                                    <RadialGradientBrush>
+                                        <GradientStop Color="White" Offset="0"/>
+                                        <GradientStop Color="Transparent" Offset="0.7"/>
+                                    </RadialGradientBrush>
+                                </Ellipse.Fill>
+                            </Ellipse>
+                            <Image Canvas.Left="8" Canvas.Top="64" Width="86" Height="86"
+                                   Source="{Binding ExportSuccessPorygon2Sprite}"
+                                   Classes="xs-porygon2" Classes.xsactive="{Binding IsExportSuccessVisible}"/>
+
+                            <!-- Objeto Mejora — viaja visible desde la cabeza de Porygon hasta
+                                 la pantalla de la Rotom PC (ver Style "xs-upgrade-item" en
+                                 App.axaml para el detalle de los 6 puntos del recorrido).
+                                 ZIndex="5" + declarado DESPUÉS de los dos Path de la tubería:
+                                 doble garantía de que se pinte siempre por encima, nunca
+                                 detrás (pedido explícito tras feedback real). -->
+                            <Image Canvas.Left="41" Canvas.Top="47" Width="22" Height="22" ZIndex="5"
+                                   Source="{Binding ExportSuccessUpGradeSprite}"
+                                   Classes="xs-upgrade-item" Classes.xsactive="{Binding IsExportSuccessVisible}"/>
+
+                            <!-- Chispa de conexión, en el punto de contacto justo arriba de
+                                 la pantalla de la Rotom PC. -->
+                            <Ellipse Canvas.Left="258" Canvas.Top="32" Width="26" Height="26"
+                                     Classes="xs-plug-flash" Classes.xsactive="{Binding IsExportSuccessVisible}">
+                                <Ellipse.Fill>
+                                    <RadialGradientBrush>
+                                        <GradientStop Color="#F59E0B" Offset="0"/>
+                                        <GradientStop Color="Transparent" Offset="0.7"/>
+                                    </RadialGradientBrush>
+                                </Ellipse.Fill>
+                            </Ellipse>
+
+                            <!-- Rotom PC — pantalla con Rotom adentro + cuello + teclado.
+                                 No existe sprite oficial de "Rotom PC"; se aproxima con el
+                                 Rotom base (ver .md). -->
+                            <Border Canvas.Left="216" Canvas.Top="63" Width="70" Height="60"
+                                    Background="#F4F4F5" BorderBrush="#B8B8BF" BorderThickness="2" CornerRadius="8"/>
+                            <Image Canvas.Left="234" Canvas.Top="72" Width="42" Height="42"
+                                   Source="{Binding ExportSuccessRotomSprite}"
+                                   Classes="xs-rotom-bounce" Classes.xsactive="{Binding IsExportSuccessVisible}"/>
+                            <Border Canvas.Left="245" Canvas.Top="124" Width="20" Height="8" Background="#B8B8BF"/>
+                            <Border Canvas.Left="216" Canvas.Top="134" Width="78" Height="16"
+                                    Background="White" BorderBrush="#B8B8BF" BorderThickness="1.5" CornerRadius="4">
+                                <UniformGrid Columns="9" Margin="4,5.5">
+                                    <Border Height="5" Margin="0.75,0" Background="#DCDCE0" CornerRadius="1"/>
+                                    <Border Height="5" Margin="0.75,0" Background="#DCDCE0" CornerRadius="1"/>
+                                    <Border Height="5" Margin="0.75,0" Background="#DCDCE0" CornerRadius="1"/>
+                                    <Border Height="5" Margin="0.75,0" Background="#DCDCE0" CornerRadius="1"/>
+                                    <Border Height="5" Margin="0.75,0" Background="#DCDCE0" CornerRadius="1"/>
+                                    <Border Height="5" Margin="0.75,0" Background="#DCDCE0" CornerRadius="1"/>
+                                    <Border Height="5" Margin="0.75,0" Background="#DCDCE0" CornerRadius="1"/>
+                                    <Border Height="5" Margin="0.75,0" Background="#DCDCE0" CornerRadius="1"/>
+                                    <Border Height="5" Margin="0.75,0" Background="#DCDCE0" CornerRadius="1"/>
+                                </UniformGrid>
+                            </Border>
+                        </Canvas>
+
+                        <!-- Envuelto en su propia clase "xs-success-message" — permanece
+                             invisible hasta que Porygon2 termina de revelarse (ver App.axaml)
+                             en vez de aparecer junto con el resto del diálogo. -->
+                        <StackPanel Classes="xs-success-message" Classes.xsactive="{Binding IsExportSuccessVisible}"
+                                    Spacing="16" HorizontalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                <Border Width="24" Height="24" CornerRadius="12" Background="#16A34A"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="✓" Foreground="White" FontSize="14" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="{Binding ExportSuccessTitle}" FontSize="16" FontWeight="Bold"
+                                           Foreground="#14612F" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Border Background="#EEF7F1" BorderBrush="#BFE3CD" BorderThickness="1"
+                                    CornerRadius="10" Padding="12,5" HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding ExportedFileName}" FontSize="12" Foreground="#3F6B50"
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+
+                            <Button Classes="export-done" Content="{Binding ExportSuccessDoneLabel}" HorizontalAlignment="Center"
+                                    Command="{Binding CloseExportSuccessCommand}"
+                                    Padding="28,8" CornerRadius="8" FontWeight="SemiBold"
+                                    Background="#1D9E75" Foreground="White" BorderThickness="0">
+                                <Button.Styles>
+                                    <Style Selector="Button.export-done:pointerover /template/ ContentPresenter">
+                                        <Setter Property="Background" Value="#178A65"/>
+                                        <Setter Property="TextElement.Foreground" Value="White"/>
+                                    </Style>
+                                    <Style Selector="Button.export-done:pressed /template/ ContentPresenter">
+                                        <Setter Property="Background" Value="#127355"/>
+                                        <Setter Property="TextElement.Foreground" Value="White"/>
+                                    </Style>
+                                </Button.Styles>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ── Indicador de carga: overlay grande y centrado para operaciones pesadas SIN
+                 loader temático propio todavía (verificar legalidad, analizar legalidad al
+                 exportar, guardar — "crear Pokémon" ya NO es uno de estos, tiene su propio
+                 Loader 3 abajo, huevo que eclosiona, desde la sesión de mockups/
+                 loading_screens) — BusyStateService es compartido entre MainWindowViewModel y
+                 PokemonEditorViewModel (mismo patrón de instancia única que
+                 EditSessionService), así que un solo overlay cubre todos esos casos en vez de
+                 indicadores chicos y sueltos por cada ViewModel. Condicionado a
+                 ShowGenericOverlay (no solo IsBusy) porque "abrir save" y "crear Pokémon"
+                 ahora tienen su propio overlay abajo (Loader 1 y Loader 3 respectivamente) —
+                 ver BusyStateService.BusyKind. Al ser de los últimos hijos de este Grid, pinta
+                 por encima de todo lo demás, incluido el modal de revisión.
+
+                 Estructura en dos capas, igual que mockups/loading_screens (y el mismo
+                 criterio visual que Border.review-card, ver arriba): el Border EXTERIOR
+                 cubre toda la ventana con un dim semitransparente (deja ver la app de fondo,
+                 apagada); el Border INTERIOR es el "card" — blanco sólido, se ajusta al
+                 contenido (sin Width/Height fijo, solo Padding), centrado, con borde sutil y
+                 sombra. Antes el Border exterior mismo era blanco sólido y cubría toda la
+                 ventana — quedaba "pegado" a los bordes de la pantalla en vez de una tarjeta
+                 flotante como en el boceto. -->
+            <Border IsVisible="{Binding BusyState.ShowGenericOverlay}"
+                    Background="#33000000">
+                <Border Background="White" BorderBrush="#DCDCE0" BorderThickness="1"
+                        CornerRadius="14" Padding="28,24" BoxShadow="0 10 24 0 #38000000"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                        <Image Source="{Binding BusySprite}"
+                               Width="{Binding BusyState.IconSize}" Height="{Binding BusyState.IconSize}"
+                               Classes="spin" RenderTransformOrigin="0.5,0.5">
+                            <Image.RenderTransform>
+                                <RotateTransform/>
+                            </Image.RenderTransform>
+                        </Image>
+                        <TextBlock Text="{Binding BusyState.Message}" FontSize="16" FontWeight="SemiBold"
+                                   Foreground="#1A1A1A" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Border>
+
+            <!-- ── Loader 1 (BusyKind.OpenSave) — Pokédex escaneando al abrir un save. Ver
+                 mockups/open_save_pokedex/ para el boceto aprobado; las animaciones propias
+                 de esta escena (anillos, rayo giratorio, líneas que cruzan la Pokédex) están
+                 en App.axaml ("os-*" + clase opensaveactive). La Pokédex reusa los estilos
+                 "pkdx-bob-y"/"pkdx-bob-rotate"/"pkdx-lens" del Loader 4, escalada 1.6x con un
+                 Viewbox (mismas primitivas que el Loader 4, canvas original de 66x78 → 106x125).
+                 Coordenadas de la escena (Canvas 200x170): la lente queda en (100,60), centro
+                 de los anillos y origen del rayo. Barra de progreso REAL (BusyState.Progress)
+                 con la etapa actual (BusyState.Stage) a la izquierda y el porcentaje a la
+                 derecha. Mismas dos capas que los demás loaders (dim de ventana completa +
+                 card blanco). ── -->
+            <Border IsVisible="{Binding BusyState.ShowOpenSaveLoader}"
+                    Background="#33000000">
+                <Border Background="White" BorderBrush="#DCDCE0" BorderThickness="1"
+                        CornerRadius="14" Padding="28,24" BoxShadow="0 10 24 0 #38000000"
+                        Width="340" ClipToBounds="True"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel Width="284" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="18">
+                        <TextBlock Text="{Binding BusyState.Message}" FontSize="16" FontWeight="SemiBold"
+                                   Foreground="#1A1A1A" HorizontalAlignment="Center"/>
+
+                        <Canvas Width="200" Height="170" HorizontalAlignment="Center">
+                            <!-- Anillos que se expanden desde la lente (centro 100,60; 40x40 → 80,40) -->
+                            <Ellipse Canvas.Left="80" Canvas.Top="40" Width="40" Height="40"
+                                     Stroke="#3B82F6" StrokeThickness="2" Opacity="0"
+                                     Classes="os-ring" Classes.opensaveactive="{Binding BusyState.IsOpenSaveLoaderActive}"/>
+                            <Ellipse Canvas.Left="80" Canvas.Top="40" Width="40" Height="40"
+                                     Stroke="#3B82F6" StrokeThickness="2" Opacity="0"
+                                     Classes="os-ring-2" Classes.opensaveactive="{Binding BusyState.IsOpenSaveLoaderActive}"/>
+                            <Ellipse Canvas.Left="80" Canvas.Top="40" Width="40" Height="40"
+                                     Stroke="#3B82F6" StrokeThickness="2" Opacity="0"
+                                     Classes="os-ring-3" Classes.opensaveactive="{Binding BusyState.IsOpenSaveLoaderActive}"/>
+
+                            <!-- Pokédex (mismo ícono que el Loader 4, escalado 1.6x) -->
+                            <Border Canvas.Left="47" Canvas.Top="22" Width="106" Height="125"
+                                    Classes="pkdx-bob-y" Classes.pokedexactive="{Binding BusyState.IsOpenSaveLoaderActive}">
+                                <Border Classes="pkdx-bob-rotate" Classes.pokedexactive="{Binding BusyState.IsOpenSaveLoaderActive}">
+                                    <Viewbox Width="106" Height="125" Stretch="Uniform">
+                                        <Canvas Width="66" Height="78">
+                                            <Rectangle Canvas.Left="6" Canvas.Top="8" Width="54" Height="62"
+                                                       RadiusX="8" RadiusY="8" Fill="#D9584E"/>
+                                            <Rectangle Canvas.Left="6" Canvas.Top="34" Width="54" Height="6" Fill="#4A1B0C"/>
+                                            <Ellipse Canvas.Left="23" Canvas.Top="14" Width="20" Height="20"
+                                                     Fill="#E6F1FB" Stroke="#0C447C" StrokeThickness="2.5"
+                                                     Classes="pkdx-lens" Classes.pokedexactive="{Binding BusyState.IsOpenSaveLoaderActive}"/>
+                                            <Ellipse Canvas.Left="29" Canvas.Top="20" Width="8" Height="8" Fill="#3B82F6"
+                                                     Classes="pkdx-lens" Classes.pokedexactive="{Binding BusyState.IsOpenSaveLoaderActive}"/>
+                                            <Rectangle Canvas.Left="14" Canvas.Top="48" Width="16" Height="4"
+                                                       RadiusX="2" RadiusY="2" Fill="#F5C4B3"/>
+                                            <Rectangle Canvas.Left="14" Canvas.Top="56" Width="24" Height="4"
+                                                       RadiusX="2" RadiusY="2" Fill="#F5C4B3"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Border>
+                            </Border>
+
+                            <!-- Líneas que cruzan el cuerpo de la Pokédex, recortadas a su silueta -->
+                            <Border Canvas.Left="47" Canvas.Top="22" Width="106" Height="125"
+                                    CornerRadius="13" ClipToBounds="True" IsHitTestVisible="False">
+                                <Canvas>
+                                    <Border Canvas.Left="0" Canvas.Top="0" Width="106" Height="2"
+                                            Background="#3B82F6" Opacity="0.85" BoxShadow="0 0 6 1 #85B7EB"
+                                            Classes="os-scan-h" Classes.opensaveactive="{Binding BusyState.IsOpenSaveLoaderActive}"/>
+                                    <Border Canvas.Left="0" Canvas.Top="0" Width="2" Height="125"
+                                            Background="#3B82F6" Opacity="0.85" BoxShadow="0 0 6 1 #85B7EB"
+                                            Classes="os-scan-v" Classes.opensaveactive="{Binding BusyState.IsOpenSaveLoaderActive}"/>
+                                </Canvas>
+                            </Border>
+
+                            <!-- Rayo giratorio: nace en la lente (100,60), gira sobre su extremo izquierdo -->
+                            <Border Canvas.Left="100" Canvas.Top="59" Width="92" Height="2"
+                                    RenderTransformOrigin="0,0.5" IsHitTestVisible="False"
+                                    Classes="os-sweep" Classes.opensaveactive="{Binding BusyState.IsOpenSaveLoaderActive}">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                        <GradientStop Offset="0" Color="#3B82F6"/>
+                                        <GradientStop Offset="1" Color="#003B82F6"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                        </Canvas>
+
+                        <!-- Progreso REAL: barra (Grid de dos columnas Star + StarWidthConverter,
+                             mismo patrón de siempre) + etapa actual y porcentaje debajo. -->
+                        <StackPanel Spacing="8">
+                            <Border Height="6" Background="#E5E5EA" CornerRadius="3" ClipToBounds="True">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="{Binding BusyState.Progress, Converter={StaticResource StarWidthConverter}}"/>
+                                        <ColumnDefinition Width="{Binding BusyState.InverseProgress, Converter={StaticResource StarWidthConverter}}"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Height="6" Background="#3B82F6" CornerRadius="3"/>
+                                </Grid>
+                            </Border>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="{Binding BusyState.Stage}" FontSize="12"
+                                           Foreground="#6B6B70" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Grid.Column="1" Text="{Binding BusyState.ProgressText}" FontSize="12"
+                                           Foreground="#6B6B70" HorizontalAlignment="Right"/>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Border>
+
+            <!-- ── Loader 3 (BusyKind.CreatePokemon) — huevo que eclosiona y revela la
+                 especie recién elegida. Ver mockups/loading_screens/ para el boceto; timings
+                 1:1 con el CSS original, ver Style.Animations "l3-*" en App.axaml. Mismas dos
+                 capas que los overlays de arriba (dim de ventana completa + card blanco que
+                 se ajusta al contenido). El huevo se arma con primitivas de Avalonia en vez
+                 de SVG embebido (no soportado directo) — un Ellipse para el cascarón + 3
+                 Ellipse chicas para las manchas + 2 Path para las grietas, mismas
+                 coordenadas que el boceto SVG original (viewBox 60x60), reescaladas a 64px. ── -->
+            <Border IsVisible="{Binding BusyState.ShowCreatePokemonLoader}"
+                    Background="#33000000">
+                <Border Background="White" BorderBrush="#DCDCE0" BorderThickness="1"
+                        CornerRadius="14" Padding="28,24" BoxShadow="0 10 24 0 #38000000"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                        <TextBlock Text="{Binding BusyState.Message}" FontSize="16" FontWeight="SemiBold"
+                                   Foreground="#1A1A1A" HorizontalAlignment="Center"/>
+
+                        <!-- Huevo (tiembla + se desvanece 85%-92%) — Border envuelve el
+                             cascarón entero para poder animar Angle+Opacity juntos con un
+                             solo RenderTransform simple, ver nota de patrón en App.axaml. -->
+                        <Grid Width="72" Height="72">
+                            <Border Classes="l3-egg-shake" Classes.loader3active="{Binding BusyState.IsCreatePokemonLoaderActive}"
+                                    RenderTransformOrigin="0.5,0.5">
+                                <Canvas Width="60" Height="60">
+                                    <Ellipse Canvas.Left="8" Canvas.Top="8" Width="44" Height="52"
+                                             Fill="#F5E6C8" Stroke="#C9B183" StrokeThickness="2"/>
+                                    <Ellipse Canvas.Left="19" Canvas.Top="18" Width="6" Height="8" Fill="#E0CDA0"/>
+                                    <Ellipse Canvas.Left="35.5" Canvas.Top="26.5" Width="5" Height="7" Fill="#E0CDA0"/>
+                                    <Ellipse Canvas.Left="25" Canvas.Top="38" Width="6" Height="8" Fill="#E0CDA0"/>
+                                    <Path Classes="l3-crack-1" Classes.loader3active="{Binding BusyState.IsCreatePokemonLoaderActive}"
+                                          Data="M18,20 L24,30 L16,34" Stroke="#8A745A" StrokeThickness="1.5"/>
+                                    <Path Classes="l3-crack-2" Classes.loader3active="{Binding BusyState.IsCreatePokemonLoaderActive}"
+                                          Data="M40,18 L34,26 L42,32" Stroke="#8A745A" StrokeThickness="1.5"/>
+                                </Canvas>
+                            </Border>
+
+                            <!-- Revelación: sprite dinámico de la especie recién elegida
+                                 (Loader3EggRevealSprite, resuelto en MainWindowViewModel al
+                                 confirmar especie), oculto hasta 85% del ciclo. -->
+                            <Image Source="{Binding Loader3EggRevealSprite}" Stretch="Uniform"
+                                   Width="72" Height="72"
+                                   Classes="l3-reveal" Classes.loader3active="{Binding BusyState.IsCreatePokemonLoaderActive}"
+                                   RenderTransformOrigin="0.5,0.5"/>
+                        </Grid>
+
+                        <!-- Barra de progreso — a propósito SÍ atada al ciclo fijo de 2.2s,
+                             que es la MISMA duración que el mínimo artificial de espera real
+                             (ver MainWindowViewModel.OnSpeciesChosen y nota larga en
+                             App.axaml) — único loader de los tres donde esto es intencional. -->
+                    <Border Width="160" Height="6" Background="#E5E5EA" CornerRadius="3"
+                            ClipToBounds="True">
+                        <Border HorizontalAlignment="Left" Height="6" Background="#3B82F6"
+                                CornerRadius="3" Classes="l3-progress-fill" Classes.loader3active="{Binding BusyState.IsCreatePokemonLoaderActive}"/>
+                    </Border>
+                    </StackPanel>
+                </Border>
+            </Border>
+
+            <!-- ── Loader 4 (BusyKind.VerifyLegality) — Pokédex escaneando. Un mismo Kind
+                 para dos disparadores (PokemonEditorViewModel.LoadLegalityAsync,
+                 MainWindowViewModel.ConfirmExportAsync) — ver mockups/legality_scan/. Ícono
+                 de Pokédex armado con primitivas (Rectangle/Ellipse), mismas coordenadas que
+                 el boceto SVG original (viewBox 66x78) — no hay sprite ni asset de Pokédex
+                 en el proyecto (confirmado, no es una entidad con species_id). Barra de
+                 progreso con el MISMO patrón real (Grid de columnas Star + StarWidthConverter)
+                 que el Loader 1 — a diferencia de ese, acá el progreso SÍ puede ser real
+                 (BuildSummary reporta avance por Pokémon analizado al exportar) o quedar en
+                 cero sin más (verificar un solo Pokémon es atómico, sin granularidad) —
+                 ambos casos son honestos, no se simula progreso donde no lo hay. ── -->
+            <Border IsVisible="{Binding BusyState.ShowVerifyLegalityLoader}"
+                    Background="#33000000">
+                <Border Background="White" BorderBrush="#DCDCE0" BorderThickness="1"
+                        CornerRadius="14" Padding="28,24" BoxShadow="0 10 24 0 #38000000"
+                        Width="300" ClipToBounds="True"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                        <TextBlock Text="{Binding BusyState.Message}" FontSize="16" FontWeight="SemiBold"
+                                   Foreground="#1A1A1A" HorizontalAlignment="Center"/>
+
+                        <Canvas Width="140" Height="80">
+                            <!-- Pokédex — traslación Y en el Border exterior, rotación en el
+                                 interior (dos transforms del boceto, separados en dos
+                                 elementos, ver nota en App.axaml). -->
+                            <Border Canvas.Left="0" Canvas.Top="1" Width="66" Height="78"
+                                    Classes="pkdx-bob-y" Classes.pokedexactive="{Binding BusyState.IsVerifyLegalityLoaderActive}">
+                                <Border Classes="pkdx-bob-rotate" Classes.pokedexactive="{Binding BusyState.IsVerifyLegalityLoaderActive}">
+                                    <Canvas Width="66" Height="78">
+                                        <Rectangle Canvas.Left="6" Canvas.Top="8" Width="54" Height="62"
+                                                   RadiusX="8" RadiusY="8" Fill="#D9584E"/>
+                                        <Rectangle Canvas.Left="6" Canvas.Top="34" Width="54" Height="6" Fill="#4A1B0C"/>
+                                        <Ellipse Canvas.Left="23" Canvas.Top="14" Width="20" Height="20"
+                                                 Fill="#E6F1FB" Stroke="#0C447C" StrokeThickness="2.5"
+                                                 Classes="pkdx-lens" Classes.pokedexactive="{Binding BusyState.IsVerifyLegalityLoaderActive}"/>
+                                        <Ellipse Canvas.Left="29" Canvas.Top="20" Width="8" Height="8" Fill="#3B82F6"
+                                                 Classes="pkdx-lens" Classes.pokedexactive="{Binding BusyState.IsVerifyLegalityLoaderActive}"/>
+                                        <Rectangle Canvas.Left="14" Canvas.Top="48" Width="16" Height="4"
+                                                   RadiusX="2" RadiusY="2" Fill="#F5C4B3"/>
+                                        <Rectangle Canvas.Left="14" Canvas.Top="56" Width="24" Height="4"
+                                                   RadiusX="2" RadiusY="2" Fill="#F5C4B3"/>
+                                    </Canvas>
+                                </Border>
+                            </Border>
+
+                            <!-- Pokémon siendo escaneado — CORREGIDO tras feedback: antes era
+                                 una silueta genérica fija. Ahora es el sprite real
+                                 (BusyState.CurrentScanSprite), con una revelación corta cada
+                                 vez que cambia de especie — ver Style
+                                 "Image.pkdx-scan-sprite.pkdxrevealactive" en App.axaml. -->
+                            <Image Canvas.Left="88" Canvas.Top="10" Width="48" Height="48"
+                                   Opacity="1" Stretch="Uniform"
+                                   Source="{Binding BusyState.CurrentScanSprite}"
+                                   Classes="pkdx-scan-sprite" Classes.pkdxrevealactive="{Binding BusyState.IsScanSpriteRevealing}"/>
+
+                            <!-- Haz de escaneo -->
+                            <Border Canvas.Left="78" Canvas.Top="17" Width="64" Height="2"
+                                    Background="#3B82F6"
+                                    Classes="pkdx-scan-beam" Classes.pokedexactive="{Binding BusyState.IsVerifyLegalityLoaderActive}"/>
+                        </Canvas>
+
+                        <!-- Checklist — mismas 4 categorías que LegalityMessageMapper (ver
+                             .md), no texto inventado. -->
+                        <StackPanel Spacing="6" HorizontalAlignment="Left" Width="220">
+                            <StackPanel Orientation="Horizontal" Spacing="8"
+                                        Classes="pkdx-check-1" Classes.pokedexactive="{Binding BusyState.IsVerifyLegalityLoaderActive}">
+                                <Border Width="16" Height="16" CornerRadius="8" Background="#E6F1FB">
+                                    <TextBlock Text="✓" FontSize="11" Foreground="#0C447C" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="{Binding Loc[Loader_Verify_PidNature]}" FontSize="13" Foreground="#6B6B70" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="8"
+                                        Classes="pkdx-check-2" Classes.pokedexactive="{Binding BusyState.IsVerifyLegalityLoaderActive}">
+                                <Border Width="16" Height="16" CornerRadius="8" Background="#E6F1FB">
+                                    <TextBlock Text="✓" FontSize="11" Foreground="#0C447C" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="{Binding Loc[Loader_Verify_IvsStats]}" FontSize="13" Foreground="#6B6B70" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="8"
+                                        Classes="pkdx-check-3" Classes.pokedexactive="{Binding BusyState.IsVerifyLegalityLoaderActive}">
+                                <Border Width="16" Height="16" CornerRadius="8" Background="#E6F1FB">
+                                    <TextBlock Text="✓" FontSize="11" Foreground="#0C447C" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="{Binding Loc[Loader_Verify_Moves]}" FontSize="13" Foreground="#6B6B70" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="8"
+                                        Classes="pkdx-check-4" Classes.pokedexactive="{Binding BusyState.IsVerifyLegalityLoaderActive}">
+                                <Border Width="16" Height="16" CornerRadius="8" Background="#E6F1FB">
+                                    <TextBlock Text="✓" FontSize="11" Foreground="#0C447C" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="{Binding Loc[Loader_Verify_Origin]}" FontSize="13" Foreground="#6B6B70" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Barra de progreso real (o vacía, sin simular nada — ver nota de
+                             arriba) — mismo patrón que el Loader 1 (Grid de columnas Star +
+                             StarWidthConverter, ver comentario largo ahí). -->
+                        <Border Width="160" Height="6" Background="#E5E5EA" CornerRadius="3"
+                                ClipToBounds="True">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="{Binding BusyState.Progress, Converter={StaticResource StarWidthConverter}}"/>
+                                    <ColumnDefinition Width="{Binding BusyState.InverseProgress, Converter={StaticResource StarWidthConverter}}"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Height="6" Background="#3B82F6" CornerRadius="3"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Border>
+
+            <!-- ── Loader 5 (BusyKind.SpeciesCatalog) — Pokédex quieta + barra de progreso,
+                 para cuando el modal de crear Pokémon (SpeciesPickerViewModel) todavía tiene
+                 que esperar su prefetch en background (ver
+                 MainWindowViewModel.OpenSpeciesPicker) — típicamente solo el primer click
+                 tras abrir un save de Gen 5+ (más especies = más tiempo de prefetch); en
+                 clicks siguientes el prefetch ya está listo y este overlay ni se muestra.
+                 Reusa el MISMO ícono de Pokédex que el Loader 4 (selectores por clase, no
+                 atados a un Kind — ver App.axaml), sin el haz de escaneo/sprite/checklist
+                 (no aplican acá, no se está analizando nada) — a propósito bien simple, es
+                 solo "esperá un toque mientras cargo el catálogo". Progreso REAL (no
+                 decorativo): SpeciesPickerViewModel.PreloadProgress cuenta especies ya
+                 procesadas / total, igual que el Loader 1 con los pasos de abrir el save. ── -->
+            <Border IsVisible="{Binding BusyState.ShowSpeciesCatalogLoader}"
+                    Background="#33000000">
+                <Border Background="White" BorderBrush="#DCDCE0" BorderThickness="1"
+                        CornerRadius="14" Padding="28,24" BoxShadow="0 10 24 0 #38000000"
+                        Width="260" ClipToBounds="True"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                        <TextBlock Text="{Binding BusyState.Message}" FontSize="16" FontWeight="SemiBold"
+                                   Foreground="#1A1A1A" HorizontalAlignment="Center"/>
+
+                        <Canvas Width="66" Height="80" HorizontalAlignment="Center">
+                            <Border Canvas.Left="0" Canvas.Top="1" Width="66" Height="78"
+                                    Classes="pkdx5-bob-y" Classes.pokedexactive="{Binding BusyState.IsSpeciesCatalogLoaderActive}">
+                                <Border Classes="pkdx5-bob-rotate" Classes.pokedexactive="{Binding BusyState.IsSpeciesCatalogLoaderActive}">
+                                    <Canvas Width="66" Height="78">
+                                        <Rectangle Canvas.Left="6" Canvas.Top="8" Width="54" Height="62"
+                                                   RadiusX="8" RadiusY="8" Fill="#D9584E"/>
+                                        <Rectangle Canvas.Left="6" Canvas.Top="34" Width="54" Height="6" Fill="#4A1B0C"/>
+                                        <Ellipse Canvas.Left="23" Canvas.Top="14" Width="20" Height="20"
+                                                 Fill="#E6F1FB" Stroke="#0C447C" StrokeThickness="2.5"/>
+                                        <Ellipse Canvas.Left="29" Canvas.Top="20" Width="8" Height="8" Fill="#3B82F6"
+                                                 Classes="pkdx5-lens" Classes.pokedexactive="{Binding BusyState.IsSpeciesCatalogLoaderActive}"/>
+                                        <Rectangle Canvas.Left="14" Canvas.Top="48" Width="16" Height="4"
+                                                   RadiusX="2" RadiusY="2" Fill="#F5C4B3"
+                                                   Classes="pkdx5-line-a" Classes.pokedexactive="{Binding BusyState.IsSpeciesCatalogLoaderActive}"/>
+                                        <Rectangle Canvas.Left="14" Canvas.Top="56" Width="24" Height="4"
+                                                   RadiusX="2" RadiusY="2" Fill="#F5C4B3"
+                                                   Classes="pkdx5-line-b" Classes.pokedexactive="{Binding BusyState.IsSpeciesCatalogLoaderActive}"/>
+                                    </Canvas>
+                                </Border>
+                            </Border>
+                        </Canvas>
+
+                        <!-- Barra de progreso real — mismo patrón (Grid de columnas Star +
+                             StarWidthConverter) que Loader 1 y Loader 4. -->
+                        <Border Width="160" Height="6" Background="#E5E5EA" CornerRadius="3"
+                                ClipToBounds="True">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="{Binding BusyState.Progress, Converter={StaticResource StarWidthConverter}}"/>
+                                    <ColumnDefinition Width="{Binding BusyState.InverseProgress, Converter={StaticResource StarWidthConverter}}"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Height="6" Background="#3B82F6" CornerRadius="3"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Border>
+
+
+            <!-- Menú Ayuda: Acerca de, Atajos y Reportar un error (mockups/help_about). -->
+            <views:HelpOverlay DataContext="{Binding Help}"/>
+
+        </Grid>
+
+    </DockPanel>
+
+</Window>

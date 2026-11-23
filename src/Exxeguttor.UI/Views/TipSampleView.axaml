@@ -1,0 +1,221 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Exxeguttor.UI.ViewModels"
+             xmlns:objconv="using:Avalonia.Data.Converters"
+             x:Class="Exxeguttor.UI.Views.TipSampleView"
+             x:DataType="vm:TipPageViewModel"
+             IsHitTestVisible="False">
+
+    <!-- Miniatura de lo que describe un tip: réplica no interactiva de un elemento real de la app
+         (mismos colores y textos traducidos). Se elige con el campo "sample" del tip (tips_XX.json). -->
+    <UserControl.Styles>
+        <Style Selector="Border.s-chip">
+            <Setter Property="CornerRadius" Value="8"/><Setter Property="Padding" Value="9,4"/>
+            <Setter Property="BorderThickness" Value="1"/><Setter Property="Margin" Value="3,2"/>
+        </Style>
+        <Style Selector="Border.s-bad"><Setter Property="Background" Value="#FBEAEA"/><Setter Property="BorderBrush" Value="#C0392B"/></Style>
+        <Style Selector="Border.s-warn"><Setter Property="Background" Value="#FFF6E0"/><Setter Property="BorderBrush" Value="#B8860B"/></Style>
+        <Style Selector="Border.s-plain"><Setter Property="Background" Value="#F4F7FB"/><Setter Property="BorderBrush" Value="#CBD5E1"/></Style>
+        <Style Selector="Border.s-on"><Setter Property="Background" Value="#E6F1FB"/><Setter Property="BorderBrush" Value="#3B82F6"/></Style>
+        <Style Selector="Border.s-green"><Setter Property="Background" Value="#1D9E75"/><Setter Property="BorderBrush" Value="#15805D"/><Setter Property="CornerRadius" Value="14"/><Setter Property="Padding" Value="10,4"/></Style>
+        <Style Selector="Border.s-dark"><Setter Property="Background" Value="#1C1C1F"/><Setter Property="BorderBrush" Value="#1C1C1F"/><Setter Property="CornerRadius" Value="4"/><Setter Property="Padding" Value="10,4"/></Style>
+        <Style Selector="Border.s-key">
+            <Setter Property="Background" Value="#F1F4F8"/><Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="BorderThickness" Value="1,1,1,2"/><Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="8,2"/><Setter Property="Margin" Value="2,0"/>
+        </Style>
+        <Style Selector="TextBlock.s-t"><Setter Property="FontSize" Value="11"/><Setter Property="VerticalAlignment" Value="Center"/></Style>
+        <Style Selector="TextBlock.s-sep"><Setter Property="FontSize" Value="12"/><Setter Property="Opacity" Value="0.5"/><Setter Property="VerticalAlignment" Value="Center"/><Setter Property="Margin" Value="2,0"/></Style>
+        <Style Selector="Path.s-wrench"><Setter Property="Fill" Value="White"/><Setter Property="Stretch" Value="Uniform"/><Setter Property="Width" Value="11"/><Setter Property="Height" Value="11"/><Setter Property="VerticalAlignment" Value="Center"/></Style>
+    </UserControl.Styles>
+
+    <Panel HorizontalAlignment="Center">
+
+        <!-- steps: orden de resolución del tab Legal -->
+        <StackPanel Orientation="Horizontal" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=steps}">
+            <Border Classes="s-chip s-bad"><TextBlock Classes="s-t" Text="{Binding Loc[Legality_Cat_Encounter]}" Foreground="#C0392B" FontWeight="SemiBold"/></Border>
+            <TextBlock Classes="s-sep" Text="›"/>
+            <Border Classes="s-chip s-plain"><TextBlock Classes="s-t" Text="{Binding Loc[Legality_Cat_Form]}"/></Border>
+            <TextBlock Classes="s-sep" Text="›"/>
+            <Border Classes="s-chip s-plain"><TextBlock Classes="s-t" Text="{Binding Loc[Legality_Cat_Moves]}"/></Border>
+            <TextBlock Classes="s-sep" Text="›"/>
+            <Border Classes="s-chip s-plain"><TextBlock Classes="s-t" Text="{Binding Loc[Legality_Cat_Nickname]}"/></Border>
+        </StackPanel>
+
+        <!-- severity -->
+        <StackPanel Orientation="Horizontal" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=severity}">
+            <Border Classes="s-chip s-bad"><TextBlock Classes="s-t" Text="{Binding Loc[Legality_Severity_Invalid]}" Foreground="#C0392B" FontWeight="SemiBold"/></Border>
+            <Border Classes="s-chip s-warn"><TextBlock Classes="s-t" Text="{Binding Loc[Legality_Severity_Fishy]}" Foreground="#8A6100" FontWeight="SemiBold"/></Border>
+        </StackPanel>
+
+        <!-- autofix / retry -->
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <StackPanel.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                    <Binding Path="Sample" Converter="{x:Static objconv:ObjectConverters.Equal}" ConverterParameter="autofix"/>
+                    <Binding Path="Sample" Converter="{x:Static objconv:ObjectConverters.Equal}" ConverterParameter="retry"/>
+                </MultiBinding>
+            </StackPanel.IsVisible>
+            <Border Classes="s-green">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Path Classes="s-wrench" Data="M22.7,19 L13.6,9.9 C14.5,7.6 14,4.9 12.1,3 C10.1,1 7.1,0.6 4.7,1.7 L9,6 L6,9 L1.7,4.7 C0.6,7.1 1.1,10.1 3.1,12.1 C5,14 7.7,14.5 10,13.6 L19.1,22.7 C19.5,23.1 20.1,23.1 20.5,22.7 L22.8,20.4 C23.2,20 23.2,19.4 22.7,19 Z"/>
+                    <TextBlock Classes="s-t" Text="{Binding Loc[Legality_AutoFix]}" Foreground="White" FontWeight="SemiBold" FontSize="10"/>
+                </StackPanel>
+            </Border>
+            <Border Classes="s-chip s-plain" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=retry}">
+                <TextBlock Classes="s-t" Text="{Binding Loc[AutoFix_Action_Retry]}"/>
+            </Border>
+        </StackPanel>
+
+        <!-- aviso Buscar IVs legales -->
+        <Border Classes="s-chip" Width="330" Padding="8,6" Background="#FFF4EC" BorderBrush="#F1C7A8"
+                IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=ivbanner}">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Border Width="14" Height="14" CornerRadius="3" Background="#E30909" BorderBrush="#7A0000" BorderThickness="1.2" Margin="0,0,8,0" VerticalAlignment="Center">
+                    <TextBlock Text="!" FontSize="10" FontWeight="Black" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Grid.Column="1" Text="{Binding Loc[IvSolver_Banner_Text]}" FontSize="10" Foreground="#7C2D05" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                <Border Grid.Column="2" Classes="s-dark" Margin="8,0,0,0"><TextBlock Classes="s-t" Text="{Binding Loc[IvSolver_Banner_Button]}" Foreground="White" FontSize="10"/></Border>
+            </Grid>
+        </Border>
+
+        <!-- botones del modal de IVs -->
+        <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=ivbuttons}">
+            <Border Classes="s-dark"><TextBlock Classes="s-t" Text="{Binding Loc[IvSolver_Action_UseClosest]}" Foreground="White"/></Border>
+            <Border Classes="s-chip s-plain"><TextBlock Classes="s-t" Text="{Binding Loc[IvSolver_Action_BackToOriginal]}"/></Border>
+        </StackPanel>
+
+        <!-- recrear origen / ir a movimientos (mismo botón verde del tab Legal) -->
+        <Border Classes="s-green">
+            <Border.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                    <Binding Path="Sample" Converter="{x:Static objconv:ObjectConverters.Equal}" ConverterParameter="recreate"/>
+                    <Binding Path="Sample" Converter="{x:Static objconv:ObjectConverters.Equal}" ConverterParameter="gomoves"/>
+                </MultiBinding>
+            </Border.IsVisible>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <Path Classes="s-wrench" Data="M22.7,19 L13.6,9.9 C14.5,7.6 14,4.9 12.1,3 C10.1,1 7.1,0.6 4.7,1.7 L9,6 L6,9 L1.7,4.7 C0.6,7.1 1.1,10.1 3.1,12.1 C5,14 7.7,14.5 10,13.6 L19.1,22.7 C19.5,23.1 20.1,23.1 20.5,22.7 L22.8,20.4 C23.2,20 23.2,19.4 22.7,19 Z"/>
+                <TextBlock Classes="s-t" FontSize="10" Foreground="White" FontWeight="SemiBold"
+                           Text="{Binding Loc[Recreate_Row_Button]}" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=recreate}"/>
+                <TextBlock Classes="s-t" FontSize="10" Foreground="White" FontWeight="SemiBold"
+                           Text="{Binding Loc[Recreate_NoFix_GoMoves]}" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=gomoves}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- métodos de aprendizaje -->
+        <StackPanel Orientation="Horizontal" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=methods}">
+            <Border Classes="s-chip s-plain"><TextBlock Classes="s-t" Text="{Binding Loc[Move_Method_LevelUp]}"/></Border>
+            <Border Classes="s-chip s-plain"><TextBlock Classes="s-t" Text="{Binding Loc[Move_Method_TM]}"/></Border>
+            <Border Classes="s-chip s-plain"><TextBlock Classes="s-t" Text="{Binding Loc[Move_Method_Egg]}"/></Border>
+            <Border Classes="s-chip s-plain"><TextBlock Classes="s-t" Text="{Binding Loc[Move_Method_Tutor]}"/></Border>
+        </StackPanel>
+
+        <!-- apodo + detalle técnico -->
+        <StackPanel Spacing="6" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=nickname}">
+            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                <Border Width="14" Height="14" CornerRadius="3" Background="#3B82F6" VerticalAlignment="Center">
+                    <TextBlock Text="✓" FontSize="10" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Classes="s-t" Text="{Binding Loc[Info_Nickname]}"/>
+            </StackPanel>
+            <TextBlock Classes="s-t" HorizontalAlignment="Center" Opacity="0.7" Text="{Binding Loc[Legal_TechDetail]}"/>
+        </StackPanel>
+
+        <!-- exportar: aviso de cambios sin exportar -->
+        <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=export}">
+            <Border Classes="s-chip s-warn"><TextBlock Classes="s-t" Text="{Binding Loc[Status_Edit_Dirty]}" Foreground="#8A6100"/></Border>
+            <Border Classes="s-chip s-on"><TextBlock Classes="s-t" Text="{Binding Loc[Toolbar_Export_Tip]}"/></Border>
+        </StackPanel>
+
+        <!-- revisión de exportación -->
+        <Border Classes="s-chip s-on" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=review}">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <Border Width="14" Height="14" CornerRadius="3" Background="#3B82F6" VerticalAlignment="Center">
+                    <TextBlock Text="✓" FontSize="10" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Classes="s-t" Text="{Binding Loc[Review_Title]}" FontWeight="SemiBold"/>
+            </StackPanel>
+        </Border>
+
+        <!-- deshacer liberación (toast) -->
+        <Border Background="#1C1C1F" CornerRadius="6" Padding="12,7" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=undo}">
+            <StackPanel Orientation="Horizontal" Spacing="14">
+                <TextBlock Classes="s-t" Foreground="White" Text="{Binding Loc[Release_Tip]}"/>
+                <TextBlock Classes="s-t" Foreground="#93C5FD" Text="{Binding Loc[Release_Undo]}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- indicador de idiomas -->
+        <Border Classes="s-chip s-plain" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=langs}">
+            <TextBlock Classes="s-t" FontFamily="monospace" Text="UI ES · PK EN"/>
+        </Border>
+
+        <!-- teclas: F1 / atajos -->
+        <StackPanel Orientation="Horizontal" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=keys}">
+            <Border Classes="s-key"><TextBlock Classes="s-t" FontFamily="monospace" Text="F1"/></Border>
+            <TextBlock Classes="s-sep" Text="·"/>
+            <Border Classes="s-key"><TextBlock Classes="s-t" FontFamily="monospace" Text="Ctrl"/></Border>
+            <TextBlock Classes="s-sep" Text="+"/>
+            <Border Classes="s-key"><TextBlock Classes="s-t" FontFamily="monospace" Text="O / S / W"/></Border>
+        </StackPanel>
+
+        <!-- buscar -->
+        <Border Classes="s-chip s-plain" Padding="12,5" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=search}">
+            <TextBlock Classes="s-t" Text="🔍  Pikachu · 25"/>
+        </Border>
+
+        <!-- Shift + flechas -->
+        <StackPanel Orientation="Horizontal" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=shift}">
+            <Border Classes="s-key"><TextBlock Classes="s-t" FontFamily="monospace" Text="Shift"/></Border>
+            <TextBlock Classes="s-sep" Text="+"/>
+            <Border Classes="s-key"><TextBlock Classes="s-t" FontFamily="monospace" Text="←"/></Border>
+            <Border Classes="s-key"><TextBlock Classes="s-t" FontFamily="monospace" Text="→"/></Border>
+        </StackPanel>
+
+        <!-- pestañas del editor -->
+        <Border Classes="s-chip s-on" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=tab-ivs}"><TextBlock Classes="s-t" FontWeight="SemiBold" Text="{Binding Loc[Tab_IvsEvs]}"/></Border>
+        <Border Classes="s-chip s-on" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=tab-sets}"><TextBlock Classes="s-t" FontWeight="SemiBold" Text="{Binding Loc[Tab_Sets]}"/></Border>
+        <Border Classes="s-chip s-on" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=tab-special}"><TextBlock Classes="s-t" FontWeight="SemiBold" Text="{Binding Loc[Tab_Special]}"/></Border>
+        <Border Classes="s-chip s-on" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=tab-ribbons}"><TextBlock Classes="s-t" FontWeight="SemiBold" Text="{Binding Loc[Tab_Ribbons]}"/></Border>
+
+        <!-- buscador de especies -->
+        <Border Classes="s-chip s-plain" Padding="12,5" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=picker}">
+            <TextBlock Classes="s-t" Text="{Binding Loc[Picker_Search_Placeholder]}" Opacity="0.7"/>
+        </Border>
+
+        <!-- liberar: botón y aviso de party -->
+        <Border Classes="s-chip s-bad" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=release}">
+            <TextBlock Classes="s-t" Foreground="#C0392B" FontWeight="SemiBold" Text="{Binding Loc[Release_Tip]}"/>
+        </Border>
+        <Border Classes="s-chip s-warn" MaxWidth="330" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=releaseblock}">
+            <TextBlock Classes="s-t" TextWrapping="Wrap" Foreground="#8A6100" Text="{Binding Loc[Release_DisabledTip]}"/>
+        </Border>
+
+        <!-- mochila: categorías -->
+        <StackPanel Orientation="Horizontal" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=bagtiles}">
+            <Border Classes="s-chip s-on"><TextBlock Classes="s-t" Text="{Binding Loc[Bag_Pouch_Items]}"/></Border>
+            <Border Classes="s-chip s-plain"><TextBlock Classes="s-t" Text="{Binding Loc[Bag_Pouch_Medicine]}"/></Border>
+            <Border Classes="s-chip s-plain"><TextBlock Classes="s-t" Text="{Binding Loc[Bag_Pouch_Balls]}"/></Border>
+            <Border Classes="s-chip s-plain"><TextBlock Classes="s-t" Text="{Binding Loc[Bag_Pouch_TMHMs]}"/></Border>
+        </StackPanel>
+
+        <!-- mochila: fila de objeto (− cantidad +) y MAX -->
+        <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=bagrow}">
+            <Border Classes="s-chip s-plain" Padding="10,2"><TextBlock Classes="s-t" FontSize="14" Text="−"/></Border>
+            <Border Classes="s-chip s-on" Padding="14,4"><TextBlock Classes="s-t" FontFamily="monospace" Text="3"/></Border>
+            <Border Classes="s-chip s-plain" Padding="10,2"><TextBlock Classes="s-t" FontSize="14" Text="+"/></Border>
+        </StackPanel>
+        <Border Classes="s-dark" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=bagmax}">
+            <TextBlock Classes="s-t" Foreground="White" FontWeight="Bold" Text="{Binding Loc[Bag_Max]}"/>
+        </Border>
+
+        <!-- mochila: origen Mochila / PC -->
+        <StackPanel Orientation="Horizontal" IsVisible="{Binding Sample, Converter={x:Static objconv:ObjectConverters.Equal}, ConverterParameter=bagstore}">
+            <TextBlock Classes="s-sep" Text="◀"/>
+            <Border Classes="s-chip s-on"><TextBlock Classes="s-t" Text="{Binding Loc[Bag_Store_Bag]}"/></Border>
+            <TextBlock Classes="s-sep" Text="·"/>
+            <Border Classes="s-chip s-plain"><TextBlock Classes="s-t" Text="{Binding Loc[Bag_Store_Pc]}"/></Border>
+            <TextBlock Classes="s-sep" Text="▶"/>
+        </StackPanel>
+    </Panel>
+</UserControl>

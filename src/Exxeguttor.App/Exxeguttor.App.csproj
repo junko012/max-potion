@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Exxeguttor.App</RootNamespace>
+    <AssemblyName>Exxeguttor.App</AssemblyName>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <!-- Motor de saves de Pokémon (GPL-3.0) — 25.11.7: bump desde 25.2.23 para soporte de
+       edición de Gen 9 (SV) completo. Mismo net9.0, no requirió tocar TargetFramework.
+       Ver context.md para el análisis del changelog antes de este bump. -->
+  <ItemGroup>
+    <PackageReference Include="PKHeX.Core" Version="25.11.7" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.5" />
+  </ItemGroup>
+
+  <!-- Módulo Pokédex — lista exacta de especies soportadas por juego para Espada/Escudo,
+       Escarlata/Púrpura, Legends Arceus y Legends Z-A (estos SÍ recortan qué especies
+       tienen datos programados, a diferencia de Gen 1-7 donde alcanza con MaxSpeciesID).
+       Generado desde pokemon_dex_numbers.csv de PokeAPI, ver
+       screen-pokedex-album.md en exxeguttor-context para el detalle completo. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\restricted_dex_availability.json" />
+    <EmbeddedResource Include="Assets\uncreatable_species.json" />
+    <EmbeddedResource Include="Assets\uncreatable_forms.json" />
+    <EmbeddedResource Include="Assets\creatable_forms.json" />
+  </ItemGroup>
+
+  <!-- Los ctors internos de AppSettingsService/DataLanguageService (ruta temporal en tests). -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Exxeguttor.Tests" />
+  </ItemGroup>
+
+</Project>

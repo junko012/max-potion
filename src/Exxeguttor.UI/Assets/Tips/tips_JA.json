@@ -1,0 +1,242 @@
+[
+  {
+    "category": "一般",
+    "categoryId": "general",
+    "icon": "exportar",
+    "sample": "export",
+    "title": "エクスポートでファイルに書き込まれます",
+    "text": "エクスポートするまで、変更はこのセッション内にとどまります。ステータスバーに「未書き出しの変更あり」と表示されます。エクスポートすると実際のセーブデータが書き込まれます。"
+  },
+  {
+    "category": "一般",
+    "categoryId": "general",
+    "icon": "guardar",
+    "sample": "review",
+    "title": "エクスポート前に確認",
+    "text": "確認ウィンドウでは、編集したポケモン、トレーナー、バッグ、逃がした記録を1つずつ含めるか除外するかを選べます。"
+  },
+  {
+    "category": "一般",
+    "categoryId": "general",
+    "icon": "info",
+    "sample": "langs",
+    "title": "独立した2つの言語",
+    "text": "設定で「インターフェース言語」と、別に「ゲームデータの言語」（種族・技・どうぐなど）を選べます。ステータスバーの表示に両方が出ます。"
+  },
+  {
+    "category": "一般",
+    "categoryId": "general",
+    "icon": "teclado",
+    "sample": "keys",
+    "title": "F1 とショートカット",
+    "text": "F1 でこのガイドを開きます。ヘルプ → 「キーボードショートカット」に開く・保存・エクスポート・閉じるなどの一覧があります。"
+  },
+  {
+    "category": "作成",
+    "categoryId": "creation",
+    "icon": "buscar",
+    "sample": "search",
+    "title": "名前や番号で検索",
+    "text": "種族の選択画面は入力に合わせて絞り込みます。大文字小文字やアクセントは区別しません。"
+  },
+  {
+    "category": "作成",
+    "categoryId": "creation",
+    "icon": "teclado",
+    "sample": "shift",
+    "title": "キーボードで素早く移動",
+    "text": "Shift を押しながら矢印キーを使うと、結果の10%をまとめて移動できます。Home と End は両端へ移動します。"
+  },
+  {
+    "category": "作成",
+    "categoryId": "creation",
+    "icon": "pokemon",
+    "sample": "picker",
+    "title": "そのゲームにいる種族だけが表示されます",
+    "text": "選択画面では、セーブのゲームに存在しない種族や、合法的に作れない種族（例：Pokémon LEGENDS アルセウスのヒスイ図鑑外、ソード／シールドやスカーレット／バイオレットのガラル・パルデア図鑑外）が非表示になります。いない種族を探して時間を無駄にしません。"
+  },
+  {
+    "category": "作成",
+    "categoryId": "creation",
+    "icon": "advertencia",
+    "sample": "",
+    "title": "フォルムと特別なケース",
+    "text": "一部のフォルムは作成時に合法にできず（例：Pokémon LEGENDS Z-A のジガルデ10%／50%やサトシゲッコウガ）、表示されません。種族に合法性の警告が出たら、「合法」タブを開き、上から順に直してください。"
+  },
+  {
+    "category": "編集",
+    "categoryId": "editing",
+    "icon": "grafico",
+    "sample": "tab-ivs",
+    "title": "世代ごとの個体値・努力値",
+    "text": "第1〜2世代は DV（0〜15）と能力経験値（0〜65535）です。エディターがセーブのゲームに合わせて範囲を自動調整します。"
+  },
+  {
+    "category": "編集",
+    "categoryId": "editing",
+    "icon": "pokemon",
+    "sample": "tab-sets",
+    "title": "おすすめの型",
+    "text": "「セット」タブには、その種族の Smogon と Showdown の型（特性・持ち物・性格・努力値）が表示されます。"
+  },
+  {
+    "category": "編集",
+    "categoryId": "editing",
+    "icon": "chispa",
+    "sample": "tab-special",
+    "title": "メガ・Z・ダイマックス・テラスタル",
+    "text": "メガストーン、Zクリスタルなど各ゲームの仕組みは、持ち物欄ではなく「特殊」タブで選びます。"
+  },
+  {
+    "category": "編集",
+    "categoryId": "editing",
+    "icon": "medalla",
+    "sample": "tab-ribbons",
+    "title": "ゲームごとのリボン",
+    "text": "読み込んだセーブの世代に存在するリボンだけが表示されます。"
+  },
+  {
+    "category": "ボックスとバッグ",
+    "categoryId": "storage",
+    "icon": "limpiar",
+    "sample": "release",
+    "title": "ポケモンを逃がす",
+    "text": "逃がすボタンは各ポケモン（タマゴも）に付いています。確認ウィンドウが出て、持ち物があれば警告します。持ち物も一緒に失われます。"
+  },
+  {
+    "category": "ボックスとバッグ",
+    "categoryId": "storage",
+    "icon": "info",
+    "sample": "releaseblock",
+    "title": "手持ち唯一のポケモン",
+    "text": "ゲームは手持ちに最低1匹必要なため、逃がせません。別のポケモンを手持ちに移してからもう一度お試しください。"
+  },
+  {
+    "category": "ボックスとバッグ",
+    "categoryId": "storage",
+    "icon": "guardar",
+    "sample": "undo",
+    "title": "元に戻せる範囲",
+    "text": "エクスポートするまでは、通知の「元に戻す」か、編集の破棄で元に戻せます。手持ちやボックスが埋まった場合や、別のポケモンがその場所に入った場合は戻せません。"
+  },
+  {
+    "category": "ボックスとバッグ",
+    "categoryId": "storage",
+    "icon": "exportar",
+    "sample": "review",
+    "title": "エクスポート時に1匹だけ残す",
+    "text": "確認ウィンドウで逃がす操作のチェックを外すと、そのポケモンを残せます。ただし第3世代以降のボックスで、枠が空いたままで編集もない場合に限ります。手持ちや第1〜2世代のボックスでは、逃がすと他がずれるため「元に戻す」を使ってください。"
+  },
+  {
+    "category": "ボックスとバッグ",
+    "categoryId": "storage",
+    "icon": "mochila",
+    "sample": "bagtiles",
+    "title": "バッグのカテゴリー",
+    "text": "バッグはカテゴリー（どうぐ・くすり・ボール・わざマシンなど）に分かれ、セーブの世代によって内容が変わります。カテゴリーをタップすると、どうぐを確認・編集できます。"
+  },
+  {
+    "category": "ボックスとバッグ",
+    "categoryId": "storage",
+    "icon": "lapiz",
+    "sample": "bagrow",
+    "title": "どうぐの追加と削除",
+    "text": "各カテゴリーには、持っているかどうかに関係なく、合法なすべてのどうぐが並びます。個数を増やす（またはチェックを入れる）と追加され、0 にすると削除されます。"
+  },
+  {
+    "category": "ボックスとバッグ",
+    "categoryId": "storage",
+    "icon": "chispa",
+    "sample": "bagmax",
+    "title": "最大個数",
+    "text": "「MAX」は、そのゲームでのカテゴリーの上限まで個数を上げます。それより大きい数を入力しても、自動で上限に合わせられます。"
+  },
+  {
+    "category": "ボックスとバッグ",
+    "categoryId": "storage",
+    "icon": "buscar",
+    "sample": "bagstore",
+    "title": "検索とパソコンへの切り替え",
+    "text": "検索ボックスはカテゴリー内で名前や説明を絞り込みます。預かりシステムが別にある世代では、◀ ▶ でバッグとパソコンを切り替えられます。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "balanza",
+    "sample": "steps",
+    "title": "最初のステップから始める",
+    "text": "「合法」タブのステップは依存関係順です。出会い、出身ゲーム、タマゴが先です。上から順に直すと、下のエラーの多くは自然に消えます。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "advertencia",
+    "sample": "severity",
+    "title": "赤と琥珀色は別物",
+    "text": "「合法性を損なう」はポケモンを不正にします。「疑わしい・要確認」は警告で、珍しいが有効なケースの場合もあります。まず赤を優先してください。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "lapiz",
+    "sample": "autofix",
+    "title": "「自動修正」が表示されるとき",
+    "text": "アプリが正しい値（PID、捕獲率、レベル、出身）を計算できる場合のみです。それ以外は、強調表示された欄を触って、ステップの提案に従ってください。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "chispa",
+    "sample": "retry",
+    "title": "ランダムに探す修正もあります",
+    "text": "PID の修正は組み合わせを試すため、見つからないこともあります。失敗したら「再試行」を押してください。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "grafico",
+    "sample": "ivbanner",
+    "title": "個体値の編集で出会いが崩れる場合",
+    "text": "一部の出会いでは個体値がゲームのシードから決まり、手で変えると不正になります。そのときこの通知が表示されるので、合法な個体値の検索に使ってください。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "limpiar",
+    "sample": "ivbuttons",
+    "title": "完全に一致する組み合わせがないとき",
+    "text": "検索は最も近い組み合わせ、個体値の差、ほかに変わる点（性格・特性・性別・色違い）を示します。確認するまで何も適用されず、「元の個体値に戻す」で戻せます。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "pokemon",
+    "sample": "recreate",
+    "title": "出身が無効なら作り直す",
+    "text": "「有効な出会いで作り直す」は有効な出身を提案します。種族・レベル・技・ニックネーム・持ち物・トレーナー・個体値は保持され、場所やボールなどの捕獲データが変わります。適用前に変更点が表示されます。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "info",
+    "sample": "gomoves",
+    "title": "「自動修正なし」",
+    "text": "技に合う出会いがない場合は、合法な技に変えて（「わざへ移動」）もう一度確認してください。適合する出会いが見つかれば、修正が自動で提案されます。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "buscar",
+    "sample": "methods",
+    "title": "「習得わざ」で合法な技を確認",
+    "text": "「習得わざ」タブには、各技の習得方法（レベル・わざマシン・タマゴ・教え技・思い出し）と必要レベルが表示されます。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "tips",
+    "sample": "nickname",
+    "title": "ニックネーム・言語・技術的な詳細",
+    "text": "ニックネームがどの有効な言語とも一致しない場合は、ニックネーム欄の横のチェックボックスを入れてください。「技術的な詳細」では PKHeX の元のメッセージを確認でき、相談時に役立ちます。"
+  }
+]

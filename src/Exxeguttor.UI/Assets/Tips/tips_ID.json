@@ -1,0 +1,242 @@
+[
+  {
+    "category": "Umum",
+    "categoryId": "general",
+    "icon": "exportar",
+    "sample": "export",
+    "title": "Ekspor menulis file",
+    "text": "Selama belum diekspor, perubahan hanya ada di sesi ini: bilah status menampilkan “Perubahan belum diekspor”. Saat ekspor, save yang asli ditulis."
+  },
+  {
+    "category": "Umum",
+    "categoryId": "general",
+    "icon": "guardar",
+    "sample": "review",
+    "title": "Periksa sebelum mengekspor",
+    "text": "Modal tinjauan memungkinkan Anda menyertakan atau mengecualikan satu per satu setiap Pokémon yang diedit, pelatih, tas, dan pelepasan."
+  },
+  {
+    "category": "Umum",
+    "categoryId": "general",
+    "icon": "info",
+    "sample": "langs",
+    "title": "Dua bahasa yang independen",
+    "text": "Di Preferensi Anda memilih “Bahasa antarmuka” dan, terpisah, “Bahasa data game” (spesies, jurus, item…). Indikator di bilah status menampilkan keduanya."
+  },
+  {
+    "category": "Umum",
+    "categoryId": "general",
+    "icon": "teclado",
+    "sample": "keys",
+    "title": "F1 dan pintasan",
+    "text": "F1 membuka panduan ini. Bantuan → “Pintasan keyboard” berisi daftar lengkap: buka, simpan, ekspor, tutup…"
+  },
+  {
+    "category": "Pembuatan",
+    "categoryId": "creation",
+    "icon": "buscar",
+    "sample": "search",
+    "title": "Cari berdasarkan nama atau nomor",
+    "text": "Pemilih spesies memfilter saat Anda mengetik, tanpa membedakan huruf besar/kecil atau aksen."
+  },
+  {
+    "category": "Pembuatan",
+    "categoryId": "creation",
+    "icon": "teclado",
+    "sample": "shift",
+    "title": "Lompat cepat dengan keyboard",
+    "text": "Tahan Shift sambil menekan tombol panah untuk melompati 10 % hasil sekaligus. Home dan End menuju ujung."
+  },
+  {
+    "category": "Pembuatan",
+    "categoryId": "creation",
+    "icon": "pokemon",
+    "sample": "picker",
+    "title": "Hanya spesies dari game yang ditawarkan",
+    "text": "Pemilih menyembunyikan spesies yang tidak ada di game pada save atau tidak bisa dibuat secara legal (misalnya di luar Pokédex Hisui di Legends: Arceus, atau di luar Galar dan Paldea di Sword/Shield dan Scarlet/Violet)."
+  },
+  {
+    "category": "Pembuatan",
+    "categoryId": "creation",
+    "icon": "advertencia",
+    "sample": "",
+    "title": "Bentuk dan kasus khusus",
+    "text": "Beberapa bentuk tidak bisa dibuat legal saat dibuat (seperti Zygarde 10 %/50 % atau Ash-Greninja di Legends: Z-A) dan tidak muncul. Jika suatu spesies menampilkan peringatan legalitas, periksa tab “Legal” dan perbaiki dari atas ke bawah."
+  },
+  {
+    "category": "Pengeditan",
+    "categoryId": "editing",
+    "icon": "grafico",
+    "sample": "tab-ivs",
+    "title": "IV dan EV menurut generasi",
+    "text": "Di Gen 1–2 berupa DV (0–15) dan Stat Exp (0–65535). Editor menyesuaikan rentangnya sendiri sesuai game pada save."
+  },
+  {
+    "category": "Pengeditan",
+    "categoryId": "editing",
+    "icon": "pokemon",
+    "sample": "tab-sets",
+    "title": "Set yang direkomendasikan",
+    "text": "Tab “Set” menampilkan set Smogon dan Showdown untuk spesies, lengkap dengan ability, item, nature, dan EV."
+  },
+  {
+    "category": "Pengeditan",
+    "categoryId": "editing",
+    "icon": "chispa",
+    "sample": "tab-special",
+    "title": "Mega, Z, Dynamax, dan Tera",
+    "text": "Mega Stone, Z-Crystal, dan mekanik lain tiap game dipilih di tab “Spesial”, bukan di kolom item."
+  },
+  {
+    "category": "Pengeditan",
+    "categoryId": "editing",
+    "icon": "medalla",
+    "sample": "tab-ribbons",
+    "title": "Ribbon menurut game",
+    "text": "Hanya ribbon yang ada di generasi save yang dimuat yang ditampilkan."
+  },
+  {
+    "category": "Box dan tas",
+    "categoryId": "storage",
+    "icon": "limpiar",
+    "sample": "release",
+    "title": "Melepas Pokémon",
+    "text": "Tombol lepas ada pada setiap Pokémon, termasuk telur. Sebuah dialog meminta konfirmasi dan memperingatkan jika ia membawa item: item ikut hilang."
+  },
+  {
+    "category": "Box dan tas",
+    "categoryId": "storage",
+    "icon": "info",
+    "sample": "releaseblock",
+    "title": "Satu-satunya Pokémon di party",
+    "text": "Aplikasi tidak mengizinkan melepasnya, karena game memerlukan setidaknya satu di party. Pindahkan Pokémon lain ke party lalu coba lagi."
+  },
+  {
+    "category": "Box dan tas",
+    "categoryId": "storage",
+    "icon": "guardar",
+    "sample": "undo",
+    "title": "Batalkan ada batasnya",
+    "text": "Sebelum ekspor, Anda bisa membatalkan lewat “Batalkan” pada pemberitahuan atau dengan membuang suntingan. Tidak bisa jika party atau box sudah penuh, atau Pokémon lain menempati slot itu."
+  },
+  {
+    "category": "Box dan tas",
+    "categoryId": "storage",
+    "icon": "exportar",
+    "sample": "review",
+    "title": "Mempertahankan satu saat ekspor",
+    "text": "Di modal tinjauan Anda bisa menghapus centang pelepasan untuk mempertahankan Pokémon itu, tetapi hanya di box mulai Gen 3, dengan slot masih kosong dan tanpa suntingan padanya. Di party dan box Gen 1–2, melepas menggeser yang lain: gunakan “Batalkan”."
+  },
+  {
+    "category": "Box dan tas",
+    "categoryId": "storage",
+    "icon": "mochila",
+    "sample": "bagtiles",
+    "title": "Kategori tas",
+    "text": "Tas dibagi menjadi kategori (item, obat, ball, TM/HM…) dan kategori yang ada bergantung pada generasi save. Ketuk salah satu untuk melihat dan mengedit itemnya."
+  },
+  {
+    "category": "Box dan tas",
+    "categoryId": "storage",
+    "icon": "lapiz",
+    "sample": "bagrow",
+    "title": "Menambah atau menghapus item",
+    "text": "Setiap kategori mencantumkan semua item legal, baik Anda miliki atau tidak. Naikkan jumlahnya (atau centang item) untuk menambahkannya dan turunkan ke 0 untuk menghapusnya."
+  },
+  {
+    "category": "Box dan tas",
+    "categoryId": "storage",
+    "icon": "chispa",
+    "sample": "bagmax",
+    "title": "Jumlah maksimum",
+    "text": "“MAKS” menetapkan jumlah ke batas kategori itu di game tersebut. Jika Anda mengetik angka yang lebih besar, otomatis disesuaikan ke batas."
+  },
+  {
+    "category": "Box dan tas",
+    "categoryId": "storage",
+    "icon": "buscar",
+    "sample": "bagstore",
+    "title": "Mencari dan beralih ke PC",
+    "text": "Kotak pencarian memfilter berdasarkan nama atau deskripsi di dalam kategori. Pada generasi dengan penyimpanan terpisah, panah ◀ ▶ beralih antara Tas dan PC."
+  },
+  {
+    "category": "Legalitas",
+    "categoryId": "legality",
+    "icon": "balanza",
+    "sample": "steps",
+    "title": "Mulai dari langkah pertama",
+    "text": "Langkah di tab “Legal” diurutkan menurut ketergantungan: encounter, game asal, dan telur lebih dulu. Perbaiki dari atas ke bawah dan banyak error di bawahnya hilang sendiri."
+  },
+  {
+    "category": "Legalitas",
+    "categoryId": "legality",
+    "icon": "advertencia",
+    "sample": "severity",
+    "title": "Merah dan kuning tidak sama",
+    "text": "“Menghalangi legalitas” membuat Pokémon ilegal. “Mencurigakan, tinjau” hanyalah peringatan: bisa jadi kasus langka tetapi valid. Utamakan yang merah."
+  },
+  {
+    "category": "Legalitas",
+    "categoryId": "legality",
+    "icon": "lapiz",
+    "sample": "autofix",
+    "title": "Kapan “Perbaiki otomatis” muncul",
+    "text": "Hanya ketika aplikasi bisa menghitung nilai yang benar (PID, catch rate, level, atau asal). Untuk hal lain, sentuh kolom yang disorot dan ikuti saran langkahnya."
+  },
+  {
+    "category": "Legalitas",
+    "categoryId": "legality",
+    "icon": "chispa",
+    "sample": "retry",
+    "title": "Beberapa perbaikan mencari secara acak",
+    "text": "Memperbaiki PID mencoba kombinasi dan kadang tidak menemukan apa pun. Jika gagal, tekan “Coba lagi”."
+  },
+  {
+    "category": "Legalitas",
+    "categoryId": "legality",
+    "icon": "grafico",
+    "sample": "ivbanner",
+    "title": "IV yang diubah merusak encounter",
+    "text": "Pada beberapa encounter, IV berasal dari seed game, dan mengubahnya manual membuatnya ilegal. Saat itu pemberitahuan ini muncul: gunakan untuk mencari IV legal."
+  },
+  {
+    "category": "Legalitas",
+    "categoryId": "legality",
+    "icon": "limpiar",
+    "sample": "ivbuttons",
+    "title": "Jika tidak ada kombinasi yang persis",
+    "text": "Pencarian menampilkan yang paling mendekati, selisih poin IV-nya, dan apa lagi yang akan berubah (nature, ability, gender, shiny). Tidak ada yang diterapkan sebelum Anda konfirmasi; “Kembali ke IV asli” membatalkannya."
+  },
+  {
+    "category": "Legalitas",
+    "categoryId": "legality",
+    "icon": "pokemon",
+    "sample": "recreate",
+    "title": "Asal tidak valid: buat ulang",
+    "text": "“Buat ulang dengan encounter yang valid” menawarkan asal yang legal. Spesies, level, jurus, nama panggilan, item, pelatih, dan IV dipertahankan; tempat, ball, dan data tangkapan lain berubah. Anda melihat apa yang berubah sebelum menerapkan."
+  },
+  {
+    "category": "Legalitas",
+    "categoryId": "legality",
+    "icon": "info",
+    "sample": "gomoves",
+    "title": "“Tanpa perbaikan otomatis”",
+    "text": "Jika tidak ada encounter yang cocok dengan jurusnya, ganti dengan jurus legal (“Ke Gerakan”) lalu periksa lagi: jika encounter yang cocok muncul, perbaikannya ditawarkan otomatis."
+  },
+  {
+    "category": "Legalitas",
+    "categoryId": "legality",
+    "icon": "buscar",
+    "sample": "methods",
+    "title": "Jurus legal dengan “Learnset”",
+    "text": "Tab “Learnset” menunjukkan cara tiap jurus dipelajari (level, TM, telur, tutor, pengingat) dan mulai level berapa."
+  },
+  {
+    "category": "Legalitas",
+    "categoryId": "legality",
+    "icon": "tips",
+    "sample": "nickname",
+    "title": "Nama panggilan, bahasa, dan detail teknis",
+    "text": "Jika nama panggilan tidak cocok dengan bahasa valid mana pun, centang kotak di samping kolom nama panggilan. “Detail teknis” menampilkan pesan asli PKHeX, berguna saat meminta bantuan."
+  }
+]

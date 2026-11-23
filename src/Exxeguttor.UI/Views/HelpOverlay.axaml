@@ -1,0 +1,378 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Exxeguttor.UI.ViewModels"
+             x:Class="Exxeguttor.UI.Views.HelpOverlay"
+             x:DataType="vm:HelpViewModel"
+             IsVisible="{Binding IsAnyVisible}">
+
+    <UserControl.Styles>
+        <Style Selector="Button.help-tab">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#5A6B7D"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="CornerRadius" Value="0"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style Selector="Button.help-tab.active">
+            <Setter Property="Foreground" Value="#0C447C"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderBrush" Value="#3B82F6"/>
+        </Style>
+        <Style Selector="Button.help-link">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#2860B0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0,2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.help-primary">
+            <Setter Property="Background" Value="#3B82F6"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="Border.help-card">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="ClipToBounds" Value="True"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#DCDCE0"/>
+            <Setter Property="BoxShadow" Value="0 14 32 0 #40000000"/>
+        </Style>
+        <Style Selector="Border.help-head">
+            <Setter Property="Padding" Value="24,16,18,14"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="BorderBrush" Value="#DCDCE0"/>
+            <Setter Property="Background" Value="#E6F1FB"/>
+        </Style>
+        <Style Selector="TextBlock.help-h">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#0C447C"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="TextBlock.help-sec">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#5A6B7D"/>
+            <Setter Property="Margin" Value="0,12,0,4"/>
+        </Style>
+        <Style Selector="TextBlock.help-body">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#2B3A4A"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        <Style Selector="Border.help-kbd">
+            <Setter Property="Background" Value="#F1F4F8"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="BorderThickness" Value="1,1,1,2"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="8,2"/>
+        </Style>
+        <Style Selector="Border.help-notice">
+            <Setter Property="Background" Value="#E8F6EC"/>
+            <Setter Property="BorderBrush" Value="#9AD3AB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="0,10,0,0"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <Border Background="#66000000" PointerPressed="OnDimPressed"/>
+
+        <!-- ═════════ Acerca de ═════════ -->
+        <Border Classes="help-card" Width="600" IsVisible="{Binding IsAboutVisible}">
+            <StackPanel>
+                <Border Classes="help-head">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Image Width="30" Height="30" Margin="0,0,10,0" Source="avares://maxpotion/Assets/maxpotion.png"/>
+                        <TextBlock Grid.Column="1" Classes="help-h" Text="{Binding Loc[About_Title]}"/>
+                        <Button Grid.Column="2" Content="✕" Padding="6,4" Background="Transparent"
+                                Foreground="#2860B0" BorderThickness="0" Command="{Binding CloseCommand}"/>
+                    </Grid>
+                </Border>
+
+                <StackPanel Orientation="Horizontal" Margin="16,6,16,0">
+                    <Button Classes="help-tab" Classes.active="{Binding IsTabGeneral}" Content="{Binding Loc[About_Tab_General]}"
+                            Command="{Binding SelectTabCommand}" CommandParameter="0"/>
+                    <Button Classes="help-tab" Classes.active="{Binding IsTabCredits}" Content="{Binding Loc[About_Tab_Credits]}"
+                            Command="{Binding SelectTabCommand}" CommandParameter="1"/>
+                    <Button Classes="help-tab" Classes.active="{Binding IsTabLicenses}" Content="{Binding Loc[About_Tab_Licenses]}"
+                            Command="{Binding SelectTabCommand}" CommandParameter="2"/>
+                    <Button Classes="help-tab" Classes.active="{Binding IsTabSystem}" Content="{Binding Loc[About_Tab_System]}"
+                            Command="{Binding SelectTabCommand}" CommandParameter="3"/>
+                </StackPanel>
+                <Border Height="1" Background="#E5E5EA"/>
+
+                <!-- General -->
+                <StackPanel Margin="22,16,22,8" IsVisible="{Binding IsTabGeneral}" Height="340">
+                    <Border CornerRadius="12" Padding="16,14" BorderThickness="1" BorderBrush="#DCDCE0">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                <GradientStop Color="#E6F1FB" Offset="0"/>
+                                <GradientStop Color="#F7F8FA" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Image Width="60" Height="60" Margin="0,0,14,0" Source="avares://maxpotion/Assets/maxpotion.png"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding ProductName}" FontSize="22" FontWeight="Bold" Foreground="#0C447C"/>
+                                <TextBlock Text="{Binding VersionLine}" Classes="help-body"/>
+                                <TextBlock Text="{Binding BuildLine}" IsVisible="{Binding HasBuildLine}" FontSize="11" Foreground="#8696A7"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock Text="{Binding Loc[About_Description]}" Classes="help-body" Margin="2,12,2,0"/>
+
+                    <Border Background="#F7F8FA" BorderBrush="#E5E5EA" BorderThickness="1" CornerRadius="10"
+                            Padding="14,12" Margin="0,12,0,0">
+                        <Grid ColumnDefinitions="*">
+                            <Grid ColumnDefinitions="96,*" RowDefinitions="Auto,Auto,Auto" VerticalAlignment="Center">
+                                <TextBlock Grid.Row="0" Text="{Binding Loc[About_Creator]}" Classes="help-body" Foreground="#6B7C8E"/>
+                                <Button Grid.Row="0" Grid.Column="1" Classes="help-link" Content="{Binding CreatorAlias}"
+                                        FontWeight="SemiBold" HorizontalAlignment="Left"
+                                        Command="{Binding OpenUrlCommand}" CommandParameter="https://github.com/junko012"/>
+                                <TextBlock Grid.Row="1" Text="{Binding Loc[About_Engine]}" Classes="help-body" Foreground="#6B7C8E" Margin="0,4,0,0"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding EngineLine}" Classes="help-body" Margin="0,4,0,0"/>
+                                <TextBlock Grid.Row="2" Text="{Binding Loc[About_License]}" Classes="help-body" Foreground="#6B7C8E" Margin="0,4,0,0"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="GPL-3.0-or-later" Classes="help-body" Margin="0,4,0,0"/>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <WrapPanel Margin="2,12,0,0">
+                        <Button Classes="help-link" Content="{Binding Loc[About_Link_Code]}" Margin="0,0,16,0"
+                                Command="{Binding OpenUrlCommand}" CommandParameter="https://github.com/junko012/max-potion"/>
+                        <Button Classes="help-link" Content="{Binding Loc[About_Link_Report]}" Margin="0,0,16,0"
+                                Command="{Binding OpenReportCommand}"/>
+                        <Button Classes="help-link" Content="{Binding Loc[About_Link_Releases]}" Margin="0,0,16,0"
+                                Command="{Binding CheckUpdatesCommand}"/>
+                        <Button Classes="help-link" Content="{Binding Loc[About_Link_License]}"
+                                Command="{Binding OpenUrlCommand}" CommandParameter="https://github.com/junko012/max-potion/blob/master/LICENSE"/>
+                    </WrapPanel>
+
+                    <Border Background="#FEF3E0" BorderBrush="#F0D58A" BorderThickness="1" CornerRadius="8"
+                            Padding="12,9" Margin="0,12,0,0">
+                        <TextBlock Text="{Binding Loc[About_Legal]}" Classes="help-body" FontSize="12"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Créditos -->
+                <ScrollViewer IsVisible="{Binding IsTabCredits}" Height="330" Padding="0,0,12,0" Margin="26,8,14,8">
+                    <StackPanel>
+                        <TextBlock Classes="help-sec" Text="{Binding Loc[Credits_Section_People]}"/>
+                        <ItemsControl ItemsSource="{Binding People}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CreditLine">
+                                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Classes="help-body" Margin="0,0,10,0"/>
+                                        <TextBlock Text="{Binding Role}" Classes="help-body" Foreground="#6B7C8E"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Classes="help-sec" Text="{Binding Loc[Credits_Section_Translations]}" IsVisible="{Binding HasTranslators}"/>
+                        <ItemsControl ItemsSource="{Binding Translators}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CreditLine">
+                                    <StackPanel Margin="0,2">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Classes="help-body"/>
+                                        <TextBlock Text="{Binding Role}" Classes="help-body" Foreground="#6B7C8E" FontSize="12"/>
+                                        <TextBlock Text="{Binding Note}" Classes="help-body" FontSize="12" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Classes="help-sec" Text="{Binding Loc[Credits_Section_ThirdParty]}"/>
+                        <ItemsControl ItemsSource="{Binding ThirdParty}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:LicenseItemViewModel">
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,3">
+                                        <StackPanel>
+                                            <Button Classes="help-link" Content="{Binding Name}" FontWeight="SemiBold"
+                                                    Command="{Binding OpenUrlCommand}" CommandParameter="{Binding Url}"/>
+                                            <TextBlock Text="{Binding By}" Classes="help-body" FontSize="12" Foreground="#6B7C8E"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding LicenseName}" Classes="help-body"
+                                                   Foreground="#6B7C8E" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Classes="help-body" FontSize="12" Foreground="#6B7C8E" Margin="0,14,0,0"
+                                   Text="{Binding Loc[Credits_Trademarks]}"/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Licencias -->
+                <ScrollViewer IsVisible="{Binding IsTabLicenses}" Height="330" Padding="0,0,12,0" Margin="26,8,14,8">
+                    <ItemsControl ItemsSource="{Binding Licenses}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:LicenseItemViewModel">
+                                <StackPanel Margin="0,0,0,6">
+                                    <Button Command="{Binding ToggleCommand}" IsEnabled="{Binding HasText}"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                            Background="#F4F7FB" Padding="10,8">
+                                        <Grid ColumnDefinitions="20,*,Auto">
+                                            <TextBlock Text="{Binding Arrow}" Foreground="#2860B0"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding LicenseName}" Foreground="#6B7C8E"/>
+                                        </Grid>
+                                    </Button>
+                                    <TextBox Text="{Binding Text, Mode=OneWay}" IsVisible="{Binding IsExpanded}"
+                                             IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
+                                             FontFamily="monospace" FontSize="11" MaxHeight="200" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Sistema -->
+                <StackPanel IsVisible="{Binding IsTabSystem}" Height="330" Margin="26,14,26,8">
+                    <TextBlock Classes="help-body" Text="{Binding Loc[Sys_Intro]}" FontSize="12" Foreground="#6B7C8E"/>
+                    <Border Background="#F4F7FB" BorderBrush="#E5E5EA" BorderThickness="1" CornerRadius="8"
+                            Padding="12" Margin="0,10,0,0">
+                        <SelectableTextBlock Text="{Binding SystemText}" FontFamily="monospace" FontSize="12"/>
+                    </Border>
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,12,0,0">
+                        <Button Content="{Binding Loc[Sys_Copy]}" Classes="help-primary" Command="{Binding CopySystemCommand}"/>
+                        <Button Content="{Binding Loc[Sys_OpenLogs]}" Padding="14,8" Command="{Binding OpenLogsFolderCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <Border Classes="help-notice" IsVisible="{Binding HasNotice}" Margin="26,0,26,10">
+                    <TextBlock Text="{Binding Notice}" Classes="help-body" FontSize="12"/>
+                </Border>
+                <Button Content="{Binding Loc[Action_Close]}" HorizontalAlignment="Right" Margin="0,4,22,16"
+                        Padding="18,7" Command="{Binding CloseCommand}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ═════════ Atajos de teclado ═════════ -->
+        <Border Classes="help-card" Width="500" IsVisible="{Binding IsShortcutsVisible}">
+            <StackPanel>
+                <Border Classes="help-head">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Classes="help-h" Text="{Binding Loc[Shortcuts_Title]}"/>
+                        <Button Grid.Column="1" Content="✕" Padding="6,4" Background="Transparent"
+                                Foreground="#2860B0" BorderThickness="0" Command="{Binding CloseCommand}"/>
+                    </Grid>
+                </Border>
+                <ScrollViewer MaxHeight="420" Margin="24,4,12,8" Padding="0,0,12,0">
+                    <ItemsControl ItemsSource="{Binding ShortcutGroups}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ShortcutGroup">
+                                <StackPanel>
+                                    <TextBlock Classes="help-sec" Text="{Binding Title}"/>
+                                    <ItemsControl ItemsSource="{Binding Rows}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:ShortcutRow">
+                                                <Grid ColumnDefinitions="150,*" Margin="0,3">
+                                                    <Border Classes="help-kbd" HorizontalAlignment="Left">
+                                                        <TextBlock Text="{Binding Keys}" FontFamily="monospace" FontSize="12"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Description}" Classes="help-body"
+                                                               VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <Button Content="{Binding Loc[Action_Close]}" HorizontalAlignment="Right" Margin="0,4,22,16"
+                        Padding="18,7" Command="{Binding CloseCommand}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ═════════ Reportar un error ═════════ -->
+        <Border Classes="help-card" Width="560" IsVisible="{Binding IsReportVisible}">
+            <StackPanel>
+                <Border Classes="help-head">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Classes="help-h" Text="{Binding Loc[Report_Title]}"/>
+                        <Button Grid.Column="1" Content="✕" Padding="6,4" Background="Transparent"
+                                Foreground="#2860B0" BorderThickness="0" Command="{Binding CloseCommand}"/>
+                    </Grid>
+                </Border>
+                <StackPanel Margin="24,14,24,6">
+                    <TextBlock Classes="help-body" Text="{Binding Loc[Report_Intro]}"/>
+                    <TextBlock Classes="help-sec" Text="{Binding Loc[Report_WhatHappened]}"/>
+                    <TextBox Text="{Binding ReportTitle}" Watermark="{Binding Loc[Report_WhatHappened_Hint]}" MaxLength="200"/>
+                    <TextBlock Classes="help-sec" Text="{Binding Loc[Report_Included]}"/>
+                    <Border Background="#F4F7FB" BorderBrush="#E5E5EA" BorderThickness="1" CornerRadius="8" Padding="10">
+                        <SelectableTextBlock Text="{Binding ReportPreview}" FontFamily="monospace" FontSize="11"/>
+                    </Border>
+                    <TextBlock Classes="help-body" FontSize="12" Foreground="#6B7C8E" Margin="0,8,0,0"
+                               Text="{Binding Loc[Report_NotIncluded]}"/>
+                    <TextBlock Classes="help-body" FontSize="12" Foreground="#6B7C8E" Margin="0,6,0,0"
+                               Text="{Binding Loc[Report_AttachSave]}"/>
+                    <Border Classes="help-notice" IsVisible="{Binding HasNotice}">
+                        <TextBlock Text="{Binding Notice}" Classes="help-body" FontSize="12"/>
+                    </Border>
+                </StackPanel>
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="24,8,22,16">
+                    <Button Content="{Binding Loc[Report_CopyLink]}" Padding="12,8" Command="{Binding CopyReportLinkCommand}"/>
+                    <Button Grid.Column="2" Content="{Binding Loc[Action_Cancel]}" Padding="16,8" Margin="0,0,8,0"
+                            Command="{Binding CloseCommand}"/>
+                    <Button Grid.Column="3" Classes="help-primary" Content="{Binding Loc[Report_Open]}"
+                            Command="{Binding SendReportCommand}"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+        <!-- ═════════ Algo salió mal (error no controlado) ═════════ -->
+        <Border Classes="help-card" Width="560" IsVisible="{Binding IsCrashVisible}">
+            <StackPanel>
+                <Border Classes="help-head">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Panel Width="72" Height="72" Margin="0,0,14,0">
+                            <Image Source="{Binding RotomGray}" Width="64" Height="64"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <Border Width="24" Height="24" CornerRadius="12" Background="#DC2626"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top">
+                                <TextBlock Text="!" Foreground="White" FontWeight="Bold" FontSize="15"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </Panel>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Classes="help-h" Text="{Binding Loc[Crash_Title]}"/>
+                            <TextBlock Classes="help-body" Text="{Binding Loc[Crash_Subtitle]}" Foreground="#6B7C8E"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <StackPanel Margin="24,14,24,6">
+                    <Border Background="#FFF8E1" BorderBrush="#F0D58A" BorderThickness="1" CornerRadius="8" Padding="12,10">
+                        <TextBlock Text="{Binding Loc[Crash_Note]}" Classes="help-body" FontSize="12"/>
+                    </Border>
+                    <ScrollViewer MaxHeight="170" Margin="0,10,0,0" HorizontalScrollBarVisibility="Auto">
+                        <Border Background="#F4F7FB" BorderBrush="#E5E5EA" BorderThickness="1" CornerRadius="8" Padding="10">
+                            <SelectableTextBlock Text="{Binding CrashDetail}" FontFamily="monospace" FontSize="11"/>
+                        </Border>
+                    </ScrollViewer>
+                    <TextBlock Text="{Binding LogsHint}" Classes="help-body" FontSize="11" Foreground="#8696A7" Margin="0,8,0,0"/>
+                    <Border Classes="help-notice" IsVisible="{Binding HasNotice}">
+                        <TextBlock Text="{Binding Notice}" Classes="help-body" FontSize="12"/>
+                    </Border>
+                </StackPanel>
+                <WrapPanel Margin="24,8,22,16" HorizontalAlignment="Right">
+                    <Button Content="{Binding Loc[Crash_Copy]}" Padding="12,8" Margin="0,0,8,6" Command="{Binding CopyCrashCommand}"/>
+                    <Button Content="{Binding Loc[Crash_Continue]}" Padding="12,8" Margin="0,0,8,6" Command="{Binding CloseCommand}"/>
+                    <Button Classes="help-primary" Content="{Binding Loc[Crash_Report]}" Margin="0,0,8,6"
+                            Command="{Binding ReportCrashCommand}"/>
+                    <Button Content="{Binding Loc[Crash_CloseApp]}" Padding="12,8" Margin="0,0,0,6"
+                            Background="#FDECEC" Foreground="#B42318" Command="{Binding CloseAppCommand}"/>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

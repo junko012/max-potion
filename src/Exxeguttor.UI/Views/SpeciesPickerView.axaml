@@ -1,0 +1,287 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Exxeguttor.UI.ViewModels"
+             x:Class="Exxeguttor.UI.Views.SpeciesPickerView"
+             x:DataType="vm:SpeciesPickerViewModel"
+             IsVisible="{Binding IsVisible}"
+             Opacity="{Binding ViewOpacity}">
+
+    <!-- Pantalla 4 / mockups/pokemon_picker — SEGUNDA VERSIÓN tras feedback visual sobre la
+         primera entrega. Cambios de esta ronda:
+           1) Los chips de tipo (filtro) casi no se veían (blanco sobre blanco, borde muy
+              sutil) — ahora tienen relleno gris claro cuando no están seleccionados.
+              Los badges de tipo sobre las tarjetas estaban en blanco/gris sin color — ahora
+              usan TypeColorConverter (mismo converter que el resto de la app, ej.
+              PokemonInfoView) y SIEMPRE muestran TODOS los tipos del Pokémon, no solo el
+              primero (antes las tarjetas no-focalizadas mostraban un único tipo a propósito
+              para no sobrecargar, pero coloreado ya no hace falta esa restricción).
+           2) El cover flow saltaba instantáneo al cambiar de foco, sin transición, y las
+              tarjetas casi no se distinguían entre sí (poco borde). Se reemplazó el diseño
+              de "5 slots fijos" por EXACTAMENTE el mismo mecanismo que ya usa el carrusel de
+              revisión (Pantalla 3 / mockups/export_modal): un ItemsControl sobre TODOS los
+              resultados filtrados posicionados en un Canvas vía Canvas.Left/Width/Opacity
+              con Transitions — ver SpeciesPickerViewModel.UpdateCardLayout. Rotate3DTransform
+              se sacó por completo (no se veía como perspectiva real en la práctica, y este
+              mecanismo de "degradar por distancia" ya está probado en producción).
+           3) Se agregó un botón "Crear" explícito en el footer — antes seleccionar
+              dependía de clickear DOS veces la misma tarjeta (una para enfocar, otra ya
+              enfocada para crear), lo que se sentía como un doble click no documentado.
+              Ahora clickear SIEMPRE solo mueve el foco; "Crear" es el único camino real. -->
+
+    <UserControl.Styles>
+        <!-- Chips de filtro de tipo — antes usaban un esquema genérico gris/azul sin relación
+             al tipo real; ahora respetan el mismo lenguaje de color que el resto de la app
+             (TypeColorConverter — Planta verde, Agua azul, etc., ver
+             PokemonInfoView/PokemonStatsView). No seleccionado: contorno + texto del color
+             del tipo sobre fondo blanco (clásico "outlined chip"); seleccionado: relleno
+             sólido del color del tipo + texto blanco, igual que los badges de las tarjetas.
+             "Todos" no es un tipo real — TypeColorConverter cae a su gris neutro #888888 por
+             default, que funciona bien como indicador de "sin filtro" sin tener que ensuciar
+             el converter compartido con una entrada que no es un tipo Pokémon. -->
+        <Style Selector="Button.type-chip" x:DataType="vm:TypeChipViewModel">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{Binding TypeName, Converter={StaticResource TypeColorConverter}}"/>
+            <Setter Property="Foreground" Value="{Binding TypeName, Converter={StaticResource TypeColorConverter}}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="12,4"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+        </Style>
+        <Style Selector="Button.type-chip.selected" x:DataType="vm:TypeChipViewModel">
+            <Setter Property="Background" Value="{Binding TypeName, Converter={StaticResource TypeColorConverter}}"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style Selector="Button.cf-nav">
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#C8C8CE"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="ZIndex" Value="10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- Tarjeta del cover flow — mismo criterio visual/de tiers que Border.review-card
+             (carrusel de revisión), solo con su propio contenido (sprite+tipos+nombre en vez
+             de checklist de legalidad). -->
+        <Style Selector="Border.species-card">
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="BorderBrush" Value="#C4C4CC"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BoxShadow" Value="0 3 8 0 #22000000"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Border.species-card.focused">
+            <Setter Property="Padding" Value="14"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#3B82F6"/>
+            <Setter Property="BoxShadow" Value="0 10 24 0 #38000000"/>
+        </Style>
+
+        <Style Selector="Image.species-sprite">
+            <Setter Property="Width" Value="56"/>
+            <Setter Property="Height" Value="56"/>
+        </Style>
+        <Style Selector="Border.species-card.focused Image.species-sprite">
+            <Setter Property="Width" Value="88"/>
+            <Setter Property="Height" Value="88"/>
+        </Style>
+
+        <Style Selector="TextBlock.species-name">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            <!-- "Exeggutor de Alola" no entra en una línea de la tarjeta angosta: 2 líneas antes que
+                 cortar justo la parte que distingue la forma regional de la especie base. -->
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="MaxLines" Value="2"/>
+        </Style>
+        <Style Selector="Border.species-card.focused TextBlock.species-name">
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style Selector="TextBlock.species-sub">
+            <Setter Property="FontSize" Value="9"/>
+            <Setter Property="Opacity" Value="0.55"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        </Style>
+
+        <Style Selector="Border.species-type-badge">
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="6,1"/>
+            <Setter Property="Margin" Value="1,0"/>
+        </Style>
+        <Style Selector="Border.species-type-badge TextBlock">
+            <Setter Property="FontSize" Value="8"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="Border.species-card.focused Border.species-type-badge">
+            <Setter Property="Padding" Value="7,2"/>
+        </Style>
+        <Style Selector="Border.species-card.focused Border.species-type-badge TextBlock">
+            <Setter Property="FontSize" Value="10"/>
+        </Style>
+
+        <!-- CRÍTICO para el cover flow — mismo criterio que ItemsControl#ReviewCanvasItems
+             del carrusel de revisión: el ItemsControl con ItemsPanel=Canvas no posiciona
+             solo, cada tarjeta queda envuelta en un ContentPresenter autogenerado que ES el
+             hijo directo del Canvas (no mi Border) — Canvas.Left/ZIndex se setean acá,
+             targeteando ese ContentPresenter, bindeados a CardLeft/CardZIndex de cada
+             SpeciesPickerItemViewModel. -->
+        <Style Selector="ItemsControl#SpeciesCanvasItems ContentPresenter" x:DataType="vm:SpeciesPickerItemViewModel">
+            <Setter Property="Canvas.Left" Value="{Binding CardLeft}"/>
+            <Setter Property="Canvas.Top" Value="8"/>
+            <Setter Property="ZIndex" Value="{Binding CardZIndex}"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Canvas.Left" Duration="0:0:0.32" Easing="CubicEaseOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <Border Background="#66000000"/>
+        <Border Background="White" BorderBrush="#DCDCE0" BorderThickness="1" CornerRadius="12"
+                HorizontalAlignment="Center" VerticalAlignment="Center"
+                Width="700" MaxHeight="640" BoxShadow="0 16 40 0 #59000000">
+            <DockPanel>
+
+                <!-- Header: título + contador, buscador, chips de tipo en WrapPanel (antes
+                     una sola fila con scroll horizontal — el scroll tapaba la mitad de los
+                     chips y no se leían bien, ver feedback visual. Ahora se acomodan solos
+                     en 2 líneas, todos visibles sin scroll). -->
+                <Border DockPanel.Dock="Top" BorderThickness="0,0,0,1" BorderBrush="#DDDDDD"
+                        Padding="20,14,20,12">
+                    <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="{Binding Loc[Picker_Title]}"
+                                       FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="{Binding ResultCountText}"
+                                       FontSize="11" Opacity="0.6" VerticalAlignment="Center"/>
+                        </Grid>
+                        <TextBox Watermark="{Binding Loc[Picker_Search_Placeholder]}" Text="{Binding SearchText}"
+                                 FontSize="13" Padding="8,6"/>
+                        <ItemsControl ItemsSource="{Binding TypeChips}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:TypeChipViewModel">
+                                    <Button Content="{Binding Label}" Click="OnTypeChipClick"
+                                            Classes="type-chip" Classes.selected="{Binding IsSelected}"
+                                            Margin="0,0,6,6"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Footer: atajos de teclado (siempre visibles) + Cancelar + Crear. -->
+                <Border DockPanel.Dock="Bottom" BorderThickness="0,1,0,0" BorderBrush="#DDDDDD"
+                        Padding="20,10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" FontSize="10" Opacity="0.6" VerticalAlignment="Center"
+                                   Text="{Binding Loc[Picker_Keys_Hint]}"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                            <Button Content="{Binding Loc[Action_Cancel]}" Command="{Binding CancelCommand}"/>
+                            <Button Content="{Binding Loc[Picker_Create]}" Command="{Binding CreateCommand}"
+                                    Background="#3B82F6" Foreground="White"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Cuerpo: cover flow + scrubber — es el último hijo del DockPanel, así que
+                     ocupa el espacio restante (LastChildFill). Achicado un poco (antes
+                     Margin 16 arriba, MinHeight 250, Canvas 230) para compensar que el
+                     header ahora es más alto con los chips en 2 líneas — todo tiene que
+                     seguir entrando dentro del MaxHeight=640 del modal. -->
+                <Grid RowDefinitions="Auto,Auto" Margin="0,8,0,4">
+
+                    <Grid Grid.Row="0" MinHeight="210">
+                        <Button Classes="cf-nav" HorizontalAlignment="Left" Margin="8,0,0,0"
+                                Content="‹" Click="OnPrevClick"/>
+                        <Button Classes="cf-nav" HorizontalAlignment="Right" Margin="0,0,8,0"
+                                Content="›" Click="OnNextClick"/>
+
+                        <ItemsControl x:Name="SpeciesCanvasItems" ItemsSource="{Binding Species}"
+                                      HorizontalAlignment="Center">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <!-- Width/Height fijos acá deben coincidir con
+                                         CanvasCenterX*2 / la altura máxima esperada de la
+                                         tarjeta enfocada en SpeciesPickerViewModel.cs. -->
+                                    <Canvas Width="600" Height="195" ClipToBounds="True"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:SpeciesPickerItemViewModel">
+                                    <Border Classes="species-card" Classes.focused="{Binding IsFocused}"
+                                            Width="{Binding CardWidth}" Opacity="{Binding CardOpacity}"
+                                            Tapped="SpeciesCard_Tapped">
+                                        <Border.Transitions>
+                                            <Transitions>
+                                                <DoubleTransition Property="Width" Duration="0:0:0.32" Easing="CubicEaseOut"/>
+                                                <DoubleTransition Property="Opacity" Duration="0:0:0.32" Easing="CubicEaseOut"/>
+                                            </Transitions>
+                                        </Border.Transitions>
+                                        <StackPanel HorizontalAlignment="Center" Spacing="4">
+                                            <!-- Antes: ItemsControl anidado bindeado a `Types`, generaba
+                                                 otro nivel de contenedores por tarjeta (hasta 2 más) para
+                                                 algo que como mucho muestra 2 badges fijos. Reemplazado
+                                                 por 2 controles directos — el segundo se oculta si no
+                                                 aplica (Types con un solo elemento). -->
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
+                                                <Border Classes="species-type-badge"
+                                                        Background="{Binding Type1, Converter={StaticResource TypeColorConverter}}">
+                                                    <TextBlock Text="{Binding Type1, Converter={StaticResource TypeNameConverter}}"/>
+                                                </Border>
+                                                <Border Classes="species-type-badge" IsVisible="{Binding HasType2}"
+                                                        Background="{Binding Type2, Converter={StaticResource TypeColorConverter}}">
+                                                    <TextBlock Text="{Binding Type2, Converter={StaticResource TypeNameConverter}}"/>
+                                                </Border>
+                                            </StackPanel>
+                                            <Image Source="{Binding Sprite}" Classes="species-sprite"
+                                                   RenderOptions.BitmapInterpolationMode="None"/>
+                                            <TextBlock Text="{Binding SubText}" Classes="species-sub"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding DisplayName}" Classes="species-name"
+                                                       HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+
+                    <!-- Scrubber: rango dinámico 1..N del set filtrado. -->
+                    <StackPanel Grid.Row="1" Margin="32,14,32,0" Spacing="2">
+                        <Slider Minimum="1" Maximum="{Binding ScrubberMax}" Value="{Binding ScrubberValue}"
+                                IsEnabled="{Binding HasResults}"/>
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <TextBlock Grid.Column="0" Text="{Binding FirstDexText}" FontSize="10" Opacity="0.5"/>
+                            <TextBlock Grid.Column="1" Text="{Binding ScrubberPositionText}" FontSize="10"
+                                       HorizontalAlignment="Center" Opacity="0.8"/>
+                            <TextBlock Grid.Column="2" Text="{Binding LastDexText}" FontSize="10" Opacity="0.5"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                    </StackPanel>
+
+                </Grid>
+
+            </DockPanel>
+        </Border>
+    </Grid>
+
+</UserControl>

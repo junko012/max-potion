@@ -1,0 +1,350 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Exxeguttor.UI.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="Exxeguttor.UI.Views.EmptyStateView"
+             x:DataType="vm:MainWindowViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Border.recent-row">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="8"/>
+        </Style>
+        <Style Selector="Border.recent-row:pointerover">
+            <Setter Property="Background" Value="#ECECEE"/>
+        </Style>
+        <Style Selector="Border.recent-row.latest">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#DCDCE0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- ── Animaciones de los 4 modales de error (mockups/error_empty_state/,
+             error-messages-boceto.html) — un gesto sutil en loop por caso, comunica el tipo
+             de error antes de leer el texto.
+             Avalonia NO tiene un "animator" para la propiedad compuesta RenderTransform
+             (falla en runtime con "No animator registered for the property RenderTransform",
+             aunque el string de transform compile bien para un Setter normal/no animado) —
+             hay que declarar el tipo de transform concreto en el elemento
+             (Image.RenderTransform = ScaleTransform / TranslateTransform) y animar sus
+             subpropiedades (ScaleTransform.ScaleX, TranslateTransform.X, etc.), mismo
+             patrón que ya usa "Border.notebook-icon.pulse" más arriba en MainWindow.axaml.
+             Por eso el modal más abajo usa 4 <Image> separadas (una por caso, cada una con
+             su propio tipo de transform ya declarado) en vez de una sola Image con clases
+             condicionales — evita la ambigüedad de qué tipo de transform tiene en un
+             momento dado. ── -->
+
+        <!-- Caso 1 — Ditto: wobble de escala X/Y alternada (sin rotación — TransformGroup +
+             rotate simultáneo complica la sintaxis de animación sin agregar mucho más). -->
+        <Style Selector="Image.ditto">
+            <Style.Animations>
+                <Animation Duration="0:0:1.4" IterationCount="INFINITE" Easing="SineEaseInOut">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="25%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="0.92"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1.08"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="75%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1.08"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="0.92"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Caso 2 — MissingNo.: jitter de posición en pasos discretos (el boceto original
+             suma un shift de tono/contraste vía CSS filter — Avalonia no tiene un equivalente
+             directo a "filter: hue-rotate()", así que el glitch queda solo en el movimiento
+             brusco, que ya es la parte que más comunica "dato corrupto"). -->
+        <Style Selector="Image.missingno">
+            <Style.Animations>
+                <Animation Duration="0:0:0.5" IterationCount="INFINITE">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="TranslateTransform.X" Value="0"/>
+                        <Setter Property="TranslateTransform.Y" Value="0"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="20%">
+                        <Setter Property="TranslateTransform.X" Value="-2"/>
+                        <Setter Property="TranslateTransform.Y" Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="40%">
+                        <Setter Property="TranslateTransform.X" Value="2"/>
+                        <Setter Property="TranslateTransform.Y" Value="-1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="60%">
+                        <Setter Property="TranslateTransform.X" Value="-1"/>
+                        <Setter Property="TranslateTransform.Y" Value="-1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="80%">
+                        <Setter Property="TranslateTransform.X" Value="1"/>
+                        <Setter Property="TranslateTransform.Y" Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="TranslateTransform.X" Value="0"/>
+                        <Setter Property="TranslateTransform.Y" Value="0"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Caso 3 — Abra: parpadeo intermitente + leve reducción de escala, simulando que
+             está a punto de teletransportarse. -->
+        <Style Selector="Image.abra">
+            <Style.Animations>
+                <Animation Duration="0:0:1.8" IterationCount="INFINITE" Easing="SineEaseInOut">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="80%">
+                        <Setter Property="Opacity" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="90%">
+                        <Setter Property="Opacity" Value="0.3"/>
+                        <Setter Property="ScaleTransform.ScaleX" Value="0.85"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="0.85"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Caso 4 — Snorlax: respiración sutil, postura pasiva ("bloqueo" sin urgencia). -->
+        <Style Selector="Image.snorlax">
+            <Style.Animations>
+                <Animation Duration="0:0:2" IterationCount="INFINITE" Easing="SineEaseInOut">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="50%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1.03"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1.03"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </UserControl.Styles>
+
+    <Panel>
+
+        <Grid ColumnDefinitions="Auto,*">
+
+        <!-- ── Zona "Recientes" (panel izquierdo) — ancho 400px, igual a la columna
+             derecha de MainWindow.axaml (PokemonStatsView). Si no hay recientes, el Border
+             entero queda IsVisible=False y la columna "Auto" se reduce a 0 — la zona de
+             acción de la derecha ocupa todo el ancho sola, como pide el spec. ── -->
+        <Border Grid.Column="0"
+                Width="400"
+                IsVisible="{Binding RecentSaves.HasEntries}"
+                BorderBrush="#DCDCE0" BorderThickness="0,0,1,0"
+                Background="#F4F4F5">
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Padding="16">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="{Binding Loc[EmptyState_Recents]}"
+                               FontSize="11" FontWeight="Bold" Opacity="0.5"
+                               Margin="0,0,0,10"/>
+
+                    <ItemsControl ItemsSource="{Binding RecentSaves.Entries}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:RecentSaveRowViewModel">
+                                <Border Classes="recent-row"
+                                        Classes.latest="{Binding IsLatest}">
+                                    <Grid ColumnDefinitions="Auto,*,Auto"
+                                          Cursor="Hand"
+                                          Tapped="RecentRow_Tapped">
+
+                                        <!-- Portada: sprite real si existe, si no el
+                                             fallback procedural (gradiente + glyph). 52x68: el doble del
+                                             tamaño original, para reconocer la generación solo con la
+                                             portada sin leer el texto. -->
+                                        <Grid Grid.Column="0" Width="52" Height="68" Margin="0,0,12,0">
+                                            <Image Source="{Binding CoverSprite}"
+                                                   IsVisible="{Binding HasCoverSprite}"
+                                                   Stretch="UniformToFill"/>
+                                            <Border IsVisible="{Binding !HasCoverSprite}"
+                                                    CornerRadius="6">
+                                                <Border.Background>
+                                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                                        <GradientStop Offset="0" Color="{Binding CoverTopColor}"/>
+                                                        <GradientStop Offset="1" Color="{Binding CoverBottomColor}"/>
+                                                    </LinearGradientBrush>
+                                                </Border.Background>
+                                                <TextBlock Text="{Binding CoverGlyph}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="26"/>
+                                            </Border>
+                                        </Grid>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding FileName}"
+                                                       FontSize="13"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding Subtitle}"
+                                                       FontSize="11" Opacity="0.5"
+                                                       Margin="0,1,0,0"/>
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Column="2" Text="{Binding RelativeDate}"
+                                                   FontSize="11" Opacity="0.5"
+                                                   VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- ── Zona de acción — centrada, ocupa el resto del ancho. Drag&drop se sacó del
+             todo: Avalonia 11.x no tiene target XDND en el backend de X11 (recién se
+             implementa en la 12.1, no portado hacia atrás), así que no hay forma de que un
+             archivo soltado desde Nautilus/Dolphin le llegue a la app en esta versión — no
+             era un bug de este código, es un límite real de la plataforma. Ver conversación
+             de diseño para el detalle. Queda solo el botón "Abrir save..." + los badges
+             informativos de formato (siguen teniendo sentido igual, aunque ya no haya
+             drag&drop: el usuario los ve antes de abrir el diálogo del sistema). ── -->
+        <Border Grid.Column="1">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
+                <TextBlock Text="{Binding Loc[EmptyState_NoSave]}" FontSize="16"
+                           HorizontalAlignment="Center"/>
+                <Button Content="{Binding Loc[Menu_File_Open]}"
+                        Command="{Binding OpenSaveFileCommand}"
+                        HorizontalAlignment="Center"
+                        Padding="18,7" Margin="0,10,0,16"/>
+                <TextBlock Text="{Binding Loc[EmptyState_Formats]}" FontSize="10" Opacity="0.5"
+                           HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                <WrapPanel HorizontalAlignment="Center" Margin="-6,-6,0,0">
+                    <Border Background="White" BorderBrush="#DCDCE0" BorderThickness="1"
+                            CornerRadius="10" Padding="9,3" Margin="6,6,0,0">
+                        <TextBlock Text="Gen 1-9" FontSize="10" Opacity="0.7"/>
+                    </Border>
+                    <Border Background="White" BorderBrush="#DCDCE0" BorderThickness="1"
+                            CornerRadius="10" Padding="9,3" Margin="6,6,0,0">
+                        <TextBlock Text=".sav" FontSize="10" Opacity="0.7"/>
+                    </Border>
+                    <Border Background="White" BorderBrush="#DCDCE0" BorderThickness="1"
+                            CornerRadius="10" Padding="9,3" Margin="6,6,0,0">
+                        <TextBlock Text=".dsv" FontSize="10" Opacity="0.7"/>
+                    </Border>
+                    <Border Background="White" BorderBrush="#DCDCE0" BorderThickness="1"
+                            CornerRadius="10" Padding="9,3" Margin="6,6,0,0">
+                        <TextBlock Text=".gci / .bin / .bak" FontSize="10" Opacity="0.7"/>
+                    </Border>
+                    <Border Background="White" BorderBrush="#DCDCE0" BorderThickness="1"
+                            CornerRadius="10" Padding="9,3" Margin="6,6,0,0">
+                        <!-- Saves de Switch (Espada/Escudo, BD/SP, Legends: Arceus, Escarlata/
+                             Púrpura, Legends: Z-A): el archivo se llama literalmente "main",
+                             sin extensión — nombre real que vuelcan la consola y herramientas
+                             de backup (checkpoint, JKSV, etc.). El diálogo del sistema
+                             (FileDialogService) ya lo acepta vía su patrón "*" — este badge
+                             solo lo hace explícito para que el usuario no dude si está
+                             soportado. -->
+                        <TextBlock Text="main (Switch)" FontSize="10" Opacity="0.7"/>
+                    </Border>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+
+        </Grid>
+
+        <!-- ── Modal de error (mockups/error_empty_state/) — overlay sobre TODA la pantalla
+             (Recientes + zona de acción), un solo modal para los 4 casos, cambia sprite/
+             título/texto/footer según ActiveSaveError.Kind. IsVisible en el Border de fondo
+             en vez de en el Panel entero para poder oscurecer detrás sin ocultar el resto. ── -->
+        <!-- DataContext se mantiene en MainWindowViewModel todo el tiempo (nunca se cambia
+             a SaveOpenError) — todo bindea con rutas anidadas ("ActiveSaveError.Sprite",
+             etc.). Avalonia resuelve estas rutas a null de forma segura mientras
+             ActiveSaveError es null (el Border está IsVisible=False en ese momento igual),
+             así se evita tener que "subir" con $parent para llegar a los comandos del
+             ViewModel de la pantalla. -->
+        <Border IsVisible="{Binding HasActiveSaveError}"
+                Background="#66000000">
+            <Border Width="280" Padding="22" CornerRadius="14"
+                    Background="White" BorderBrush="#DCDCE0" BorderThickness="1"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="12" HorizontalAlignment="Center">
+                    <!-- 4 Image separadas, una por caso, cada una con su propio tipo de
+                         RenderTransform ya declarado (ver nota grande en UserControl.Styles
+                         sobre por qué no puede ser una sola Image con clases condicionales). -->
+                    <Panel Width="64" Height="64">
+                        <Image Source="{Binding ActiveSaveError.Sprite}"
+                               Classes="ditto"
+                               IsVisible="{Binding ActiveSaveError.IsDitto}"
+                               RenderTransformOrigin="50%,50%">
+                            <Image.RenderTransform>
+                                <ScaleTransform/>
+                            </Image.RenderTransform>
+                        </Image>
+                        <Image Source="{Binding ActiveSaveError.Sprite}"
+                               Classes="missingno"
+                               IsVisible="{Binding ActiveSaveError.IsMissingNo}"
+                               RenderTransformOrigin="50%,50%">
+                            <Image.RenderTransform>
+                                <TranslateTransform/>
+                            </Image.RenderTransform>
+                        </Image>
+                        <Image Source="{Binding ActiveSaveError.Sprite}"
+                               Classes="abra"
+                               IsVisible="{Binding ActiveSaveError.IsAbra}"
+                               RenderTransformOrigin="50%,50%">
+                            <Image.RenderTransform>
+                                <ScaleTransform/>
+                            </Image.RenderTransform>
+                        </Image>
+                        <Image Source="{Binding ActiveSaveError.Sprite}"
+                               Classes="snorlax"
+                               IsVisible="{Binding ActiveSaveError.IsSnorlax}"
+                               RenderTransformOrigin="50%,50%">
+                            <Image.RenderTransform>
+                                <ScaleTransform/>
+                            </Image.RenderTransform>
+                        </Image>
+                    </Panel>
+                    <TextBlock Text="{Binding ActiveSaveError.Title}" FontSize="14" FontWeight="Bold"
+                               HorizontalAlignment="Center" TextAlignment="Center"/>
+                    <TextBlock Text="{Binding ActiveSaveError.Message}" FontSize="12" Opacity="0.6"
+                               HorizontalAlignment="Center" TextAlignment="Center"
+                               TextWrapping="Wrap" Width="220"/>
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0"
+                                HorizontalAlignment="Center">
+                        <!-- Caso 3 (Abra/NotFound) es el único con acción secundaria. -->
+                        <Button Content="{Binding Loc[SaveError_RemoveFromRecents]}"
+                                Command="{Binding RemoveFailedRecentAndDismissCommand}"
+                                IsVisible="{Binding ActiveSaveError.ShowRemoveFromRecents}"
+                                Padding="14,6"/>
+                        <Button Content="{Binding Loc[SaveError_Dismiss]}"
+                                Command="{Binding DismissSaveErrorCommand}"
+                                Padding="14,6"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
+
+    </Panel>
+</UserControl>

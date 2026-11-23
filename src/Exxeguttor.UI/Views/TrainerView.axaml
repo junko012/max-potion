@@ -1,0 +1,111 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Exxeguttor.UI.ViewModels"
+             xmlns:svc="using:Exxeguttor.UI.Services"
+             x:Class="Exxeguttor.UI.Views.TrainerView"
+             x:DataType="vm:TrainerViewModel">
+
+    <Border Padding="12" IsVisible="{Binding IsVisible}">
+        <StackPanel Spacing="2">
+
+            <TextBlock Text="{Binding Loc[TrainerPanel_Title]}"
+                       FontSize="11" FontWeight="Bold"
+                       Opacity="0.7"
+                       Margin="0,0,0,6"/>
+
+            <!-- Name (editable) -->
+            <Grid ColumnDefinitions="60,*" Height="20">
+                <TextBlock Grid.Column="0" Text="{Binding Loc[TrainerPanel_Name]}" Opacity="0.55" FontSize="11" VerticalAlignment="Center"/>
+                <TextBox Grid.Column="1" Text="{Binding Name}" FontSize="11" Height="18" MinHeight="0"
+                         Padding="2,0" VerticalContentAlignment="Center"/>
+            </Grid>
+
+            <!-- TID / SID (solo lectura) -->
+            <Grid ColumnDefinitions="60,*" Height="20" Margin="0,3,0,0">
+                <TextBlock Grid.Column="0" Text="{Binding Loc[TrainerPanel_Id]}" Opacity="0.55" FontSize="11" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center">
+                    <Run Text="{Binding TIDDisplay}"/><Run Text=" / "/><Run Text="{Binding SIDDisplay}"/>
+                </TextBlock>
+            </Grid>
+
+            <!-- Gender (editable) + ícono ♂/♀, mismo símbolo que ya se usa para los
+                 Pokémon en el resto de la app -->
+            <Grid ColumnDefinitions="60,*" Height="20" Margin="0,3,0,0">
+                <TextBlock Grid.Column="0" Text="{Binding Loc[Info_Gender]}" Opacity="0.55" FontSize="11" VerticalAlignment="Center"/>
+                <Grid Grid.Column="1" ColumnDefinitions="16,*">
+                    <TextBlock Grid.Column="0" Text="{Binding GenderIcon}" FontSize="12"
+                               FontWeight="Bold" VerticalAlignment="Center"/>
+                    <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableGenders}" SelectedItem="{Binding Gender}"
+                              FontSize="11" Height="18" MinHeight="0" Padding="4,0" HorizontalContentAlignment="Stretch"/>
+                </Grid>
+            </Grid>
+
+            <!-- Time (solo lectura — metadato del save, no identidad del entrenador) -->
+            <Grid ColumnDefinitions="60,*" Height="20" Margin="0,3,0,0">
+                <TextBlock Grid.Column="0" Text="{Binding Loc[TrainerPanel_Time]}" Opacity="0.55" FontSize="11" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="{Binding PlayTime}" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Game (solo lectura) -->
+            <Grid ColumnDefinitions="60,*" Height="20" Margin="0,3,0,0">
+                <TextBlock Grid.Column="0" Text="{Binding Loc[TrainerPanel_Game]}" Opacity="0.55" FontSize="11" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="{Binding GameName}" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Gen (solo lectura) -->
+            <Grid ColumnDefinitions="60,*" Height="20" Margin="0,3,0,0">
+                <TextBlock Grid.Column="0" Text="{Binding Loc[TrainerPanel_Gen]}" Opacity="0.55" FontSize="11" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="{Binding Generation}" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Badges (solo lectura por ahora — son bit-flags individuales por medalla,
+                 no un número simple; hacerlas editables bien implicaría una UI de checkboxes
+                 por medalla, evaluado aparte si se necesita). -->
+            <Grid ColumnDefinitions="60,*" Height="20" Margin="0,3,0,0">
+                <TextBlock Grid.Column="0" Text="{Binding Loc[TrainerPanel_Badges]}" Opacity="0.55" FontSize="11" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="{Binding BadgeCount}" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Money (editable, Gen1+ — HasMoney siempre true en la práctica). Ícono 💰,
+                 formato con separador de miles (MoneyDisplay usa "N0"), y "max" como link de
+                 texto al lado — mismo patrón que ya usa el editor de IVs/EVs para su botón
+                 "max", no un botón grande. -->
+            <Grid ColumnDefinitions="60,16,*,28" Height="20" Margin="0,3,0,0" IsVisible="{Binding HasMoney}">
+                <TextBlock Grid.Column="0" Text="{Binding Loc[TrainerPanel_Money]}" Opacity="0.55" FontSize="11" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="💰" FontSize="11" VerticalAlignment="Center"/>
+                <TextBox Grid.Column="2" Text="{Binding MoneyDisplay}" svc:NumericInput.Kind="Grouped" MaxLength="13" FontSize="11" Height="18" MinHeight="0"
+                         Padding="2,0" VerticalContentAlignment="Center"/>
+                <Button Grid.Column="3" Content="{Binding Loc[Stats_Max]}" Command="{Binding MaxMoneyCommand}"
+                        FontSize="9" Padding="4,0" Background="Transparent" BorderThickness="0"
+                        HorizontalContentAlignment="Center" VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Coins (editable, solo Gen1-4 — HasCoins gatea por generación, ver
+                 TrainerService.GetCoins). No aparece atenuada en el resto: directamente no
+                 existe el atributo en esa generación, no es lo mismo que "vale 0". -->
+            <Grid ColumnDefinitions="60,16,*,28" Height="20" Margin="0,3,0,0" IsVisible="{Binding HasCoins}">
+                <TextBlock Grid.Column="0" Text="{Binding Loc[TrainerPanel_Coins]}" Opacity="0.55" FontSize="11" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="🪙" FontSize="11" VerticalAlignment="Center"/>
+                <TextBox Grid.Column="2" Text="{Binding CoinsDisplay}" svc:NumericInput.Kind="Grouped" MaxLength="13" FontSize="11" Height="18" MinHeight="0"
+                         Padding="2,0" VerticalContentAlignment="Center"/>
+                <Button Grid.Column="3" Content="{Binding Loc[Stats_Max]}" Command="{Binding MaxCoinsCommand}"
+                        FontSize="9" Padding="4,0" Background="Transparent" BorderThickness="0"
+                        HorizontalContentAlignment="Center" VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Battle Points (editable, solo Emerald/Gen4/Gen6 — HasBattlePoints gatea
+                 por generación, mismo criterio que Coins). Tope fijo de 9999 (regla del
+                 juego, PKHeX.Core no expone un "MaxBP" — ver TrainerViewModel). -->
+            <Grid ColumnDefinitions="60,16,*,28" Height="20" Margin="0,3,0,0" IsVisible="{Binding HasBattlePoints}">
+                <TextBlock Grid.Column="0" Text="{Binding Loc[TrainerPanel_BP]}" Opacity="0.55" FontSize="11" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="🏆" FontSize="11" VerticalAlignment="Center"/>
+                <TextBox Grid.Column="2" Text="{Binding BattlePointsDisplay}" svc:NumericInput.Kind="Grouped" MaxLength="13" FontSize="11" Height="18" MinHeight="0"
+                         Padding="2,0" VerticalContentAlignment="Center"/>
+                <Button Grid.Column="3" Content="{Binding Loc[Stats_Max]}" Command="{Binding MaxBattlePointsCommand}"
+                        FontSize="9" Padding="4,0" Background="Transparent" BorderThickness="0"
+                        HorizontalContentAlignment="Center" VerticalAlignment="Center"/>
+            </Grid>
+
+        </StackPanel>
+    </Border>
+</UserControl>

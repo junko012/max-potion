@@ -1,0 +1,110 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Exxeguttor.UI.ViewModels"
+             x:Class="Exxeguttor.UI.Views.BagItemListView"
+             x:DataType="vm:BagViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Button.owned-check">
+            <Setter Property="Width" Value="20"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#C9C6BE"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+        </Style>
+        <Style Selector="Button.owned-check.checked">
+            <Setter Property="Background" Value="#D9584E"/>
+            <Setter Property="BorderBrush" Value="#D9584E"/>
+        </Style>
+        <Style Selector="Button.stepper-btn">
+            <Setter Property="Width" Value="22"/>
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#E5E5E5"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="Button.max-btn">
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#E5E5E5"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="FontSize" Value="9.5"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+    </UserControl.Styles>
+
+    <DockPanel Margin="14">
+
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,4">
+            <TextBlock Grid.Column="0" Text="{Binding PouchTitle}" FontSize="15" FontWeight="SemiBold"/>
+            <TextBlock Grid.Column="1" Text="{Binding PouchCountText}" FontSize="11" Opacity="0.5"
+                       VerticalAlignment="Bottom"/>
+        </Grid>
+
+        <TextBox DockPanel.Dock="Top" Watermark="{Binding Loc[Bag_Search_Placeholder]}"
+                 Text="{Binding SearchText}" Margin="0,8,0,10"/>
+
+        <!-- VirtualizingStackPanel (no el StackPanel default de ItemsControl) — sesión
+             "análisis con calma": cada fila tiene ~10 controles (5 botones, imagen, 4
+             textos); sin virtualizar, Avalonia mide/dibuja TODAS las filas de la categoría
+             de una sola vez la primera vez que se muestran, sin importar cuántas entren en
+             pantalla — para una categoría de ~100 ítems (Gen4+) son ~1000 controles
+             realizados de golpe. Este era el costo real detrás de "la primera vez que entrás
+             a una categoría tarda", que ningún cache de datos (sprites, ViewModels) podía
+             tocar por ser un costo de RENDER, no de datos. Con esto solo se realizan las
+             filas visibles + un margen, sin importar el tamaño de la categoría. -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Items}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><VirtualizingStackPanel/></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vm:BagItemRowViewModel">
+                        <Grid ColumnDefinitions="24,32,*,Auto,Auto" Margin="0,7">
+
+                            <Button Grid.Column="0" Classes="owned-check" Classes.checked="{Binding Owned}"
+                                    Command="{Binding ToggleOwnedCommand}" VerticalAlignment="Center">
+                                <TextBlock Text="✓" FontSize="12" FontWeight="Bold" Foreground="White"
+                                           IsVisible="{Binding Owned}" HorizontalAlignment="Center"/>
+                            </Button>
+
+                            <Image Grid.Column="1" Source="{Binding Sprite}" Width="26" Height="26"
+                                   Margin="6,0" VerticalAlignment="Center"
+                                   RenderOptions.BitmapInterpolationMode="None"/>
+
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,6,0">
+                                <TextBlock Text="{Binding Name}" FontSize="12.5" FontWeight="SemiBold"
+                                           TextWrapping="Wrap"
+                                           Opacity="{Binding Owned, Converter={StaticResource BoolToOpacityConverter}}"/>
+                                <TextBlock Text="{Binding Description}" FontSize="10.5" Opacity="0.55"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="5"
+                                        VerticalAlignment="Center" IsEnabled="{Binding Owned}">
+                                <Button Classes="stepper-btn" Content="−" Command="{Binding DecrementCommand}"/>
+                                <TextBlock Text="{Binding Quantity}" FontSize="12.5" FontWeight="Bold"
+                                           Width="20" TextAlignment="Center" VerticalAlignment="Center"/>
+                                <Button Classes="stepper-btn" Content="+" Command="{Binding IncrementCommand}"/>
+                            </StackPanel>
+
+                            <Button Grid.Column="4" Classes="max-btn" Content="{ReflectionBinding $parent[UserControl].DataContext.Loc[Bag_Max]}" Margin="6,0,0,0"
+                                    Command="{Binding MaxCommand}" IsEnabled="{Binding Owned}"
+                                    VerticalAlignment="Center"
+                                    ToolTip.Tip="{ReflectionBinding $parent[UserControl].DataContext.Loc[Bag_Max_Tip]}"/>
+
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+    </DockPanel>
+
+</UserControl>

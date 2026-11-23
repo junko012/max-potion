@@ -1,0 +1,122 @@
+## ---------------------------------------------------------------------
+## .gitignore para Max Potion (.NET 9.0 + Avalonia UI + PKHeX.Core)
+## ---------------------------------------------------------------------
+
+## Carpetas de build / compilación (se regeneran solas con dotnet build)
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Xx]64/
+[Xx]86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+build/
+bld/
+out/
+publish/
+
+## Archivos de usuario / IDE (Visual Studio, VS Code, Rider)
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.sln.docstates
+.idea/
+*.iml
+
+## Rider / JetBrains
+.idea/
+*.sln.iml
+
+## NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Resultados de test
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+
+## Archivos de rendimiento / crash dumps
+*.dmp
+*.stackdump
+
+## Archivos temporales del OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## Logs
+*.log
+logs/
+
+## Archivos de publicación / packaging (RPM/DEB/AppImage se generan, no se versionan)
+*.rpm
+*.deb
+*.AppImage
+*.appimage
+publish-output/
+dist/
+
+## Secrets / configuración local sensible
+appsettings.local.json
+appsettings.*.local.json
+*.pfx
+*.key
+*.pem
+secrets.json
+.env
+.env.local
+
+## Archivos de save de Pokémon reales (datos de prueba/personales, NO subir saves reales)
+## Ajustar extensiones según lo que uses para testing (ej: .sav, .dsv, .dat)
+*.sav
+*.SAV
+testdata/personal/
+
+## Base de datos: SOLO ignorar copias de trabajo/temporales, NO la db oficial versionada
+## (pokemon.db oficial SÍ se versiona en database/pokemon.db)
+*.db-shm
+*.db-wal
+*.db-journal
+*_temp.db
+*_backup.db
+
+## Archivos de análisis / cache de Rider-ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+## Avalonia previewer cache
+.avalonia/
+
+## MSBuild binlog (útil para debugging pero pesado, no versionar)
+*.binlog
+
+## Archivos temporales varios
+*.tmp
+*.bak
+*.swp
+*~
+
+## Python (scripts/)
+__pycache__/
+*.pyc
+*.db-wal
+*.db-shm
+*.db-journal
+*.db-wal
+*.db-shm
+*.db-journal

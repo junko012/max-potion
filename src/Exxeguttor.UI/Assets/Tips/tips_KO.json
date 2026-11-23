@@ -1,0 +1,242 @@
+[
+  {
+    "category": "일반",
+    "categoryId": "general",
+    "icon": "exportar",
+    "sample": "export",
+    "title": "내보내기를 해야 파일에 기록됩니다",
+    "text": "내보내기 전까지 변경 사항은 이 세션에만 있습니다. 상태 표시줄에 “내보내지 않은 변경 사항”가 표시됩니다. 내보내면 실제 세이브가 기록됩니다."
+  },
+  {
+    "category": "일반",
+    "categoryId": "general",
+    "icon": "guardar",
+    "sample": "review",
+    "title": "내보내기 전에 확인하세요",
+    "text": "검토 창에서 편집한 포켓몬, 트레이너, 가방, 놓아주기를 하나씩 포함하거나 제외할 수 있습니다."
+  },
+  {
+    "category": "일반",
+    "categoryId": "general",
+    "icon": "info",
+    "sample": "langs",
+    "title": "서로 독립된 두 가지 언어",
+    "text": "환경설정에서 “인터페이스 언어”와 별도로 “게임 데이터 언어”(종족, 기술, 도구 등)을 고릅니다. 상태 표시줄의 표시기에 둘 다 나옵니다."
+  },
+  {
+    "category": "일반",
+    "categoryId": "general",
+    "icon": "teclado",
+    "sample": "keys",
+    "title": "F1과 단축키",
+    "text": "F1은 이 가이드를 엽니다. 도움말 → “키보드 단축키”에 열기, 저장, 내보내기, 닫기 등 전체 목록이 있습니다."
+  },
+  {
+    "category": "생성",
+    "categoryId": "creation",
+    "icon": "buscar",
+    "sample": "search",
+    "title": "이름이나 번호로 검색",
+    "text": "종족 선택기는 입력하는 대로 걸러 주며 대소문자와 악센트를 구분하지 않습니다."
+  },
+  {
+    "category": "생성",
+    "categoryId": "creation",
+    "icon": "teclado",
+    "sample": "shift",
+    "title": "키보드로 빠르게 이동",
+    "text": "Shift를 누른 채 화살표 키를 쓰면 결과의 10%를 한 번에 건너뜁니다. Home과 End는 양 끝으로 이동합니다."
+  },
+  {
+    "category": "생성",
+    "categoryId": "creation",
+    "icon": "pokemon",
+    "sample": "picker",
+    "title": "해당 게임에 있는 종족만 표시됩니다",
+    "text": "선택기는 세이브의 게임에 존재하지 않거나 합법적으로 만들 수 없는 종족(예: 레전드 아르세우스의 히스이 도감 밖, 소드/실드와 스칼렛/바이올렛의 가라르·팔데아 밖)을 숨깁니다."
+  },
+  {
+    "category": "생성",
+    "categoryId": "creation",
+    "icon": "advertencia",
+    "sample": "",
+    "title": "폼과 특별한 경우",
+    "text": "일부 폼은 생성 시 합법으로 만들 수 없어(예: 레전드 Z-A의 지가르데 10%/50%, 지우 개굴닌자) 표시되지 않습니다. 어떤 종족에 합법성 경고가 뜨면 “합법성” 탭을 열고 위에서 아래로 고치세요."
+  },
+  {
+    "category": "편집",
+    "categoryId": "editing",
+    "icon": "grafico",
+    "sample": "tab-ivs",
+    "title": "세대별 개체값과 노력치",
+    "text": "1~2세대는 DV(0~15)와 스탯 경험치(0~65535)입니다. 편집기가 세이브의 게임에 맞춰 범위를 자동으로 조정합니다."
+  },
+  {
+    "category": "편집",
+    "categoryId": "editing",
+    "icon": "pokemon",
+    "sample": "tab-sets",
+    "title": "추천 세트",
+    "text": "“세트” 탭에는 해당 종족의 Smogon·Showdown 세트(특성, 도구, 성격, 노력치)가 표시됩니다."
+  },
+  {
+    "category": "편집",
+    "categoryId": "editing",
+    "icon": "chispa",
+    "sample": "tab-special",
+    "title": "메가, Z, 다이맥스, 테라스탈",
+    "text": "메가스톤, Z크리스탈 등 각 게임의 요소는 도구 칸이 아니라 “특수” 탭에서 고릅니다."
+  },
+  {
+    "category": "편집",
+    "categoryId": "editing",
+    "icon": "medalla",
+    "sample": "tab-ribbons",
+    "title": "게임별 리본",
+    "text": "불러온 세이브의 세대에 존재하는 리본만 표시됩니다."
+  },
+  {
+    "category": "박스와 가방",
+    "categoryId": "storage",
+    "icon": "limpiar",
+    "sample": "release",
+    "title": "포켓몬 놓아주기",
+    "text": "놓아주기 버튼은 알을 포함해 각 포켓몬에 있습니다. 확인 창이 뜨며, 도구를 들고 있으면 경고합니다. 도구도 함께 사라집니다."
+  },
+  {
+    "category": "박스와 가방",
+    "categoryId": "storage",
+    "icon": "info",
+    "sample": "releaseblock",
+    "title": "파티의 유일한 포켓몬",
+    "text": "게임에는 파티에 최소 한 마리가 필요하므로 놓아줄 수 없습니다. 다른 포켓몬을 파티로 옮긴 뒤 다시 시도하세요."
+  },
+  {
+    "category": "박스와 가방",
+    "categoryId": "storage",
+    "icon": "guardar",
+    "sample": "undo",
+    "title": "되돌리기의 한계",
+    "text": "내보내기 전까지는 알림의 “실행 취소”나 편집 취소로 되돌릴 수 있습니다. 파티나 박스가 가득 찼거나 다른 포켓몬이 그 자리를 차지했다면 되돌릴 수 없습니다."
+  },
+  {
+    "category": "박스와 가방",
+    "categoryId": "storage",
+    "icon": "exportar",
+    "sample": "review",
+    "title": "내보낼 때 한 마리만 남기기",
+    "text": "검토 창에서 놓아주기 체크를 해제하면 그 포켓몬을 남길 수 있습니다. 단 3세대 이후 박스에서, 자리가 비어 있고 그 포켓몬에 대한 편집이 없을 때만 가능합니다. 파티와 1~2세대 박스에서는 놓아주면 나머지가 밀리므로 “실행 취소”를 사용하세요."
+  },
+  {
+    "category": "박스와 가방",
+    "categoryId": "storage",
+    "icon": "mochila",
+    "sample": "bagtiles",
+    "title": "가방 카테고리",
+    "text": "가방은 카테고리(도구, 회복약, 볼, 기술머신 등)로 나뉘며, 어떤 카테고리가 있는지는 세이브의 세대에 따라 다릅니다. 카테고리를 눌러 도구를 보고 편집하세요."
+  },
+  {
+    "category": "박스와 가방",
+    "categoryId": "storage",
+    "icon": "lapiz",
+    "sample": "bagrow",
+    "title": "도구 추가와 제거",
+    "text": "각 카테고리에는 가지고 있든 아니든 합법적인 모든 도구가 나열됩니다. 수량을 올리거나(또는 도구를 체크하여) 추가하고, 0으로 내리면 제거됩니다."
+  },
+  {
+    "category": "박스와 가방",
+    "categoryId": "storage",
+    "icon": "chispa",
+    "sample": "bagmax",
+    "title": "최대 수량",
+    "text": "“최대”는 해당 게임에서 그 카테고리의 한도까지 수량을 올립니다. 더 큰 숫자를 입력해도 자동으로 한도에 맞춰집니다."
+  },
+  {
+    "category": "박스와 가방",
+    "categoryId": "storage",
+    "icon": "buscar",
+    "sample": "bagstore",
+    "title": "검색과 PC로 전환",
+    "text": "검색창은 카테고리 안에서 이름이나 설명으로 걸러 줍니다. 별도 보관함이 있는 세대에서는 ◀ ▶ 화살표로 가방과 PC를 전환합니다."
+  },
+  {
+    "category": "합법성",
+    "categoryId": "legality",
+    "icon": "balanza",
+    "sample": "steps",
+    "title": "첫 번째 단계부터 시작하세요",
+    "text": "“합법성” 탭의 단계는 의존 관계 순서입니다. 조우, 출신 게임, 알이 먼저입니다. 위에서 아래로 고치면 아래의 많은 오류가 저절로 사라집니다."
+  },
+  {
+    "category": "합법성",
+    "categoryId": "legality",
+    "icon": "advertencia",
+    "sample": "severity",
+    "title": "빨강과 호박색은 다릅니다",
+    "text": "“합법성 차단”은(는) 포켓몬을 불법으로 만듭니다. “의심스러움, 검토 필요”은(는) 경고이며 드물지만 유효한 경우일 수 있습니다. 빨간 것부터 처리하세요."
+  },
+  {
+    "category": "합법성",
+    "categoryId": "legality",
+    "icon": "lapiz",
+    "sample": "autofix",
+    "title": "“자동 수정”이(가) 나타나는 때",
+    "text": "앱이 올바른 값(PID, 포획률, 레벨, 출신)을 계산할 수 있을 때만 나타납니다. 그 밖에는 강조된 칸을 눌러 단계의 제안을 따르세요."
+  },
+  {
+    "category": "합법성",
+    "categoryId": "legality",
+    "icon": "chispa",
+    "sample": "retry",
+    "title": "일부 수정은 무작위로 찾습니다",
+    "text": "PID 수정은 조합을 시도하므로 가끔 아무것도 찾지 못합니다. 실패하면 “다시 시도”를 누르세요."
+  },
+  {
+    "category": "합법성",
+    "categoryId": "legality",
+    "icon": "grafico",
+    "sample": "ivbanner",
+    "title": "개체값 편집이 조우를 깨뜨릴 때",
+    "text": "일부 조우에서는 개체값이 게임 시드에서 나오므로 손으로 바꾸면 불법이 됩니다. 이때 이 알림이 나타나니, 합법적인 개체값을 찾는 데 사용하세요."
+  },
+  {
+    "category": "합법성",
+    "categoryId": "legality",
+    "icon": "limpiar",
+    "sample": "ivbuttons",
+    "title": "정확히 맞는 조합이 없을 때",
+    "text": "검색은 가장 가까운 조합, 개체값 차이, 그 밖에 바뀌는 것(성격, 특성, 성별, 이로치)을 보여 줍니다. 확인하기 전에는 아무것도 적용되지 않으며, “원래 개체값으로 되돌리기”로 되돌릴 수 있습니다."
+  },
+  {
+    "category": "합법성",
+    "categoryId": "legality",
+    "icon": "pokemon",
+    "sample": "recreate",
+    "title": "출신이 잘못되었다면 다시 만들기",
+    "text": "“유효한 조우로 다시 만들기”은(는) 합법적인 출신을 제안합니다. 종족, 레벨, 기술, 닉네임, 도구, 트레이너, 개체값은 유지되고 장소, 볼 등 포획 데이터가 바뀝니다. 적용 전에 바뀌는 내용이 표시됩니다."
+  },
+  {
+    "category": "합법성",
+    "categoryId": "legality",
+    "icon": "info",
+    "sample": "gomoves",
+    "title": "“자동 수정 없음”",
+    "text": "기술에 맞는 조우가 없다면 합법적인 기술로 바꾸고(“기술로 이동”) 다시 확인하세요. 호환되는 조우가 나타나면 수정이 자동으로 제안됩니다."
+  },
+  {
+    "category": "합법성",
+    "categoryId": "legality",
+    "icon": "buscar",
+    "sample": "methods",
+    "title": "“습득 기술”로 합법적인 기술 확인",
+    "text": "“습득 기술” 탭은 각 기술을 배우는 방법(레벨, 기술머신, 알, 튜터, 기억)과 시작 레벨을 보여 줍니다."
+  },
+  {
+    "category": "합법성",
+    "categoryId": "legality",
+    "icon": "tips",
+    "sample": "nickname",
+    "title": "닉네임, 언어, 기술 세부 정보",
+    "text": "닉네임이 어떤 유효한 언어와도 맞지 않으면 닉네임 칸 옆의 체크박스를 선택하세요. “기술적 세부 내용”은(는) PKHeX의 원래 메시지를 보여 주어 도움을 요청할 때 유용합니다."
+  }
+]

@@ -1,0 +1,12 @@
+Max Potion is an all-in-one Pokémon save file editor, written for Linux first and also available on other platforms. Everything it needs ships with it, so it works without an internet connection.
+
+Features:
+- Real-time legality analysis: every edit is checked as you make it
+- Movesets and learnsets built in: which moves a Pokémon can learn and how, plus recommended sets, type matchups, evolution chains and item descriptions, so there is no need to look anything up elsewhere
+- Fully offline: the whole database is bundled with the app
+- Interface in 13 languages, and game data (species, moves, items, abilities) in the language you play in
+- Create and edit Pokémon and items from scratch: stats, moves, ribbons, origin and more, plus bag and Pokédex
+
+Built on PKHeX.Core, it supports the main series games that library handles. Written by junko012. Bug reports and ideas are welcome at https://github.com/junko012/max-potion/issues
+
+Back up your saves before editing. Pokémon and its names are trademarks of Nintendo, Creatures and Game Freak. Max Potion is a fan project and is not affiliated with them.

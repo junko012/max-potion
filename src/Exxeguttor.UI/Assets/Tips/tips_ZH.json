@@ -1,0 +1,242 @@
+[
+  {
+    "category": "通用",
+    "categoryId": "general",
+    "icon": "exportar",
+    "sample": "export",
+    "title": "导出才会写入文件",
+    "text": "在导出之前，修改只存在于本次会话：状态栏会显示“有未导出的更改”。导出时才会写入真正的存档。"
+  },
+  {
+    "category": "通用",
+    "categoryId": "general",
+    "icon": "guardar",
+    "sample": "review",
+    "title": "导出前先检查",
+    "text": "审核窗口可以逐个选择是否包含每只被编辑的宝可梦、训练家、背包以及放生记录。"
+  },
+  {
+    "category": "通用",
+    "categoryId": "general",
+    "icon": "info",
+    "sample": "langs",
+    "title": "两种相互独立的语言",
+    "text": "在偏好设置中分别选择“界面语言”和“游戏数据语言”（物种、招式、道具等）。状态栏的指示器会同时显示两者。"
+  },
+  {
+    "category": "通用",
+    "categoryId": "general",
+    "icon": "teclado",
+    "sample": "keys",
+    "title": "F1 与快捷键",
+    "text": "F1 打开本指南。帮助 → “键盘快捷键”中有完整列表：打开、保存、导出、关闭……"
+  },
+  {
+    "category": "创建",
+    "categoryId": "creation",
+    "icon": "buscar",
+    "sample": "search",
+    "title": "按名称或编号搜索",
+    "text": "物种选择器会在你输入时实时筛选，不区分大小写和重音。"
+  },
+  {
+    "category": "创建",
+    "categoryId": "creation",
+    "icon": "teclado",
+    "sample": "shift",
+    "title": "键盘快速跳转",
+    "text": "按住 Shift 再用方向键，可一次跳过 10% 的结果。Home 和 End 跳到两端。"
+  },
+  {
+    "category": "创建",
+    "categoryId": "creation",
+    "icon": "pokemon",
+    "sample": "picker",
+    "title": "只提供游戏中存在的物种",
+    "text": "选择器会隐藏存档对应游戏中不存在、或无法合法创建的物种（例如《传说 阿尔宙斯》中洗翠图鉴之外的物种，或《剑/盾》《朱/紫》中伽勒尔、帕底亚之外的物种），这样你就不用白费功夫去找不存在的宝可梦。"
+  },
+  {
+    "category": "创建",
+    "categoryId": "creation",
+    "icon": "advertencia",
+    "sample": "",
+    "title": "形态与特殊情况",
+    "text": "有些形态在创建时无法做到合法（例如《传说 Z-A》中的 Zygarde 10%/50% 或甲贺忍蛙的小智版），因此不会出现。如果某物种出现合法性警告，请查看“合法”页，并从上往下修正。"
+  },
+  {
+    "category": "编辑",
+    "categoryId": "editing",
+    "icon": "grafico",
+    "sample": "tab-ivs",
+    "title": "按世代区分的个体值与努力值",
+    "text": "第 1–2 代是 DV（0–15）和属性经验（0–65535）。编辑器会根据存档的游戏自动调整范围。"
+  },
+  {
+    "category": "编辑",
+    "categoryId": "editing",
+    "icon": "pokemon",
+    "sample": "tab-sets",
+    "title": "推荐配招",
+    "text": "“配置”页会显示该物种的 Smogon 与 Showdown 配招，包含特性、道具、性格和努力值。"
+  },
+  {
+    "category": "编辑",
+    "categoryId": "editing",
+    "icon": "chispa",
+    "sample": "tab-special",
+    "title": "Mega、Z、极巨化与太晶化",
+    "text": "Mega 石、Z 纯晶以及各游戏的其他机制，请在“特殊”页中选择，而不是在道具栏里。"
+  },
+  {
+    "category": "编辑",
+    "categoryId": "editing",
+    "icon": "medalla",
+    "sample": "tab-ribbons",
+    "title": "按游戏区分的奖章",
+    "text": "只会显示已加载存档所属世代中存在的奖章。"
+  },
+  {
+    "category": "盒子与背包",
+    "categoryId": "storage",
+    "icon": "limpiar",
+    "sample": "release",
+    "title": "放生宝可梦",
+    "text": "每只宝可梦上都有放生按钮，蛋也一样。弹窗会要求确认，并在它携带道具时提醒：道具也会一并丢失。"
+  },
+  {
+    "category": "盒子与背包",
+    "categoryId": "storage",
+    "icon": "info",
+    "sample": "releaseblock",
+    "title": "队伍中唯一的宝可梦",
+    "text": "应用不允许放生它，因为游戏要求队伍中至少有一只。请先把另一只宝可梦放进队伍，再重试。"
+  },
+  {
+    "category": "盒子与背包",
+    "categoryId": "storage",
+    "icon": "guardar",
+    "sample": "undo",
+    "title": "撤销有限制",
+    "text": "导出之前，你可以通过提示中的“撤销”撤销，或放弃全部编辑。如果队伍或盒子已满，或该位置被其他宝可梦占用，就无法撤销。"
+  },
+  {
+    "category": "盒子与背包",
+    "categoryId": "storage",
+    "icon": "exportar",
+    "sample": "review",
+    "title": "导出时保留某一只",
+    "text": "在审核窗口中，你可以取消勾选某次放生以保留那只宝可梦，但仅限第 3 代及以后的盒子、位置仍为空且没有对它的编辑。队伍和第 1–2 代的盒子里放生会让其他宝可梦移位：请改用“撤销”。"
+  },
+  {
+    "category": "盒子与背包",
+    "categoryId": "storage",
+    "icon": "mochila",
+    "sample": "bagtiles",
+    "title": "背包分类",
+    "text": "背包分为多个分类（道具、药品、球、技能机等），具体有哪些取决于存档的世代。点击一个分类即可查看并编辑其中的道具。"
+  },
+  {
+    "category": "盒子与背包",
+    "categoryId": "storage",
+    "icon": "lapiz",
+    "sample": "bagrow",
+    "title": "添加或移除道具",
+    "text": "每个分类会列出所有合法道具，无论你是否拥有。增加数量（或勾选道具）即可添加，减到 0 即可移除。"
+  },
+  {
+    "category": "盒子与背包",
+    "categoryId": "storage",
+    "icon": "chispa",
+    "sample": "bagmax",
+    "title": "最大数量",
+    "text": "“最大”会把数量设为该游戏中此分类的上限。如果输入更大的数字，会自动调整为上限。"
+  },
+  {
+    "category": "盒子与背包",
+    "categoryId": "storage",
+    "icon": "buscar",
+    "sample": "bagstore",
+    "title": "搜索与切换到电脑",
+    "text": "搜索框会在分类内按名称或说明筛选。在有独立存储的世代中，◀ ▶ 箭头可在背包和电脑之间切换。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "balanza",
+    "sample": "steps",
+    "title": "从第一步开始",
+    "text": "“合法”页的步骤按依赖关系排序：先是相遇、原始游戏和蛋。从上往下修正，下面的许多错误会自行消失。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "advertencia",
+    "sample": "severity",
+    "title": "红色与琥珀色不一样",
+    "text": "“影响合法性”会让宝可梦不合法。“可疑，请检查”只是提醒：可能是罕见但合法的情况。请优先处理红色。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "lapiz",
+    "sample": "autofix",
+    "title": "“自动修复”何时出现",
+    "text": "只有当应用能算出正确值（PID、捕获率、等级或来源）时才会出现。其他情况请点击高亮的栏位，并按该步骤的建议修改。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "chispa",
+    "sample": "retry",
+    "title": "有些修复是随机搜索",
+    "text": "修复 PID 会尝试各种组合，有时什么也找不到。失败时请点击“重试”。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "grafico",
+    "sample": "ivbanner",
+    "title": "改动个体值会破坏相遇",
+    "text": "在某些相遇中，个体值来自游戏种子，手动修改会使其不合法。此时会出现这个提示：用它来查找合法的个体值。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "limpiar",
+    "sample": "ivbuttons",
+    "title": "没有完全匹配的组合时",
+    "text": "搜索会显示最接近的一组、个体值相差多少点，以及还会改变什么（性格、特性、性别、闪光）。未经你确认不会应用任何内容；“恢复原始个体值”可以撤回。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "pokemon",
+    "sample": "recreate",
+    "title": "来源无效：重新生成",
+    "text": "“使用有效的相遇重新创建”会提供合法的来源。物种、等级、招式、昵称、道具、训练家和个体值都会保留；地点、球种等捕获数据会改变。应用前会显示具体变化。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "info",
+    "sample": "gomoves",
+    "title": "“没有自动修复”",
+    "text": "如果没有任何相遇与其招式匹配，请把招式改成合法的（“前往技能”）后再检查：一旦出现兼容的相遇，就会自动提供修复。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "buscar",
+    "sample": "methods",
+    "title": "用“学习表”查看合法招式",
+    "text": "“学习表”页会显示每个招式的习得方式（升级、招式机、蛋、教学、回忆）以及从几级开始。"
+  },
+  {
+    "category": "合法性",
+    "categoryId": "legality",
+    "icon": "tips",
+    "sample": "nickname",
+    "title": "昵称、语言与技术详情",
+    "text": "如果昵称与任何有效语言都不匹配，请勾选昵称栏旁的复选框。“技术详情”会显示 PKHeX 的原始信息，求助时很有用。"
+  }
+]
