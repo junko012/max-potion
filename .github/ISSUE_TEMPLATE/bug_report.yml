@@ -1,0 +1,63 @@
+name: Bug report
+description: Something does not work as expected
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Please **back up your save** before testing anything.
+        Do not attach or paste your save file here unless a maintainer asks for it.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a save...
+        2. Go to...
+        3. ...
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: Max Potion version
+      description: Help → About shows it. Filled in automatically when you report from the app.
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      description: For example, openSUSE Tumbleweed, Ubuntu 24.04, Windows 11, macOS 14.
+    validations:
+      required: true
+  - type: input
+    id: game
+    attributes:
+      label: Game of the save file
+      description: For example, Scarlet/Violet, Legends Z-A. Leave empty if not related to a save.
+    validations:
+      required: false
+  - type: input
+    id: install
+    attributes:
+      label: How did you install it?
+      description: rpm, deb, AppImage, tar.gz, zip, dmg, or built from source.
+    validations:
+      required: false
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Filled in automatically when you report from the app (paths are anonymized). Check it before sending.
+      render: text
+    validations:
+      required: false

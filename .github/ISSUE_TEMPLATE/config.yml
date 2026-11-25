@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/junko012/max-potion/discussions
+    about: For questions, ideas and general conversation, use Discussions.
