@@ -95,6 +95,7 @@ jobs:
       - name: Show rpm signature state
         if: matrix.rid == 'linux-x64'
         run: |
+          rpm --version
           for f in dist/*.rpm; do
             echo "$f"; rpm -qp --qf 'firma=%{RSAHEADER:pgpsig}\n' "$f"; sha256sum "$f"
           done

@@ -47,11 +47,18 @@ case "$mode" in
 exec $(command -v gpg) --batch --pinentry-mode loopback --passphrase-file "$work/pass" "\$@"
 WRAP
     chmod 700 "$work/gpgwrap"
+    # rpm >= 6 (el de los runners nuevos de GitHub) construye paquetes V6 y guarda la firma en el campo nuevo OPENPGP,
+    # que los rpm 4.x (Leap 15.x, Fedora antiguas, etc.) NO leen: dicen «File is unsigned». `--rpmv4` añade además la firma
+    # clásica (RSAHEADER) que sí leen. Solo se pasa si este rpmsign la conoce (rpm 4.18 no la tiene y no la necesita).
+    extra=()
+    if rpmsign --help 2>&1 | grep -q -- '--rpmv4'; then extra+=(--rpmv4); fi
+    echo "rpm: $(rpm --version) · opciones extra de rpmsign: ${extra[*]:-ninguna}"
     for f in "${rpms[@]}"; do
       rpmsign \
         --define "_gpg_name $fpr" \
         --define "_gpg_digest_algo sha256" \
         --define "__gpg $work/gpgwrap" \
+        ${extra[@]+"${extra[@]}"} \
         --addsign "$f"
     done
     # Verificación con una base de datos de rpm temporal
@@ -61,7 +68,7 @@ WRAP
       rpmkeys --dbpath "$work/rpmdb" --checksig "$f"
       sig="$(rpm -qp --qf '%{RSAHEADER:pgpsig}' "$f" 2>/dev/null || true)"
       if [[ -z "$sig" || "$sig" == "(none)" ]]; then
-        echo "::error::$f quedó SIN firma (rpmsign no añadió la firma RSA)."
+        echo "::error::$f no tiene la firma RSA clásica (RSAHEADER): los rpm 4.x lo verían como «unsigned»."
         exit 1
       fi
       echo "Firma del rpm: $sig"
