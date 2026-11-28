@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Exxeguttor.App</RootNamespace>
     <AssemblyName>Exxeguttor.App</AssemblyName>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <!-- Motor de saves de Pokémon (GPL-3.0) — 25.11.7: bump desde 25.2.23 para soporte de

@@ -240,6 +240,10 @@
         </Style>
     </Window.Styles>
 
+    <!-- Escala de la interfaz (Preferencias → Tamaño de la interfaz, Ctrl +/−/0): todo el contenido va dentro de
+         este LayoutTransformControl; MainWindow.axaml.cs le asigna un ScaleTransform según MainWindowViewModel.UiScale.
+         Limitación: los menús desplegables y los tooltips son ventanas/capas propias y no se escalan. -->
+    <LayoutTransformControl x:Name="ScaleHost">
     <DockPanel>
 
         <!-- Barra superior: solo menú File/Help — el selector de modo, badge de juego y
@@ -281,6 +285,16 @@
                 </MenuItem>
                 <MenuItem Header="{Binding Loc[Menu_Prefs_DataLanguage]}"
                           ItemsSource="{Binding DataLocaleEntries}">
+                    <MenuItem.ItemContainerTheme>
+                        <ControlTheme x:DataType="vm:LocaleMenuEntry" TargetType="MenuItem"
+                                      BasedOn="{StaticResource {x:Type MenuItem}}">
+                            <Setter Property="Header" Value="{ReflectionBinding Display}"/>
+                            <Setter Property="Command" Value="{ReflectionBinding Command}"/>
+                        </ControlTheme>
+                    </MenuItem.ItemContainerTheme>
+                </MenuItem>
+                <MenuItem Header="{Binding Loc[Menu_Prefs_UiScale]}"
+                          ItemsSource="{Binding UiScaleEntries}">
                     <MenuItem.ItemContainerTheme>
                         <ControlTheme x:DataType="vm:LocaleMenuEntry" TargetType="MenuItem"
                                       BasedOn="{StaticResource {x:Type MenuItem}}">
@@ -334,6 +348,28 @@
                     </Panel>
                     <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center"/>
                 </StackPanel>
+                <!-- Zoom de la interfaz, centrado en la barra: «−  125 %  +». Clic en el porcentaje = volver a 100 %.
+                     Mismas acciones que Preferencias → Tamaño de la interfaz y Ctrl +/−/0. Se dibuja sobre toda la fila
+                     (ColumnSpan 4) para quedar al centro real de la ventana. -->
+                <Border Grid.Column="0" Grid.ColumnSpan="4" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Background="#F3F4F6" BorderBrush="#D1D5DB" BorderThickness="1" CornerRadius="10"
+                        ToolTip.Tip="{Binding Loc[Menu_Prefs_UiScale]}">
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="−" Command="{Binding ZoomOutCommand}" IsEnabled="{Binding CanZoomOut}"
+                                AutomationProperties.Name="{Binding Loc[Shortcuts_Zoom]}"
+                                Background="Transparent" BorderThickness="0" Padding="8,0" MinWidth="26" FontSize="13"
+                                HorizontalContentAlignment="Center" VerticalAlignment="Center"/>
+                        <Button Content="{Binding UiScaleText}" Command="{Binding ZoomResetCommand}"
+                                ToolTip.Tip="{Binding Loc[Shortcuts_ZoomReset]}"
+                                AutomationProperties.Name="{Binding Loc[Shortcuts_ZoomReset]}"
+                                Background="Transparent" BorderThickness="0" Padding="6,0" MinWidth="52" FontSize="11"
+                                HorizontalContentAlignment="Center" VerticalAlignment="Center"/>
+                        <Button Content="+" Command="{Binding ZoomInCommand}" IsEnabled="{Binding CanZoomIn}"
+                                AutomationProperties.Name="{Binding Loc[Shortcuts_Zoom]}"
+                                Background="Transparent" BorderThickness="0" Padding="8,0" MinWidth="26" FontSize="13"
+                                HorizontalContentAlignment="Center" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
                 <!-- Rotom: sin cambios = gris y apagado; con cambios sin exportar = color + resplandor ámbar.
                      Caja fija de 22x20 con recorte (Canvas no limita el tamaño del hijo) para que el sprite
                      se vea grande sin agrandar la barra. -->
@@ -2160,5 +2196,6 @@
         </Grid>
 
     </DockPanel>
+    </LayoutTransformControl>
 
 </Window>

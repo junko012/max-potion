@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Avalonia.Controls;
@@ -138,6 +139,12 @@ public class MainWindowViewModel : INotifyPropertyChanged
         DataLanguageService.Instance.Changed += OnDataLanguageChanged;
         SwitchUiLocaleCommand   = new RelayCommand<string>(code => { if (code != null) SwitchUiLocale(code); });
         SwitchDataLocaleCommand = new RelayCommand<string>(code => { if (code != null) DataLanguageService.Instance.SetPreference(code); });
+        // Escala de la interfaz: se lee de settings.json; la ventana la aplica al enterarse de UiScale.
+        ZoomInCommand    = new RelayCommand(ZoomIn);
+        ZoomOutCommand   = new RelayCommand(ZoomOut);
+        ZoomResetCommand = new RelayCommand(ZoomReset);
+        _uiScale = _appSettings.GetUiScale();
+        RebuildUiScaleEntries();
         RebuildLocaleEntries();
 
         OpenSaveFileCommand = new AsyncRelayCommand(OpenSaveFileAsync);
@@ -197,6 +204,55 @@ public class MainWindowViewModel : INotifyPropertyChanged
 
     public ICommand SwitchUiLocaleCommand   { get; }
     public ICommand SwitchDataLocaleCommand { get; }
+
+    // ── Escala (zoom) de la interfaz ──────────────────────────────────────────────────────
+    private readonly AppSettingsService _appSettings = new();
+    private double _uiScale = InterfaceScale.Default;
+    private List<LocaleMenuEntry> _uiScaleEntries = new();
+
+    /// <summary>Factor de escala actual (1.0 = 100 %). MainWindow lo aplica con un LayoutTransformControl.</summary>
+    public double UiScale => _uiScale;
+
+    /// <summary>Filas del submenú Preferencias → Tamaño de la interfaz (la activa lleva ✓).</summary>
+    public List<LocaleMenuEntry> UiScaleEntries { get => _uiScaleEntries; private set { _uiScaleEntries = value; OnPropertyChanged(); } }
+
+    /// <summary>«125 %»: texto de la mitad de la píldora de zoom de la barra de estado (clic = volver a 100 %).</summary>
+    public string UiScaleText => InterfaceScale.Format(_uiScale);
+    public bool CanZoomIn  => InterfaceScale.Next(_uiScale)     > _uiScale + 0.0001;
+    public bool CanZoomOut => InterfaceScale.Previous(_uiScale) < _uiScale - 0.0001;
+
+    public ICommand ZoomInCommand    { get; }
+    public ICommand ZoomOutCommand   { get; }
+    public ICommand ZoomResetCommand { get; }
+
+    public void ZoomIn()    => SetUiScale(InterfaceScale.Next(_uiScale));
+    public void ZoomOut()   => SetUiScale(InterfaceScale.Previous(_uiScale));
+    public void ZoomReset() => SetUiScale(InterfaceScale.Default);
+
+    private void SetUiScale(double value)
+    {
+        value = InterfaceScale.Snap(value);
+        if (Math.Abs(value - _uiScale) < 0.0001) return;
+        _uiScale = value;
+        _appSettings.SetUiScale(value); // nunca lanza: si no puede escribir, solo no persiste
+        RebuildUiScaleEntries();
+        OnPropertyChanged(nameof(UiScale));
+        OnPropertyChanged(nameof(UiScaleText));
+        OnPropertyChanged(nameof(CanZoomIn));
+        OnPropertyChanged(nameof(CanZoomOut));
+    }
+
+    private void RebuildUiScaleEntries()
+    {
+        var list = new List<LocaleMenuEntry>();
+        foreach (var step in InterfaceScale.Steps)
+        {
+            var captured = step;
+            list.Add(new LocaleMenuEntry(captured.ToString(CultureInfo.InvariantCulture), InterfaceScale.Format(captured), "", "",
+                Math.Abs(captured - _uiScale) < 0.0001, new RelayCommand(() => SetUiScale(captured))));
+        }
+        UiScaleEntries = list;
+    }
 
     private List<LocaleMenuEntry> _uiLocaleEntries = new();
     private List<LocaleMenuEntry> _dataLocaleEntries = new();

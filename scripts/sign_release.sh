@@ -7,12 +7,19 @@
 # Variables de entorno (secrets de GitHub):
 #   GPG_PRIVATE_KEY   clave privada en base64 (gpg --export-secret-keys --armor <id> | base64 -w0)
 #   GPG_PASSPHRASE    contraseña de la clave
-# Si no están definidas, el script avisa y sale con éxito SIN firmar (el release sigue funcionando sin firma).
+# Si no están definidas, el script avisa y sale con éxito SIN firmar (ensayos con workflow_dispatch).
+# Con REQUIRE_SIGNING=1 (releases reales, tags v*) falla en su lugar, y en modo rpm además comprueba que cada .rpm
+# quedó realmente firmado (`rpmkeys --checksig` también da OK para un rpm sin firma: solo comprueba los hashes).
 # Ver docs/SIGNING.md.
 set -euo pipefail
 
 mode="${1:-}"; dist="${2:-dist}"
 if [[ -z "${GPG_PRIVATE_KEY:-}" || -z "${GPG_PASSPHRASE:-}" ]]; then
+  # En un release real (tag) REQUIRE_SIGNING=1: sin secrets el job FALLA en vez de publicar paquetes sin firmar.
+  if [[ "${REQUIRE_SIGNING:-}" == "1" ]]; then
+    echo "::error::GPG_PRIVATE_KEY / GPG_PASSPHRASE no definidos y REQUIRE_SIGNING=1: no se publica sin firma."
+    exit 1
+  fi
   echo "::notice::GPG_PRIVATE_KEY / GPG_PASSPHRASE no definidos: se omite la firma."
   exit 0
 fi
@@ -50,7 +57,15 @@ WRAP
     # Verificación con una base de datos de rpm temporal
     mkdir -p "$work/rpmdb"
     rpmkeys --dbpath "$work/rpmdb" --import "$work/pub.asc"
-    for f in "${rpms[@]}"; do rpmkeys --dbpath "$work/rpmdb" --checksig "$f"; done
+    for f in "${rpms[@]}"; do
+      rpmkeys --dbpath "$work/rpmdb" --checksig "$f"
+      sig="$(rpm -qp --qf '%{RSAHEADER:pgpsig}' "$f" 2>/dev/null || true)"
+      if [[ -z "$sig" || "$sig" == "(none)" ]]; then
+        echo "::error::$f quedó SIN firma (rpmsign no añadió la firma RSA)."
+        exit 1
+      fi
+      echo "Firma del rpm: $sig"
+    done
     ;;
   checksums)
     [[ -f "$dist/SHA256SUMS.txt" ]] || { echo "Falta $dist/SHA256SUMS.txt"; exit 1; }

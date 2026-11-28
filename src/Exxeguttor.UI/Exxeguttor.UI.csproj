@@ -14,7 +14,7 @@
     <AssemblyTitle>Max Potion</AssemblyTitle>
     <Company>Max Potion contributors</Company>
     <ApplicationIcon>Assets\maxpotion.ico</ApplicationIcon>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>Max Potion contributors</Authors>
     <Copyright>Copyright © 2025 Max Potion contributors</Copyright>
     <Description>Pokémon save file editor</Description>

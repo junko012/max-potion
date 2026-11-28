@@ -57,25 +57,25 @@ Packages include the app, the database and all 13 interface languages (there is 
 ### Fedora / openSUSE
 ```bash
 sudo rpm --import maxpotion-signing-key.asc
-sudo dnf install ./maxpotion-1.0.0-1.x86_64.rpm      # openSUSE: sudo zypper install ./maxpotion-1.0.0-1.x86_64.rpm
+sudo dnf install ./maxpotion-1.0.1-1.x86_64.rpm      # openSUSE: sudo zypper install ./maxpotion-1.0.1-1.x86_64.rpm
 ```
 
 ### Ubuntu / Debian
 ```bash
-sudo apt install ./maxpotion_1.0.0_amd64.deb
+sudo apt install ./maxpotion_1.0.1_amd64.deb
 ```
 
 ### AppImage (any distro)
 ```bash
-chmod +x MaxPotion-1.0.0-x86_64.AppImage
-./MaxPotion-1.0.0-x86_64.AppImage
+chmod +x MaxPotion-1.0.1-x86_64.AppImage
+./MaxPotion-1.0.1-x86_64.AppImage
 ```
 If it does not start because FUSE is missing, run it with `--appimage-extract-and-run`.
 
 ### Portable (any distro)
 ```bash
-tar -xzf MaxPotion-1.0.0-linux-x64.tar.gz
-./MaxPotion-1.0.0-linux-x64/maxpotion
+tar -xzf MaxPotion-1.0.1-linux-x64.tar.gz
+./MaxPotion-1.0.1-linux-x64/maxpotion
 ```
 
 ### Windows

@@ -4,7 +4,7 @@ namespace Exxeguttor.App.Services;
 
 /// <summary>
 /// Preferencias persistentes de la app en <c>~/.config/maxpotion/settings.json</c>
-/// (Fase 0 de <c>docs/i18n_project/i18n-plan.md</c>). Hoy solo guarda los dos idiomas:
+/// (Fase 0 de <c>docs/i18n_project/i18n-plan.md</c>). Guarda los dos idiomas y la escala de la interfaz (<c>uiScale</c>):
 /// <c>uiLocale</c> (idioma de la interfaz; null = sin preferencia, se detecta el del sistema) y
 /// <c>dataLocale</c> (idioma de los datos del juego; <c>"auto"</c> = igual que la interfaz).
 /// </summary>
@@ -45,6 +45,17 @@ public class AppSettingsService
 
     public void SetDataLocale(string locale) => WriteString("dataLocale", locale);
 
+    /// <summary>Escala de la interfaz guardada (<see cref="InterfaceScale"/>): 1.0 si no hay nada o el valor no es un número.</summary>
+    public double GetUiScale()
+    {
+        var dict = ReadAll();
+        return dict.TryGetValue("uiScale", out var el) && el.ValueKind == JsonValueKind.Number && el.TryGetDouble(out var v)
+            ? InterfaceScale.Snap(v)
+            : InterfaceScale.Default;
+    }
+
+    public void SetUiScale(double scale) => WriteElement("uiScale", JsonSerializer.SerializeToElement(InterfaceScale.Snap(scale)));
+
     private string? ReadString(string key)
     {
         var dict = ReadAll();
@@ -54,12 +65,14 @@ public class AppSettingsService
             : null;
     }
 
-    private void WriteString(string key, string value)
+    private void WriteString(string key, string value) => WriteElement(key, JsonSerializer.SerializeToElement(value));
+
+    private void WriteElement(string key, JsonElement value)
     {
         try
         {
             var dict = ReadAll();
-            dict[key] = JsonSerializer.SerializeToElement(value);
+            dict[key] = value;
             Directory.CreateDirectory(Path.GetDirectoryName(_filePath)!);
             File.WriteAllText(_filePath, JsonSerializer.Serialize(dict, WriteOptions));
         }

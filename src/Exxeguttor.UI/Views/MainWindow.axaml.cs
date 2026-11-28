@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Exxeguttor.UI.Services;
 using Exxeguttor.UI.ViewModels;
@@ -39,6 +40,74 @@ public partial class MainWindow : Window
         // El DataContext se asigna DESPUÉS de construir la ventana (ver App.axaml.cs), así que
         // el enganche al BusyState tiene que esperar a DataContextChanged.
         DataContextChanged += OnDataContextChangedHookBusy;
+        DataContextChanged += OnDataContextChangedHookScale;
+    }
+
+    // ── Escala de la interfaz (zoom) ──────────────────────────────────────────────────────
+    // El contenido vive dentro de ScaleHost (LayoutTransformControl). Al cambiar la escala la ventana crece o se
+    // achica en la misma proporción (el layout lógico se mantiene y todo se ve más grande), hasta el tamaño de la
+    // pantalla; si ya está maximizada, no cambia de tamaño y el contenido se reacomoda al área lógica menor
+    // (ventana / escala). El tamaño mínimo también sube con la escala (900×600 lógicos), acotado a la pantalla.
+    // No se pudo compilar ni probar en el sandbox.
+    private const double BaseWidth = 1280, BaseHeight = 750, BaseMinWidth = 900, BaseMinHeight = 600;
+    private double _appliedScale = 1.0;
+    private MainWindowViewModel? _scaleVm;
+
+    private void OnDataContextChangedHookScale(object? sender, EventArgs e)
+    {
+        if (_scaleVm != null) _scaleVm.PropertyChanged -= OnScaleVmPropertyChanged;
+        _scaleVm = DataContext as MainWindowViewModel;
+        if (_scaleVm == null) return;
+        _scaleVm.PropertyChanged += OnScaleVmPropertyChanged;
+        ApplyUiScale(_scaleVm.UiScale);
+    }
+
+    private void OnScaleVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainWindowViewModel.UiScale) && _scaleVm != null)
+            ApplyUiScale(_scaleVm.UiScale);
+    }
+
+    private void ApplyUiScale(double scale)
+    {
+        ScaleHost.LayoutTransform = Math.Abs(scale - 1.0) < 0.0001 ? null : new ScaleTransform(scale, scale);
+
+        var maxW = double.PositiveInfinity;
+        var maxH = double.PositiveInfinity;
+        Avalonia.PixelRect? area = Screens?.ScreenFromVisual(this)?.WorkingArea;
+        var rs = RenderScaling > 0 ? RenderScaling : 1.0;
+        if (area is { } wa)
+        {
+            maxW = wa.Width / rs * 0.98;
+            maxH = wa.Height / rs * 0.95;
+        }
+        MinWidth  = Math.Min(BaseMinWidth * scale, maxW);
+        MinHeight = Math.Min(BaseMinHeight * scale, maxH);
+
+        if (!IsVisible)
+        {
+            // Arranque: el tamaño inicial ya sale proporcional a la escala guardada.
+            Width  = Math.Max(MinWidth,  Math.Min(BaseWidth * scale,  maxW));
+            Height = Math.Max(MinHeight, Math.Min(BaseHeight * scale, maxH));
+        }
+        else if (WindowState == WindowState.Normal)
+        {
+            // Ventana abierta: crece/se achica en proporción al cambio de escala y se mantiene dentro de la pantalla.
+            var ratio = scale / _appliedScale;
+            var w = Math.Max(MinWidth,  Math.Min(ClientSize.Width * ratio,  maxW));
+            var h = Math.Max(MinHeight, Math.Min(ClientSize.Height * ratio, maxH));
+            Width = w;
+            Height = h;
+            if (area is { } r)
+            {
+                var px = (int)Math.Round(w * rs);
+                var py = (int)Math.Round(h * rs);
+                var x = Math.Max(r.X, Math.Min(Position.X, r.Right - px));
+                var y = Math.Max(r.Y, Math.Min(Position.Y, r.Bottom - py));
+                if (x != Position.X || y != Position.Y) Position = new Avalonia.PixelPoint(x, y);
+            }
+        }
+        _appliedScale = scale;
     }
 
     // ── Repintado forzado al cerrar un loader ─────────────────────────────────────────────
@@ -116,6 +185,14 @@ public partial class MainWindow : Window
     private void MainWindow_KeyDown(object? sender, KeyEventArgs e)
     {
         if (DataContext is not MainWindowViewModel vm) return;
+
+        // Zoom de la interfaz: Ctrl (o Cmd) + «+» / «−» / «0». Va primero: funciona aun con un modal abierto.
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta))
+        {
+            if (e.Key is Key.OemPlus or Key.Add)          { vm.ZoomIn();    e.Handled = true; return; }
+            if (e.Key is Key.OemMinus or Key.Subtract)    { vm.ZoomOut();   e.Handled = true; return; }
+            if (e.Key is Key.D0 or Key.NumPad0)           { vm.ZoomReset(); e.Handled = true; return; }
+        }
 
         // Menú Ayuda: Esc cierra el modal abierto; F1 abre la guía rápida (Tips) si no hay otro modal de Ayuda.
         if (vm.Help.IsAnyVisible)

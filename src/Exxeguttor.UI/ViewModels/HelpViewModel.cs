@@ -251,6 +251,8 @@ public sealed class HelpViewModel : INotifyPropertyChanged
                 new("Ctrl+S", L("Shortcuts_Save")),
                 new("Ctrl+Shift+S", L("Shortcuts_Export")),
                 new("Ctrl+W", L("Shortcuts_Close")),
+                new("Ctrl +  /  Ctrl −", L("Shortcuts_Zoom")),
+                new("Ctrl+0", L("Shortcuts_ZoomReset")),
             ]),
             new(L("Shortcuts_Group_Review"), [new("←  →", L("Shortcuts_Review_Cards"))]),
             new(L("Shortcuts_Group_Tips"), [new("↑  ↓", L("Shortcuts_Tips_Scroll"))]),

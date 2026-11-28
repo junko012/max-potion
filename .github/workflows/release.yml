@@ -80,13 +80,24 @@ jobs:
           APPIMAGETOOL="$PWD/appimagetool.AppImage" python3 scripts/build_appimage.py "${VERSION}" build/publish dist
           ls -lh dist
 
-      # Firma GPG de los .rpm (ver docs/SIGNING.md). Sin los secrets, el script avisa y no firma.
+      # Firma GPG de los .rpm (ver docs/SIGNING.md). En ensayos sin los secrets el script avisa y no firma; en un tag v* falla
+      # (REQUIRE_SIGNING) y también si el rpm no queda firmado, para no publicar nunca un rpm sin firma.
       - name: Sign .rpm
         if: matrix.rid == 'linux-x64'
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          REQUIRE_SIGNING: ${{ startsWith(github.ref, 'refs/tags/v') && '1' || '' }}
         run: bash scripts/sign_release.sh rpm dist
+
+      # Diagnóstico: estado del rpm justo antes de subirlo como artefacto. Se compara con el paso "Verify rpm signature"
+      # del job release (mismo sha256 = el archivo no cambió en el traslado).
+      - name: Show rpm signature state
+        if: matrix.rid == 'linux-x64'
+        run: |
+          for f in dist/*.rpm; do
+            echo "$f"; rpm -qp --qf 'firma=%{RSAHEADER:pgpsig}\n' "$f"; sha256sum "$f"
+          done
 
       - uses: actions/upload-artifact@v4
         with:
@@ -102,12 +113,26 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with: { path: dist, merge-multiple: true }
+      # Defensa final: el rpm que llegó del job build debe traer su firma RSA. Si no, no se publica nada.
+      - name: Verify rpm signature
+        shell: bash
+        run: |
+          sudo apt-get install -y rpm > /dev/null
+          for f in dist/*.rpm; do
+            sig="$(rpm -qp --qf '%{RSAHEADER:pgpsig}' "$f")"
+            echo "$f -> $sig"; sha256sum "$f"
+            if [[ -z "$sig" || "$sig" == "(none)" ]]; then
+              echo "::error::$f llegó SIN firma al job release; no se publica."
+              exit 1
+            fi
+          done
       - name: Checksums
         run: cd dist && sha256sum * > SHA256SUMS.txt
       - name: Sign checksums
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          REQUIRE_SIGNING: "1"
         run: bash scripts/sign_release.sh checksums dist
       - name: Publish release
         env:
